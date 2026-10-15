@@ -12,9 +12,17 @@ import {
   MapPin,
   Clock,
   Printer,
+  Sparkles,
+  User,
+  Cpu,
+  Globe,
+  Youtube,
+  Award,
+  Layers,
+  Zap,
 } from 'lucide-react';
 
-export type LegalTab = 'privacy' | 'terms' | 'refund' | 'contact';
+export type LegalTab = 'about' | 'privacy' | 'terms' | 'refund' | 'contact';
 
 interface LegalModalProps {
   isOpen: boolean;
@@ -25,7 +33,7 @@ interface LegalModalProps {
 export const LegalModal: React.FC<LegalModalProps> = ({
   isOpen,
   onClose,
-  defaultTab = 'privacy',
+  defaultTab = 'about',
 }) => {
   const [activeTab, setActiveTab] = useState<LegalTab>(defaultTab);
 
@@ -53,10 +61,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 font-heading">
-                Legal Documentation &amp; Trust Center
+                About &amp; Trust Center · excel.dattasable.com
               </h2>
               <p className="text-xs text-slate-500">
-                Official policies governing excel.dattasable.com · Updated October 2026
+                Created by Datta Sable · Official Policies &amp; Contact Information
               </p>
             </div>
           </div>
@@ -65,7 +73,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
             <button
               onClick={() => window.print()}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors"
-              title="Print Policy"
+              title="Print Document"
             >
               <Printer size={13} />
               <span>Print</span>
@@ -82,6 +90,18 @@ export const LegalModal: React.FC<LegalModalProps> = ({
 
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1 px-4 sm:px-6 pt-3 border-b border-slate-200 bg-slate-50 overflow-x-auto text-xs font-medium no-scrollbar">
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`flex items-center gap-2 px-4 py-2.5 border-b-2 font-semibold transition-all whitespace-nowrap ${
+              activeTab === 'about'
+                ? 'border-emerald-700 text-emerald-800 bg-white rounded-t-lg shadow-2xs'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <User size={14} />
+            <span>About Us</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('privacy')}
             className={`flex items-center gap-2 px-4 py-2.5 border-b-2 font-semibold transition-all whitespace-nowrap ${
@@ -133,6 +153,149 @@ export const LegalModal: React.FC<LegalModalProps> = ({
 
         {/* Content Body */}
         <div className="p-6 sm:p-8 overflow-y-auto space-y-6 text-slate-700 text-xs sm:text-sm leading-relaxed">
+          {/* ABOUT US TAB */}
+          {activeTab === 'about' && (
+            <div className="space-y-6">
+              {/* Profile Card Header */}
+              <div className="bg-gradient-to-r from-[#172b2a] via-[#1c3830] to-[#142823] text-white rounded-2xl p-6 sm:p-7 border border-[#2d5246] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-2xl shrink-0 shadow-md">
+                    DS
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e4238] border border-[#3b7563] text-[#86efac] text-[10px] font-mono font-medium mb-1.5">
+                      <Sparkles size={11} />
+                      <span>FOUNDER &amp; LEAD DEVELOPER</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white font-heading">
+                      Dattatray Gorakh Sable
+                    </h3>
+                    <p className="text-xs text-[#a9c4b9]">
+                      Business Intelligence Architect, Data Engineer &amp; Analytics Consultant
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <a
+                    href="https://dattasable.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-sm"
+                  >
+                    <span>dattasable.com</span>
+                    <ExternalLink size={12} />
+                  </a>
+                  <a
+                    href="https://fabric.dattasable.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#193742] hover:bg-[#204957] text-sky-200 text-xs font-bold border border-sky-400/40 transition-all"
+                  >
+                    <Cpu size={12} className="text-sky-400" />
+                    <span>Fabric Master</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Mission Statement */}
+              <section className="space-y-2">
+                <h3 className="text-base font-bold text-slate-900 font-heading">
+                  Our Mission: Democratizing Executive-Grade Business Intelligence
+                </h3>
+                <p>
+                  Traditional Enterprise BI platforms like Microsoft Power BI, Tableau, and Looker are incredibly powerful, but they often come with steep license costs, complicated user permissioning, and heavy server lock-ins. On the other hand, raw Excel files require hours of manual copy-pasting, pivot alignment, and formula debugging every single month.
+                </p>
+                <p>
+                  <strong>excel.dattasable.com</strong> was engineered by Datta Sable to bridge this exact gap: to let anyone instantly upload CSV or tabular records, explore dynamic browser dashboards, and download a boardroom-ready Microsoft Excel (.xlsx) workbook loaded with live native formulas, automated KPI scorecards, and executive visual charts in seconds.
+                </p>
+              </section>
+
+              {/* 4 Core Pillars */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
+                    <ShieldCheck size={16} />
+                    <span>100% IN-BROWSER PRIVACY</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Zero cloud data storage. All column parsing, data aggregation, and workbook assembly happen client-side in your local browser sandbox. Your proprietary business figures never leave your device.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
+                    <Zap size={16} />
+                    <span>LIVE NATIVE EXCEL FORMULAS</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    We generate authentic, editable Excel formulas (SUMIFS, AVERAGEIFS, ROUND). When you update transactions or source records in Excel, your entire dashboard recalculates dynamically.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
+                    <Layers size={16} />
+                    <span>AUTOMATIC SCHEMA ENGINE</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Intelligent type detection identifies dates, financial currencies, percentages, and categorical dimensions automatically, generating pivot summaries without manual setup.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
+                    <Award size={16} />
+                    <span>ACCESSIBLE &amp; FAIR PRICING</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Free live interactive analytics for everyone. Single unlocked Excel downloads for ₹9, or Lifetime Unlimited VIP access for ₹49 via instant UPI QR payment.
+                  </p>
+                </div>
+              </div>
+
+              {/* Creator Track Record & Network */}
+              <section className="space-y-2 pt-2 border-t border-slate-100">
+                <h3 className="text-base font-bold text-slate-900 font-heading">
+                  About the Developer — Datta Sable
+                </h3>
+                <p>
+                  Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Pune, Maharashtra. With extensive expertise spanning Microsoft Fabric, Power BI, SQL, Azure, and automated financial modeling, Datta builds modern tools that transform raw enterprise records into high-impact visual intelligence.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href="https://dattasable.com/dashboards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-medium transition-colors"
+                  >
+                    <Globe size={13} />
+                    <span>BI Dashboards Showcase</span>
+                    <ExternalLink size={11} />
+                  </a>
+                  <a
+                    href="https://www.youtube.com/@sabledatttatray"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-red-400 hover:bg-red-50 text-slate-700 hover:text-red-700 text-xs font-medium transition-colors"
+                  >
+                    <Youtube size={13} className="text-red-500" />
+                    <span>YouTube Channel (@sabledatttatray)</span>
+                    <ExternalLink size={11} />
+                  </a>
+                  <a
+                    href="mailto:support@dattasable.com"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors"
+                  >
+                    <Mail size={13} />
+                    <span>support@dattasable.com</span>
+                  </a>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* PRIVACY POLICY TAB */}
           {activeTab === 'privacy' && (
             <div className="space-y-6">
               <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-4 text-emerald-950 text-xs flex items-start gap-3">
@@ -181,12 +344,13 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   4. Regulatory Compliance &amp; Rights
                 </h3>
                 <p>
-                  This Privacy Policy complies with the Information Technology Act, 2000 (India), the Digital Personal Data Protection Act (DPDP), and international GDPR privacy principles. For any privacy inquiries, reach our Data Grievance Officer at <code>dattasable1999@gmail.com</code>.
+                  This Privacy Policy complies with the Information Technology Act, 2000 (India), the Digital Personal Data Protection Act (DPDP), and international GDPR privacy principles. For any privacy inquiries, reach our Data Grievance Officer at <code>support@dattasable.com</code>.
                 </p>
               </section>
             </div>
           )}
 
+          {/* TERMS OF SERVICE TAB */}
           {activeTab === 'terms' && (
             <div className="space-y-6">
               <section className="space-y-2">
@@ -235,6 +399,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
             </div>
           )}
 
+          {/* REFUND POLICY TAB */}
           {activeTab === 'refund' && (
             <div className="space-y-6">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-950 text-xs flex items-start gap-3">
@@ -282,12 +447,13 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   3. How to Request a Refund
                 </h3>
                 <p>
-                  Simply message us on WhatsApp at <strong>+91 8010803756</strong> or email <strong>dattasable1999@gmail.com</strong> with your UPI Reference ID / UTR Number and payment timestamp.
+                  Simply message us on WhatsApp at <strong>+91 8010803756</strong> or email <strong>support@dattasable.com</strong> with your UPI Reference ID / UTR Number and payment timestamp.
                 </p>
               </section>
             </div>
           )}
 
+          {/* CONTACT & GRIEVANCE TAB */}
           {activeTab === 'contact' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -308,9 +474,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <div className="flex items-start gap-3 text-xs text-slate-700">
                   <Mail size={16} className="text-emerald-700 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Official Email:</strong>{' '}
-                    <a href="mailto:dattasable1999@gmail.com" className="text-emerald-700 hover:underline">
-                      dattasable1999@gmail.com
+                    <strong>Official Support Email:</strong>{' '}
+                    <a href="mailto:support@dattasable.com" className="text-emerald-700 hover:underline font-medium">
+                      support@dattasable.com
                     </a>
                   </div>
                 </div>

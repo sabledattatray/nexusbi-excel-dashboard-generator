@@ -16,7 +16,7 @@ import { ExcelLogo } from './ExcelLogo';
 interface FooterProps {
   onSelectTab?: (tab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers') => void;
   onOpenUploadModal?: () => void;
-  onOpenLegal?: (tab: 'privacy' | 'terms' | 'refund' | 'contact') => void;
+  onOpenLegal?: (tab: 'about' | 'privacy' | 'terms' | 'refund' | 'contact') => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, onOpenLegal }) => {
@@ -70,7 +70,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
               <li>
                 <button
                   onClick={() => onSelectTab?.('dashboard')}
-                  className="hover:text-white transition-colors text-left"
+                  className="hover:text-white transition-colors text-left cursor-pointer"
                 >
                   Executive Overview
                 </button>
@@ -78,7 +78,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
               <li>
                 <button
                   onClick={() => onSelectTab?.('excel-preview')}
-                  className="hover:text-white transition-colors text-left"
+                  className="hover:text-white transition-colors text-left cursor-pointer"
                 >
                   Live Excel Workbook
                 </button>
@@ -86,7 +86,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
               <li>
                 <button
                   onClick={() => onSelectTab?.('pivot')}
-                  className="hover:text-white transition-colors text-left"
+                  className="hover:text-white transition-colors text-left cursor-pointer"
                 >
                   Grouped Pivot Analysis
                 </button>
@@ -94,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
               <li>
                 <button
                   onClick={() => onSelectTab?.('transactions')}
-                  className="hover:text-white transition-colors text-left"
+                  className="hover:text-white transition-colors text-left cursor-pointer"
                 >
                   Source Records
                 </button>
@@ -130,9 +130,21 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
           {/* Column 3: Legal & Trust Center */}
           <div className="space-y-3">
             <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-emerald-400">
-              Legal &amp; Trust
+              About &amp; Legal
             </h4>
             <ul className="space-y-2 text-xs text-[#9bb0a7]">
+              <li>
+                <a
+                  href="/about"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onOpenLegal?.('about');
+                  }}
+                  className="hover:text-white transition-colors block text-left"
+                >
+                  About Us &amp; Mission
+                </a>
+              </li>
               <li>
                 <a
                   href="/privacy"
@@ -238,6 +250,13 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
             <span className="font-mono text-emerald-300">excel.dattasable.com</span>
             <span>·</span>
             <button
+              onClick={() => onOpenLegal?.('about')}
+              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              About Us
+            </button>
+            <span>·</span>
+            <button
               onClick={() => onOpenLegal?.('privacy')}
               className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
             >
@@ -267,10 +286,9 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <span className="flex items-center gap-1 text-emerald-300">
-              <ShieldCheck size={13} />
-              100% Client-Side Privacy (Zero Cloud Uploads)
-            </span>
+            <a href="mailto:support@dattasable.com" className="text-emerald-300 hover:underline">
+              support@dattasable.com
+            </a>
             <span>·</span>
             <span>UPI: 8010803756@upi</span>
           </div>

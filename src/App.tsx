@@ -97,7 +97,9 @@ export default function App() {
     // Deep-link route detection for dedicated SEO & legal paths
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
-      if (path.includes('privacy')) {
+      if (path.includes('about')) {
+        handleOpenLegal('about');
+      } else if (path.includes('privacy')) {
         handleOpenLegal('privacy');
       } else if (path.includes('terms')) {
         handleOpenLegal('terms');

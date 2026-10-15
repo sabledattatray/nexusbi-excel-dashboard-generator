@@ -96,9 +96,17 @@ const pages = [
     metaHeading: 'Refund & Cancellation Policy',
   },
   {
+    slug: 'about',
+    title: 'About Us | Datta Sable — Free Excel Dashboard Generator',
+    description: 'Learn about Datta Sable, Business Intelligence Architect and creator of excel.dattasable.com. Discover our mission, in-browser privacy architecture, and executive KPI templates.',
+    canonical: 'https://excel.dattasable.com/about',
+    h1: 'About Us – Datta Sable & The Automated Excel Dashboard Generator',
+    metaHeading: 'About Us & Mission',
+  },
+  {
     slug: 'contact',
     title: 'Contact Us & Grievance Redressal | excel.dattasable.com',
-    description: 'Contact Dattatray Gorakh Sable, developer of excel.dattasable.com. Official support channels, WhatsApp, email, and grievance officer details.',
+    description: 'Contact Dattatray Gorakh Sable, developer of excel.dattasable.com. Official support channels, WhatsApp, email (support@dattasable.com), and grievance officer details.',
     canonical: 'https://excel.dattasable.com/contact',
     h1: 'Contact Us & Grievance Redressal – Datta Sable Analytics',
     metaHeading: 'Contact & Grievance Details',
