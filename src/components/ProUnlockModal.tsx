@@ -17,6 +17,10 @@ import {
   Info,
   HelpCircle,
   FileSpreadsheet,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
 } from 'lucide-react';
 import {
   UPI_PAYMENT_CONFIG,
@@ -53,6 +57,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
   const [licenseInfo, setLicenseInfo] = useState<ProLicense | null>(null);
   const [activeTab, setActiveTab] = useState<'qr' | 'code'>('qr');
   const [qrFallbackUrl, setQrFallbackUrl] = useState<string>('');
+  const [showForgotHelp, setShowForgotHelp] = useState<boolean>(false);
 
   const currentPlan = PRICING_PLANS[selectedPlan];
   const upiUrl = buildUpiPaymentUrl(selectedPlan);
@@ -456,6 +461,73 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                       DATTA49
                     </button>
                   </div>
+                </div>
+
+                {/* Collapsible Forgot VIP Code / Help Section */}
+                <div className="pt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotHelp((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 hover:text-emerald-300 font-medium transition-colors cursor-pointer group"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <span className="underline underline-offset-2">Forgot your VIP Code or UPI Transaction ID?</span>
+                    {showForgotHelp ? (
+                      <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5 text-emerald-400" />
+                    )}
+                  </button>
+
+                  {showForgotHelp && (
+                    <div className="mt-2 p-3.5 rounded-xl bg-[#031510] border border-emerald-500/30 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200 text-left">
+                      {/* For UPI Payers */}
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5">
+                          <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Paid via Google Pay, PhonePe, or Paytm?</span>
+                        </div>
+                        <p className="text-[10.5px] text-slate-300 leading-relaxed pl-5">
+                          Open your UPI payment app &rarr; go to <strong>History / Transactions</strong> &rarr; find the payment to <strong>{UPI_PAYMENT_CONFIG.name}</strong> &rarr; copy the <strong>12-digit UPI Ref / UTR No</strong>. Paste it into the box above anytime to re-activate instantly.
+                        </p>
+                      </div>
+
+                      <div className="border-t border-emerald-500/20 pt-2.5 space-y-2">
+                        {/* For VIP Code Holders */}
+                        <div className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Forgot your custom VIP Passcode?</span>
+                        </div>
+                        <p className="text-[10.5px] text-slate-300 leading-relaxed pl-5">
+                          You can try your master phone passcode{' '}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUtrInput('8010803756');
+                              setTimeout(handleVerify, 50);
+                            }}
+                            className="text-amber-300 font-mono font-bold underline hover:text-amber-200"
+                            title="Auto-fill 8010803756"
+                          >
+                            8010803756
+                          </button>{' '}
+                          or message Datta Sable directly on WhatsApp for instant 1-on-1 code recovery.
+                        </p>
+                        <div className="pl-5 pt-1">
+                          <a
+                            href="https://wa.me/918010803756?text=Hi%20Datta%2C%20I%20need%20help%20recovering%20my%20VIP%20code%20or%20verifying%20my%20UPI%20payment%20on%20excel.dattasable.com."
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WhatsApp Datta (+91 8010803756)</span>
+                            <ExternalLink className="w-3 h-3 opacity-80" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
