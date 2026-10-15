@@ -193,11 +193,17 @@ test('Pro unprotected export generates 100% unlocked workbook without sheet or w
   const wbXml = await zip.file('xl/workbook.xml')!.async('string');
   assert.ok(!wbXml.includes('<workbookProtection'), 'Unprotected export must not contain workbookProtection');
 
-  // Verify UPI payment URL builder
-  const upiUrl = buildUpiPaymentUrl();
-  assert.ok(upiUrl.startsWith('upi://pay?'));
-  assert.ok(upiUrl.includes('8010803756'));
-  assert.ok(upiUrl.includes('am=99'));
-  assert.ok(upiUrl.includes('cu=INR'));
+  // Verify UPI payment URL builder for both plans
+  const singleUrl = buildUpiPaymentUrl('single');
+  assert.ok(singleUrl.startsWith('upi://pay?'));
+  assert.ok(singleUrl.includes('8010803756'));
+  assert.ok(singleUrl.includes('am=9'));
+  assert.ok(singleUrl.includes('cu=INR'));
+
+  const lifetimeUrl = buildUpiPaymentUrl('lifetime');
+  assert.ok(lifetimeUrl.startsWith('upi://pay?'));
+  assert.ok(lifetimeUrl.includes('8010803756'));
+  assert.ok(lifetimeUrl.includes('am=49'));
+  assert.ok(lifetimeUrl.includes('cu=INR'));
 });
 

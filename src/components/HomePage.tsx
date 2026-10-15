@@ -240,10 +240,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 onClick={onOpenUnlockModal}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500/25 via-emerald-500/20 to-teal-500/20 hover:from-amber-500/35 hover:to-teal-500/30 text-amber-300 hover:text-white text-sm font-bold border border-amber-400/50 shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
-                title="Unlock 100% Unprotected & Editable Excel Files for ₹99"
+                title="Unlock 100% Unprotected & Editable Excel Files from ₹9"
               >
                 <Crown size={17} className="text-amber-400" />
-                <span>Unlock Pro (₹99)</span>
+                <span>Unlock Pro (from ₹9)</span>
               </button>
             ) : (
               <button

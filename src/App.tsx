@@ -25,7 +25,7 @@ import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
-import { isProUnlocked } from './utils/proLicenseManager';
+import { isProUnlocked, consumeDownloadCredit } from './utils/proLicenseManager';
 
 // Lazy-loaded heavy components for lightning-fast initial load & maximum smoothness
 const ExcelLiveViewer = lazy(() => import('./components/ExcelLiveViewer').then((m) => ({ default: m.ExcelLiveViewer })));
@@ -154,6 +154,11 @@ export default function App() {
 
       setLastDownloadedFilename(filename);
       setIsSuccessOpen(true);
+
+      if (shouldBeUnprotected) {
+        consumeDownloadCredit();
+        setIsProUser(isProUnlocked());
+      }
     } catch (error) {
       console.error('Failed to export Excel file:', error);
       alert('Could not compile Excel file. Please try again.');

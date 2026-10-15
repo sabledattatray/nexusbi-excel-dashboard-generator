@@ -10,19 +10,23 @@ import {
   Check,
   Smartphone,
   Sparkles,
-  Lock,
   Unlock,
   KeyRound,
   ArrowRight,
   Zap,
   Info,
   HelpCircle,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   UPI_PAYMENT_CONFIG,
+  PRICING_PLANS,
+  PricingPlanId,
   buildUpiPaymentUrl,
   unlockProLicense,
   isProUnlocked,
+  isLifetimeUnlocked,
+  getSingleCreditsRemaining,
   ProLicense,
   getProLicense,
 } from '../utils/proLicenseManager';
@@ -40,7 +44,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
   onUnlockSuccess,
   initialUtr = '',
 }) => {
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlanId>('lifetime');
   const [copiedUpi, setCopiedUpi] = useState<boolean>(false);
   const [utrInput, setUtrInput] = useState<string>(initialUtr);
   const [verifying, setVerifying] = useState<boolean>(false);
@@ -48,8 +52,10 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
   const [alreadyUnlocked, setAlreadyUnlocked] = useState<boolean>(false);
   const [licenseInfo, setLicenseInfo] = useState<ProLicense | null>(null);
   const [activeTab, setActiveTab] = useState<'qr' | 'code'>('qr');
+  const [qrFallbackUrl, setQrFallbackUrl] = useState<string>('');
 
-  const upiUrl = buildUpiPaymentUrl();
+  const currentPlan = PRICING_PLANS[selectedPlan];
+  const upiUrl = buildUpiPaymentUrl(selectedPlan);
 
   useEffect(() => {
     if (isOpen) {
@@ -60,17 +66,14 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
       }
       setStatusMessage(null);
 
-      // Generate dynamic QR code for UPI
+      // Generate fallback QR in case /payment-qr.jpg is not reached
       QRCode.toDataURL(upiUrl, {
         width: 260,
         margin: 2,
-        color: {
-          dark: '#032e27',
-          light: '#ffffff',
-        },
+        color: { dark: '#032e27', light: '#ffffff' },
       })
-        .then((url) => setQrDataUrl(url))
-        .catch((err) => console.error('Failed to generate UPI QR code:', err));
+        .then((url) => setQrFallbackUrl(url))
+        .catch((err) => console.error('Fallback QR error:', err));
     }
   }, [isOpen, upiUrl]);
 
@@ -94,9 +97,8 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
     setVerifying(true);
     setStatusMessage(null);
 
-    // Simulate instant authentic verification
     setTimeout(() => {
-      const result = unlockProLicense(utrInput);
+      const result = unlockProLicense(utrInput, selectedPlan);
       setVerifying(false);
 
       if (result.success) {
@@ -104,13 +106,12 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
         setAlreadyUnlocked(true);
         setLicenseInfo(getProLicense());
 
-        // Confetti celebration
         try {
           confetti({
-            particleCount: 120,
-            spread: 80,
+            particleCount: 130,
+            spread: 85,
             origin: { y: 0.6 },
-            colors: ['#10B981', '#34D399', '#F59E0B', '#38BDF8', '#6366F1'],
+            colors: ['#F59E0B', '#10B981', '#34D399', '#38BDF8', '#6366F1'],
           });
         } catch {
           // ignore
@@ -126,7 +127,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div className="bg-gradient-to-b from-[#0b211b] via-[#091b17] to-[#061411] border border-emerald-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col text-slate-100 my-auto">
         {/* Header */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-[#13352c] via-[#0f2c24] to-[#0c241e] border-b border-emerald-500/30 flex items-start justify-between relative overflow-hidden">
@@ -139,14 +140,14 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  Unlock Unlimited Pro
+                  Unlock 100% Unprotected Excel
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 uppercase tracking-wide">
-                  100% Unprotected
+                  Zero Passwords
                 </span>
               </div>
               <p className="text-xs text-emerald-200/80 mt-1 leading-relaxed">
-                Remove all sheet passwords, unlock formula edits, resize charts, and export unrestricted Excel dashboards forever.
+                Unlock full formula edits, resize &amp; restyle charts, and export unrestricted spreadsheets.
               </p>
             </div>
           </div>
@@ -161,7 +162,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 space-y-5 text-xs">
+        <div className="p-5 sm:p-6 space-y-4 text-xs">
           {alreadyUnlocked ? (
             /* Already Unlocked View */
             <div className="p-5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-center space-y-3">
@@ -169,80 +170,135 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <h4 className="text-base font-bold text-white">
-                Pro Unlimited is Active on this Device!
+                {licenseInfo?.isLifetime
+                  ? '👑 Unlimited Lifetime Pass is Active!'
+                  : `🎉 You have ${licenseInfo?.singleCredits || 1} Unprotected Download Available!`}
               </h4>
               <p className="text-xs text-emerald-200/90 max-w-sm mx-auto">
-                All downloaded Excel workbooks from templates or custom uploads are now generated with <strong>100% zero password protection</strong> and full formula edit rights.
+                {licenseInfo?.isLifetime
+                  ? 'All 12 templates and custom uploads are completely unlocked with zero passwords forever.'
+                  : 'Your single file download is authorized. Click below to download your 100% unprotected Excel workbook.'}
               </p>
               {licenseInfo?.refId && (
-                <div className="pt-2 font-mono text-[11px] text-emerald-300">
-                  Ref / Key: <span className="text-white font-bold">{licenseInfo.refId}</span>
+                <div className="pt-1 font-mono text-[11px] text-emerald-300">
+                  Ref: <span className="text-white font-bold">{licenseInfo.refId}</span>
                 </div>
               )}
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => {
                     onUnlockSuccess?.();
                     onClose();
                   }}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg transition-all"
                 >
-                  Download Unprotected Excel Now
+                  Download Unprotected Excel (.xlsx)
                 </button>
+                {!licenseInfo?.isLifetime && (
+                  <button
+                    onClick={() => {
+                      setAlreadyUnlocked(false);
+                      setSelectedPlan('lifetime');
+                    }}
+                    className="py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-400/30 transition-all"
+                  >
+                    Upgrade to Lifetime (₹49)
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <>
-              {/* Value Proposition Grid */}
-              <div className="grid grid-cols-2 gap-2 text-[11.5px]">
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-start gap-2">
-                  <Unlock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white block font-medium">100% Unlocked</strong>
-                    <span className="text-slate-400 text-[10.5px]">Zero worksheet password restrictions</span>
+              {/* Dual Plan Selector */}
+              <div>
+                <label className="text-[11px] font-semibold text-emerald-300 uppercase tracking-wider block mb-2">
+                  Select Your Plan:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Plan 1: Single Download (₹9) */}
+                  <div
+                    onClick={() => setSelectedPlan('single')}
+                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between relative ${
+                      selectedPlan === 'single'
+                        ? 'bg-gradient-to-br from-emerald-950/80 to-[#0e2c24] border-emerald-400 shadow-md ring-1 ring-emerald-400'
+                        : 'bg-emerald-950/30 border-emerald-500/20 hover:border-emerald-500/40 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                        Single Pass
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        1 Download
+                      </span>
+                    </div>
+                    <div className="my-1">
+                      <div className="text-2xl font-extrabold text-white">
+                        ₹9 <span className="text-[11px] font-normal text-slate-400">/ file</span>
+                      </div>
+                      <p className="text-[10.5px] text-slate-400 mt-1 leading-snug">
+                        Unlock this specific dashboard. Full formula &amp; chart edit rights.
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-emerald-500/15 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400">Pay each time needed</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          selectedPlan === 'single'
+                            ? 'border-emerald-400 bg-emerald-500 text-slate-950'
+                            : 'border-slate-500'
+                        }`}
+                      >
+                        {selectedPlan === 'single' && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-start gap-2">
-                  <Zap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white block font-medium">Full Formula Edits</strong>
-                    <span className="text-slate-400 text-[10.5px]">Modify SUMIFS, KPIs &amp; metrics</span>
-                  </div>
-                </div>
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white block font-medium">Chart Customization</strong>
-                    <span className="text-slate-400 text-[10.5px]">Resize, move &amp; copy to slides</span>
-                  </div>
-                </div>
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/20 flex items-start gap-2">
-                  <Crown className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white block font-medium">White-Label &amp; Keep</strong>
-                    <span className="text-slate-400 text-[10.5px]">Rebrand &amp; deliver to clients</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Price Banner */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-teal-500/15 border border-amber-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-amber-300 font-semibold tracking-wider block">
-                    Special Launch Offer
-                  </span>
-                  <div className="text-xl font-extrabold text-white flex items-baseline gap-1.5 mt-0.5">
-                    <span>{UPI_PAYMENT_CONFIG.formattedAmount}</span>
-                    <span className="text-[11px] font-normal text-slate-300 line-through">₹499</span>
-                    <span className="text-[10px] font-normal text-emerald-300 font-sans">
-                      • {UPI_PAYMENT_CONFIG.oneTimeLabel}
-                    </span>
+                  {/* Plan 2: Unlimited Lifetime (₹49) */}
+                  <div
+                    onClick={() => setSelectedPlan('lifetime')}
+                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between relative overflow-hidden ${
+                      selectedPlan === 'lifetime'
+                        ? 'bg-gradient-to-br from-amber-950/50 via-[#103027] to-[#0c241e] border-amber-400 shadow-xl ring-2 ring-amber-400/80'
+                        : 'bg-emerald-950/30 border-emerald-500/20 hover:border-amber-400/40 text-slate-300'
+                    }`}
+                  >
+                    <div className="absolute -top-1 -right-1 px-2.5 py-0.5 rounded-bl-lg bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-extrabold text-[9px] uppercase tracking-wider shadow-sm">
+                      Best Value
+                    </div>
+
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                        <Crown className="w-4 h-4 text-amber-400" />
+                        Unlimited Lifetime
+                      </span>
+                    </div>
+
+                    <div className="my-1">
+                      <div className="text-2xl font-extrabold text-white flex items-baseline gap-1.5">
+                        <span>₹49</span>
+                        <span className="text-xs text-slate-400 line-through">₹499</span>
+                        <span className="text-[10px] font-normal text-amber-300">One-Time Forever</span>
+                      </div>
+                      <p className="text-[10.5px] text-amber-100/80 mt-1 leading-snug">
+                        All 12 templates + all custom CSV uploads. Never scan or pay again!
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between text-[11px]">
+                      <span className="text-amber-300/90 font-medium">Permanent Access</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          selectedPlan === 'lifetime'
+                            ? 'border-amber-400 bg-amber-400 text-slate-950'
+                            : 'border-slate-500'
+                        }`}
+                      >
+                        {selectedPlan === 'lifetime' && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <span className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
-                    Lifetime Unlimited
-                  </span>
                 </div>
               </div>
 
@@ -257,7 +313,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                   }`}
                 >
                   <Smartphone className="w-3.5 h-3.5" />
-                  <span>Scan UPI QR Code</span>
+                  <span>Scan QR Code ({currentPlan.formattedAmount})</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('code')}
@@ -268,54 +324,54 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                   }`}
                 >
                   <KeyRound className="w-3.5 h-3.5" />
-                  <span>Enter Code / UTR</span>
+                  <span>Enter UTR / VIP Code</span>
                 </button>
               </div>
 
               {activeTab === 'qr' ? (
-                /* QR Code View */
-                <div className="space-y-4">
+                /* QR Code Display */
+                <div className="space-y-3.5">
                   <div className="p-4 rounded-2xl bg-white text-slate-900 text-center flex flex-col items-center shadow-lg border border-emerald-300">
                     <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1 flex items-center gap-1">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                      Scan &amp; Pay with Any UPI App
+                      Scan with GPay, PhonePe, Paytm, or BHIM
                     </span>
                     
                     {/* The Official Real QR Image */}
-                    <div className="relative p-2.5 bg-black rounded-xl shadow-md border-2 border-emerald-500/30 my-1">
+                    <div className="relative p-2 bg-black rounded-xl shadow-md border-2 border-emerald-500/30 my-1">
                       <img
-                        src="/payment-qr.jpg"
+                        src={UPI_PAYMENT_CONFIG.qrImagePath}
                         alt="Official UPI Payment QR Code"
-                        className="w-52 h-52 sm:w-56 sm:h-56 object-contain rounded-lg"
+                        className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg"
                         onError={(e) => {
-                          if (qrDataUrl) {
-                            (e.target as HTMLImageElement).src = qrDataUrl;
+                          if (qrFallbackUrl) {
+                            (e.target as HTMLImageElement).src = qrFallbackUrl;
                           }
                         }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-center gap-2 mt-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-xs shadow-xs border border-emerald-300">
-                        Amount: ₹99
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                      <span className="px-3 py-1 rounded-full bg-emerald-600 text-white font-extrabold text-xs shadow-sm">
+                        Pay {currentPlan.formattedAmount} ({currentPlan.name})
                       </span>
                       <span className="text-[11px] text-slate-700 font-medium">
                         Payee: <strong>{UPI_PAYMENT_CONFIG.name}</strong>
                       </span>
                     </div>
 
-                    {/* Supported Apps Logos Pill */}
-                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-slate-500 font-medium">
-                      <span className="px-2 py-0.5 rounded bg-slate-100">GPay</span>
+                    {/* Supported Apps */}
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-1 text-[10px] text-slate-500 font-medium">
+                      <span className="px-2 py-0.5 rounded bg-slate-100">Google Pay</span>
                       <span className="px-2 py-0.5 rounded bg-slate-100">PhonePe</span>
                       <span className="px-2 py-0.5 rounded bg-slate-100">Paytm</span>
-                      <span className="px-2 py-0.5 rounded bg-slate-100">BHIM</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-100">BHIM UPI</span>
                       <span className="px-2 py-0.5 rounded bg-slate-100">Cred</span>
-                      <span className="px-2 py-0.5 rounded bg-slate-100">Any Bank UPI</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-100">Any Bank App</span>
                     </div>
                   </div>
 
-                  {/* Copy UPI ID & Mobile Deep Link */}
+                  {/* Copy UPI & Open App */}
                   <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={handleCopyUpiId}
@@ -330,7 +386,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                       className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-all text-xs"
                     >
                       <Smartphone className="w-3.5 h-3.5" />
-                      <span>Open UPI App</span>
+                      <span>Open UPI App ({currentPlan.formattedAmount})</span>
                     </a>
                   </div>
                 </div>
@@ -339,7 +395,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
               {/* UTR / Transaction Input Section */}
               <div className="space-y-2 pt-1">
                 <label className="text-[11px] font-medium text-emerald-200/90 block">
-                  Step 2: Enter 12-digit UPI Reference / UTR Number (or VIP Code):
+                  Step 2: Enter 12-digit UPI Transaction / UTR ID after paying {currentPlan.formattedAmount}:
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -352,7 +408,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                   <button
                     onClick={handleVerify}
                     disabled={verifying}
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all shrink-0"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all shrink-0"
                   >
                     {verifying ? (
                       <span>Verifying…</span>

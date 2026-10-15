@@ -143,7 +143,7 @@ export const DownloadSuccessModal: React.FC<DownloadSuccessModalProps> = ({
               <div className="pt-2 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="text-[11px]">
                   <span className="font-bold text-slate-800 block">Want 100% Editable &amp; Unprotected Excel?</span>
-                  <span className="text-slate-500">Edit formulas, resize charts &amp; white-label for just {UPI_PAYMENT_CONFIG.formattedAmount} one-time.</span>
+                  <span className="text-slate-500">Single file for <strong>₹9</strong> · Unlimited Lifetime for <strong>₹49</strong></span>
                 </div>
                 <button
                   onClick={() => {
@@ -153,7 +153,7 @@ export const DownloadSuccessModal: React.FC<DownloadSuccessModalProps> = ({
                   className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <Crown className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Unlock for {UPI_PAYMENT_CONFIG.formattedAmount}</span>
+                  <span>Unlock from ₹9</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>

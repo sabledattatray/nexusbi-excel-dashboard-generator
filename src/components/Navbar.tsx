@@ -239,12 +239,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               onOpenUnlockModal?.();
               setIsMobileMenuOpen(false);
             }}
-            title="Unlock 100% Unprotected & Editable Excel Files for ₹99"
+            title="Unlock 100% Unprotected & Editable Excel Files from ₹9"
           >
             <Crown size={14.5} className="text-amber-400 group-hover:text-amber-300 shrink-0" />
             <span className="truncate">{isProUnlocked ? 'Pro Unlimited Active' : 'Unlock Pro Access'}</span>
             <span className="nav-badge text-amber-300 border-amber-500/40 bg-amber-950/40">
-              {isProUnlocked ? 'Active' : '₹99'}
+              {isProUnlocked ? 'Active' : 'from ₹9'}
             </span>
           </button>
         </nav>
@@ -335,13 +335,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'bg-amber-100/90 text-amber-950 border border-amber-300 font-bold'
                 : 'bg-gradient-to-r from-amber-50 to-emerald-50 text-emerald-950 border border-amber-400/50 hover:border-emerald-500 font-bold hover:scale-[1.02]'
             }`}
-            title={isProUnlocked ? 'Pro Unlimited Active — All Downloads Unprotected' : 'Unlock 100% Unprotected & Editable Excel Files for ₹99'}
+            title={isProUnlocked ? 'Pro Unlimited Active — All Downloads Unprotected' : 'Unlock 100% Unprotected & Editable Excel Files from ₹9'}
           >
             <Crown size={13} className={isProUnlocked ? 'text-amber-600' : 'text-amber-500'} />
             <span>{isProUnlocked ? 'PRO UNLOCKED' : 'Unlock Pro'}</span>
             {!isProUnlocked && (
               <span className="text-[10px] font-mono px-1 py-0.2 bg-emerald-700 text-white rounded font-bold">
-                ₹99
+                from ₹9
               </span>
             )}
           </button>
@@ -403,11 +403,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               className="secondary-button !border-amber-400/60 !bg-gradient-to-r !from-amber-50 !via-emerald-50 !to-teal-50 text-emerald-950 font-bold shadow-xs hover:border-amber-500 transition-all"
               onClick={onOpenUnlockModal}
-              title="Unlock Unlimited Unprotected Excel Files (One-Time ₹99)"
+              title="Unlock Unprotected Excel Files (Single ₹9 · Unlimited ₹49)"
             >
               <Crown size={14} className="text-amber-600 shrink-0" />
-              <span className="hidden sm:inline">Unlock Unprotected (₹99)</span>
-              <span className="sm:hidden">Pro ₹99</span>
+              <span className="hidden sm:inline">Unlock Unprotected (from ₹9)</span>
+              <span className="sm:hidden">Pro from ₹9</span>
             </button>
           )}
 
