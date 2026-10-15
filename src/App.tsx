@@ -201,7 +201,7 @@ export default function App() {
           : <AdaptiveDashboard key={config.industry + seedOffset} data={dataset} selection={analysisSelection} onChange={setAnalysisSelection} view={activeTab} />)}
       </main>
 
-      <footer className="workspace-footer"><div className="footer-top"><div><div className="footer-brand"><BarChart3 size={18}/>NexusBI</div><p>Make sense of your spreadsheets.</p></div><div className="footer-principles"><span><FileSpreadsheet size={15}/>Open Excel format</span><span><Layers size={15}/>Original data preserved</span><span><CheckCircle2 size={15}/>Transparent calculations</span></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} NexusBI · Crafted by Datta Sable</span><span>Thoughtful tools. Clearer decisions.</span></div></footer>
+      <footer className="workspace-footer"><div className="footer-top"><div><div className="footer-brand"><BarChart3 size={18}/>NexusBI</div><p>Make sense of your spreadsheets.</p></div><div className="footer-principles"><span><FileSpreadsheet size={15}/>Open Excel format</span><span><Layers size={15}/>Original data preserved</span><span><CheckCircle2 size={15}/>Transparent calculations</span></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} NexusBI · Crafted by <a href="https://dattasable.com/" target="_blank" rel="noopener noreferrer">Datta Sable</a></span><span>Thoughtful tools. Clearer decisions.</span></div></footer>
 
       {/* Modals */}
       <CustomizerModal key={config.industry + config.companyName + isCustomizerOpen}
