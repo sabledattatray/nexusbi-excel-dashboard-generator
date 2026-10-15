@@ -191,11 +191,12 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal }
               </li>
               <li>
                 <a
-                  href="https://www.youtube.com/@DattaSable"
+                  href="https://www.youtube.com/@sabledatttatray"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white flex items-center gap-1.5 transition-colors"
                 >
+                  <Youtube size={13} className="text-red-400 shrink-0" />
                   <span>YouTube Tutorials</span>
                   <ExternalLink size={11} className="opacity-70" />
                 </a>
