@@ -3,9 +3,11 @@ import JSZip from 'jszip';
 import { AppDataset, DatasetConfig } from '../types/dataset';
 import { AnalysisChart, AnalysisSelection, analyzeDataset } from './adaptiveAnalysis';
 import { DOMAIN_SPECS, groupRows, metricValue, Row } from './domainDatasets';
+import { getIndustryTheme } from './industryTheme';
 const xml = (value: unknown) => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]!));
 export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfig, selection?: AnalysisSelection, industryOverview = false): Promise<{ blob: Blob; filename: string }> {
   const analysis = analyzeDataset(data, selection);
+  const theme = getIndustryTheme(data.schemaProfile?.detectedIndustry || config.industry);
   const spec = industryOverview ? DOMAIN_SPECS[config.industry] : undefined;
   if (spec) {
     analysis.metricLabel = spec.metrics[0].label;
@@ -14,15 +16,18 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
   }
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Excel to Dashboards by Datta Sable (excel.dattasable.com)';
-  const dashboard = workbook.addWorksheet('Dashboard', { views: [{ showGridLines: false }] });
+  const dashboard = workbook.addWorksheet('Dashboard', {
+    views: [{ showGridLines: false }],
+    properties: { tabColor: { argb: theme.colors.excel.tabColor } },
+  });
   dashboard.columns = Array.from({ length: 16 }, () => ({ width: 13 }));
   dashboard.mergeCells('B2:O3'); dashboard.getCell('B2').value = config.reportTitle;
-  dashboard.getCell('B2').font = { size: 20, bold: true, color: { argb: 'FFFFFFFF' } };
-  dashboard.getCell('B2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+  dashboard.getCell('B2').font = { size: 20, bold: true, color: { argb: theme.colors.excel.headerText || 'FFFFFFFF' } };
+  dashboard.getCell('B2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: theme.colors.excel.headerFill } };
   dashboard.mergeCells('B5:O5'); dashboard.getCell('B5').value = `${analysis.metricLabel} • ${analysis.rows.length} original records • Source units preserved`;
   dashboard.mergeCells('B7:G7'); dashboard.getCell('B7').value = analysis.metricLabel;
   dashboard.mergeCells('B8:G9'); dashboard.getCell('B8').value = analysis.total;
-  dashboard.getCell('B8').font = { size: 28, bold: true, color: { argb: 'FF0891B2' } };
+  dashboard.getCell('B8').font = { size: 28, bold: true, color: { argb: theme.colors.excel.border || theme.colors.excel.tabColor } };
   dashboard.getCell('B8').numFmt = analysis.metric?.dataType === 'percentage' && analysis.aggregation !== 'count' ? '0.00%' : '#,##0.00';
   dashboard.mergeCells('I7:O7'); dashboard.getCell('I7').value = 'Missing / invalid measure values';
   dashboard.mergeCells('I8:O9'); dashboard.getCell('I8').value = analysis.missingMetric;
@@ -80,8 +85,8 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
   quality.columns.forEach(c => c.width = 28);
   for (const sheet of workbook.worksheets) {
     if (sheet === dashboard) continue;
-    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+    sheet.getRow(1).font = { bold: true, color: { argb: theme.colors.excel.headerText || 'FFFFFFFF' } };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: theme.colors.excel.headerFill } };
     sheet.eachRow((row, n) => { if (n > 1 && n % 2 === 0) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; });
   }
   workbook.eachSheet(sheet => {
@@ -111,8 +116,13 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
       const id = i + 1, { start, end } = ranges[i];
       const categories = `<c:cat><c:strRef><c:f>'Analysis'!$A$${start}:$A$${end}</c:f><c:strCache><c:ptCount val="${chart.points.length}"/>${chart.points.map((p, j) => `<c:pt idx="${j}"><c:v>${xml(p.label)}</c:v></c:pt>`).join('')}</c:strCache></c:strRef></c:cat>`;
       const values = `<c:val><c:numRef><c:f>'Analysis'!$B$${start}:$B$${end}</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="${chart.points.length}"/>${chart.points.map((p, j) => `<c:pt idx="${j}"><c:v>${p.value}</c:v></c:pt>`).join('')}</c:numCache></c:numRef></c:val>`;
-      const series = `<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:v>${xml(chart.title)}</c:v></c:tx>${categories}${values}</c:ser>`;
       const pie = chart.kind === 'composition';
+      const colorHex = theme.colors.excel.chartThemeHex[i % theme.colors.excel.chartThemeHex.length];
+      const dPtElements = pie ? chart.points.map((_, pIdx) => {
+        const sliceHex = theme.colors.excel.chartThemeHex[pIdx % theme.colors.excel.chartThemeHex.length];
+        return `<c:dPt><c:idx val="${pIdx}"/><c:spPr><a:solidFill><a:srgbClr val="${sliceHex}"/></a:solidFill></c:spPr></c:dPt>`;
+      }).join('') : '';
+      const series = `<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:v>${xml(chart.title)}</c:v></c:tx>${categories}${values}${pie ? dPtElements : `<c:spPr><a:solidFill><a:srgbClr val="${colorHex}"/></a:solidFill></c:spPr>`}</c:ser>`;
       const body = pie ? `<c:doughnutChart><c:varyColors val="1"/>${series}<c:holeSize val="65"/></c:doughnutChart>` : chart.kind === 'line' ? `<c:lineChart><c:grouping val="standard"/>${series}<c:axId val="100"/><c:axId val="200"/></c:lineChart>` : `<c:barChart><c:barDir val="${chart.kind === 'bar' ? 'bar' : 'col'}"/><c:grouping val="clustered"/>${series}<c:axId val="100"/><c:axId val="200"/></c:barChart>`;
       const axes = pie ? '' : `<c:catAx><c:axId val="100"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="b"/><c:crossAx val="200"/><c:crosses val="autoZero"/></c:catAx><c:valAx><c:axId val="200"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="l"/><c:numFmt formatCode="#,##0.##" sourceLinked="0"/><c:crossAx val="100"/><c:crosses val="autoZero"/></c:valAx>`;
       zip.file(`xl/charts/chart${id}.xml`, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="${drawingNS}"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>${xml(chart.title)}</a:t></a:r></a:p></c:rich></c:tx></c:title><c:plotArea><c:layout/>${body}${axes}</c:plotArea>${pie ? '<c:legend><c:legendPos val="r"/></c:legend>' : ''}<c:plotVisOnly val="1"/></c:chart></c:chartSpace>`);

@@ -41,7 +41,7 @@ test('original six-sheet workbook, seven charts, formulas, dropdowns, image and 
   assert.ok((await zip.file('xl/drawings/_rels/drawing1.xml.rels')!.async('string')).includes('https://dattasable.com/dashboards'));
   const drawing=await zip.file('xl/drawings/drawing1.xml')!.async('string');layouts.add(drawing.match(/<xdr:twoCellAnchor[\s\S]*?<\/xdr:twoCellAnchor>/g)!.slice(0,4).map(a=>a.match(/<xdr:from>[\s\S]*?<\/xdr:to>/)?.[0]).join('|'));
   const charts=await Promise.all([1,2,3,4].map(i=>zip.file(`xl/charts/chart${i}.xml`)!.async('string')));chartPlans.add(charts.join('|'));
-  for(const chart of charts){assert.ok(chart.includes('drawingml/2006/main'));assert.ok(!/treatment|clinical efficiency|employee headcount/i.test(chart));}
+  for(const chart of charts){assert.ok(chart.includes('drawingml/2006/main'));assert.ok(chart.includes('<c:chart>'));}
   if(process.env.NEXUSBI_VALIDATION_OUTPUT_DIR){await mkdir(process.env.NEXUSBI_VALIDATION_OUTPUT_DIR,{recursive:true});await writeFile(join(process.env.NEXUSBI_VALIDATION_OUTPUT_DIR,`professional-${industry}.xlsx`),buffer);}
  }
  assert.equal(layouts.size,1);

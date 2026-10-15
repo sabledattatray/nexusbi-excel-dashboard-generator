@@ -549,6 +549,18 @@ export function getAdaptedKpiLabels(
 
   if (!schema) return base;
 
+  // Check if this schema is from a custom user upload with custom-named measures,
+  // rather than the standard commercial generator schema.
+  const isCustomUserUpload = 
+    schema.primaryMetricLabel && 
+    schema.primaryMetricLabel !== 'Gross Revenue' && 
+    schema.primaryMetricLabel !== 'Revenue' &&
+    schema.primaryCategoryLabel !== 'Product Category';
+
+  if (!isCustomUserUpload) {
+    return base;
+  }
+
   return {
     metric1: schema.primaryMetricLabel ? `Total ${schema.primaryMetricLabel}` : base.metric1,
     metric2: schema.secondaryMetricLabel ? `Total ${schema.secondaryMetricLabel}` : base.metric2,

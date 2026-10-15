@@ -206,7 +206,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1200"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1200"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Revenue Contribution by Product Category</a:t>
+              <a:t>${escapeXml(labels.metric1)} Contribution by ${escapeXml(labels.categoryLabel)}</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -224,7 +224,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$D$61</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Gross Revenue</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           ${topCats.map((cat, i) => `
@@ -293,7 +293,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1200"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1200"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Regional Theater Quota Attainment (Actual vs Target)</a:t>
+              <a:t>${escapeXml(labels.dimensionLabel)} Quota Attainment (Actual vs Target)</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -313,12 +313,12 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$K$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Actual Rev</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Actual ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="0284C7"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="0369A1"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>
@@ -346,7 +346,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$L$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Target Rev</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Target ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
@@ -435,7 +435,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1200"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1200"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Sales Channel Revenue Mix (Native Donut Chart)</a:t>
+              <a:t>Sales Channel ${escapeXml(labels.metric1)} Mix</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -453,7 +453,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$K$61</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Channel Revenue</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Channel ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           ${channelList.map((ch, i) => `
@@ -527,7 +527,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1100"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1100"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Pivot Chart 1: Global Theater Revenue by Sales Channel</a:t>
+              <a:t>Pivot Chart 1: ${escapeXml(labels.dimensionLabel)} ${escapeXml(labels.metric1)} by Sales Channel</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -543,7 +543,7 @@ export async function injectNativeExcelCharts(
         <c:varyColors val="0"/>
         ${['Direct Enterprise', 'Partner Ecosystem', 'Inside Sales', 'Online Enterprise'].map((ch, idx) => {
           const colLetter = ['C', 'D', 'E', 'F'][idx];
-          const colorHex = ['0284C7', '10B981', '6366F1', 'F59E0B'][idx];
+          const colorHex = hexColors[idx % hexColors.length];
           return `
         <c:ser>
           <c:idx val="${idx}"/>
@@ -641,7 +641,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1100"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1100"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Pivot Chart 2: Product Category Revenue Matrix</a:t>
+              <a:t>Pivot Chart 2: ${escapeXml(labels.categoryLabel)} ${escapeXml(labels.metric1)} Matrix</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -659,7 +659,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Pivot Table Analysis'!$G$14</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total Revenue</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           ${topCats.map((cat, i) => `
@@ -728,7 +728,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1100"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1100"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Pivot Chart 3: Fiscal Quarterly Revenue &amp; Operating Profit</a:t>
+              <a:t>Pivot Chart 3: Fiscal Quarterly ${escapeXml(labels.metric1)} &amp; ${escapeXml(labels.metric2)}</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -748,12 +748,12 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Pivot Table Analysis'!$C$23</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Gross Revenue</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="0284C7"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="0369A1"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>
@@ -781,12 +781,12 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Pivot Table Analysis'!$E$23</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Operating Profit</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric2)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="10B981"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="059669"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[1]}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[1]}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>

@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import { generateRealisticDataset } from './dataGenerator';
 import { DatasetConfig } from '../types/dataset';
 import { injectNativeExcelCharts } from './nativeExcelChartInjector';
+import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
 
 // Executive Palette for Professional Excel Workbooks
 const COLORS = {
@@ -41,6 +42,14 @@ export async function exportToProfessionalExcel(
     kpi,
   } = datasetData;
 
+  const theme = getIndustryTheme(config.industry);
+  const labels = getAdaptedKpiLabels(config.industry, (datasetData as any).schemaProfile);
+  const primaryHeaderFill = theme.colors.excel.headerFill || COLORS.navyDark;
+  const primaryTabColor = theme.colors.excel.tabColor || COLORS.emeraldMed;
+  const primaryAccentFill = theme.colors.excel.accentFill || COLORS.blueLight;
+  const primaryAccentText = theme.colors.excel.accentText || COLORS.blueDark;
+  const primaryBorder = theme.colors.excel.border || COLORS.skyBar;
+
   const workbook = new ExcelJS.Workbook();
   workbook.creator = `${config.companyName} Executive BI Engine`;
   workbook.lastModifiedBy = 'Excel to Dashboards by Datta Sable (excel.dattasable.com)';
@@ -55,7 +64,7 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const dashSheet = workbook.addWorksheet('Executive Dashboard', {
     views: [{ showGridLines: true }],
-    properties: { tabColor: { argb: COLORS.emeraldMed } },
+    properties: { tabColor: { argb: primaryTabColor } },
   });
 
   // Explicit column widths for balanced executive dashboard grid layout
@@ -81,24 +90,24 @@ export async function exportToProfessionalExcel(
   // Header Title Banner (Row 2 & 3)
   dashSheet.mergeCells('B2:O2');
   const bannerTitle = dashSheet.getCell('B2');
-  bannerTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — EXECUTIVE PERFORMANCE DASHBOARD`;
+  bannerTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — ${theme.name.toUpperCase()} EXECUTIVE DASHBOARD`;
   bannerTitle.font = { name: 'Segoe UI', size: 15, bold: true, color: { argb: COLORS.pureWhite } };
   bannerTitle.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: COLORS.navyDark },
+    fgColor: { argb: primaryHeaderFill },
   };
   bannerTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   dashSheet.getRow(2).height = 34;
 
   dashSheet.mergeCells('B3:O3');
   const bannerSub = dashSheet.getCell('B3');
-  bannerSub.value = `Interactive Enterprise BI Model • Visual Donut & Waterfall Charts • Live Dynamic Formulas • Generated: ${new Date().toISOString().split('T')[0]} • Status: Final Verified`;
+  bannerSub.value = `Interactive ${theme.badge} BI Model • Dynamic Live Formulas & Visual Analytics • Generated: ${new Date().toISOString().split('T')[0]} • Status: Final Verified`;
   bannerSub.font = { name: 'Segoe UI', size: 9, italic: true, color: { argb: 'FF94A3B8' } };
   bannerSub.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: COLORS.navyMedium },
+    fgColor: { argb: primaryHeaderFill },
   };
   bannerSub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   dashSheet.getRow(3).height = 20;
@@ -106,16 +115,16 @@ export async function exportToProfessionalExcel(
   // INTERACTIVE SLICER CONTROLS BAR (Row 4)
   dashSheet.getRow(4).height = 26;
   
-  // Slicer 1: Region Selector (Data Validation Dropdown)
-  dashSheet.getCell('B4').value = 'Region Filter:';
+  // Slicer 1: Region / Dimension Selector (Data Validation Dropdown)
+  dashSheet.getCell('B4').value = `${labels.dimensionLabel}:`;
   dashSheet.getCell('B4').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.slateMuted } };
   dashSheet.getCell('B4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   dashSheet.mergeCells('C4:D4');
   const slicerRegion = dashSheet.getCell('C4');
   slicerRegion.value = 'All Regions';
-  slicerRegion.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: COLORS.blueDark } };
-  slicerRegion.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.blueLight } };
+  slicerRegion.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: primaryAccentText } };
+  slicerRegion.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryAccentFill } };
   slicerRegion.alignment = { vertical: 'middle', horizontal: 'center' };
   slicerRegion.border = {
     top: { style: 'thin', color: { argb: COLORS.borderDark } },
@@ -154,7 +163,7 @@ export async function exportToProfessionalExcel(
 
   dashSheet.mergeCells('J4:O4');
   const slicerHelp = dashSheet.getCell('J4');
-  slicerHelp.value = '💡 Tip: Select dropdown in C4 or G4 in Excel to recalculate entire dashboard dynamically!';
+  slicerHelp.value = `💡 Tip: Select dropdown in C4 (${labels.dimensionLabel}) or G4 (Channel) in Excel to recalculate entire dashboard dynamically!`;
   slicerHelp.font = { name: 'Segoe UI', size: 9, italic: true, color: { argb: COLORS.slateMuted } };
   slicerHelp.alignment = { vertical: 'middle', horizontal: 'left' };
 
@@ -169,23 +178,23 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'B',
       colEnd: 'C',
-      label: 'GROSS REVENUE',
+      label: labels.metric1.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!T3:T${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalRevenue,
       subtext: '● Certified Actuals',
       numFmt: '$#,##0',
-      accentColor: COLORS.blueDark,
-      bgCard: COLORS.blueLight,
+      accentColor: primaryAccentText,
+      bgCard: primaryAccentFill,
     },
     {
       colStart: 'D',
       colEnd: 'E',
-      label: 'GROSS PROFIT',
+      label: labels.metric2.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!V3:V${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalGrossProfit,
-      subtext: '● Net Operating Spread',
+      subtext: '● Net Operating Value',
       numFmt: '$#,##0',
       accentColor: COLORS.emeraldDark,
       bgCard: COLORS.emeraldLight,
@@ -193,7 +202,7 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'F',
       colEnd: 'G',
-      label: 'BLENDED MARGIN',
+      label: labels.metric3.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(B7>0, D7/B7, 0)`
         : kpi.overallMarginPct,
@@ -205,11 +214,11 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'H',
       colEnd: 'I',
-      label: 'UNITS SHIPPED',
+      label: labels.metric4.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!R3:R${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalUnits,
-      subtext: '● Product Volume',
+      subtext: '● Volume Metric',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
       bgCard: COLORS.zebraLight,
@@ -217,11 +226,11 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'J',
       colEnd: 'K',
-      label: 'TRANSACTION COUNT',
+      label: labels.metric5.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(AND(C4="All Regions", G4="All Channels"), COUNTA('Sales Transactions'!A3:A${txRowCount}), IF(C4="All Regions", COUNTIFS('Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4), COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.orderCount,
-      subtext: '● Closed Contracts',
+      subtext: '● Closed Records',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
       bgCard: COLORS.zebraLight,
@@ -229,11 +238,11 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'L',
       colEnd: 'M',
-      label: 'AVERAGE DEAL SIZE',
+      label: labels.metric6.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(J7>0, B7/J7, 0)`
         : kpi.averageDealSize,
-      subtext: '● Per Contract Average',
+      subtext: '● Unit Average',
       numFmt: '$#,##0',
       accentColor: COLORS.navyMedium,
       bgCard: COLORS.zebraLight,
@@ -241,11 +250,11 @@ export async function exportToProfessionalExcel(
     {
       colStart: 'N',
       colEnd: 'O',
-      label: 'CUSTOMER ACCOUNTS',
+      label: labels.entityLabel.toUpperCase(),
       formula: config.useLiveExcelFormulas
         ? `=IF(AND(C4="All Regions", G4="All Channels"), ${customerAccounts.length}, ROUND(MAX(1, J7/${Math.max(1, Math.round(transactions.length / customerAccounts.length))}), 0))`
         : customerAccounts.length,
-      subtext: '● Enterprise Portfolio',
+      subtext: '● Active Portfolio',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
       bgCard: COLORS.zebraLight,
@@ -325,19 +334,19 @@ export async function exportToProfessionalExcel(
   // LEFT SIDE: MONTHLY FINANCIAL TABLE (B44:H58)
   dashSheet.mergeCells('B44:H44');
   const monthBanner = dashSheet.getCell('B44');
-  monthBanner.value = 'MONTHLY FINANCIAL RUN-RATE & MARGIN SUMMARY DATA';
+  monthBanner.value = `MONTHLY ${labels.metric1.toUpperCase()} & ${labels.metric2.toUpperCase()} RUN-RATE SUMMARY`;
   monthBanner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  monthBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  monthBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   monthBanner.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(44).height = 22;
 
   const monthHeaders = [
     { col: 'B', title: 'Period', align: 'center' },
-    { col: 'C', title: 'Revenue ($)', align: 'right' },
-    { col: 'D', title: 'COGS ($)', align: 'right' },
-    { col: 'E', title: 'Gross Profit ($)', align: 'right' },
-    { col: 'F', title: 'Margin %', align: 'right' },
-    { col: 'G', title: 'Orders', align: 'center' },
+    { col: 'C', title: `${labels.metric1} ($)`, align: 'right' },
+    { col: 'D', title: 'Direct Cost ($)', align: 'right' },
+    { col: 'E', title: `${labels.metric2} ($)`, align: 'right' },
+    { col: 'F', title: `${labels.metric3} %`, align: 'right' },
+    { col: 'G', title: 'Volume', align: 'center' },
     { col: 'H', title: 'In-Cell Trend', align: 'left' },
   ];
   monthHeaders.forEach((mh) => {
@@ -455,12 +464,12 @@ export async function exportToProfessionalExcel(
   // RIGHT SIDE TOP: REGIONAL QUOTA & MARGIN PERFORMANCE SCORECARD (Rows 44 to 50)
   dashSheet.mergeCells('I44:O44');
   const regTblHeader = dashSheet.getCell('I44');
-  regTblHeader.value = 'REGIONAL QUOTA & MARGIN PERFORMANCE SCORECARD';
+  regTblHeader.value = `${labels.dimensionLabel.toUpperCase()} PERFORMANCE SCORECARD`;
   regTblHeader.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  regTblHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  regTblHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   regTblHeader.alignment = { vertical: 'middle', horizontal: 'center' };
 
-  const regHeaders = ['Region', 'Director', 'Actual Rev', 'Quota Target', 'Attainment', 'Profit', 'In-Cell Bar'];
+  const regHeaders = [labels.dimensionLabel, 'Lead', `Actual ${labels.metric1}`, 'Quota Target', 'Attainment', labels.metric2, 'In-Cell Bar'];
   const regCols = ['I', 'J', 'K', 'L', 'M', 'N', 'O'];
   regCols.forEach((col, idx) => {
     const c = dashSheet.getCell(`${col}45`);
@@ -547,7 +556,7 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+      bottom: { style: 'double', color: { argb: primaryHeaderFill } },
     };
     c.font = { name: 'Segoe UI', size: 8.5, bold: true };
   });
@@ -568,14 +577,14 @@ export async function exportToProfessionalExcel(
   // RIGHT SIDE BOTTOM: TOP STRATEGIC CLIENT ACCOUNTS (Rows 52 to 58)
   dashSheet.mergeCells('I52:O52');
   const accTitle = dashSheet.getCell('I52');
-  accTitle.value = 'TOP STRATEGIC ENTERPRISE CLIENT ACCOUNTS';
+  accTitle.value = `TOP STRATEGIC ${labels.entityLabel.toUpperCase()}S BY VALUE`;
   accTitle.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
-  accTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  accTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   accTitle.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(52).height = 22;
 
   dashSheet.mergeCells('I53:K53');
-  dashSheet.getCell('I53').value = 'Organization';
+  dashSheet.getCell('I53').value = labels.entityLabel;
   dashSheet.getCell('L53').value = 'Tier';
   dashSheet.getCell('M53').value = 'Orders';
   dashSheet.getCell('N53').value = 'Revenue';
@@ -682,19 +691,19 @@ export async function exportToProfessionalExcel(
   // LEFT SIDE: PRODUCT CATEGORY PORTFOLIO TABLE (B60:H67)
   dashSheet.mergeCells('B60:H60');
   const catBanner = dashSheet.getCell('B60');
-  catBanner.value = 'PRODUCT CATEGORY PORTFOLIO & MARGIN DIRECTORY';
+  catBanner.value = `${labels.categoryLabel.toUpperCase()} PORTFOLIO & MARGIN DIRECTORY`;
   catBanner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  catBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  catBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   catBanner.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(60).height = 22;
 
   const catHeaders = [
-    { col: 'B', title: 'Category' },
-    { col: 'C', title: 'Units' },
-    { col: 'D', title: 'Gross Revenue' },
-    { col: 'E', title: 'Rev Share' },
-    { col: 'F', title: 'Gross Profit' },
-    { col: 'G', title: 'Margin %' },
+    { col: 'B', title: labels.categoryLabel },
+    { col: 'C', title: labels.metric4.length > 18 ? 'Volume / Units' : labels.metric4 },
+    { col: 'D', title: labels.metric1 },
+    { col: 'E', title: 'Share %' },
+    { col: 'F', title: labels.metric2 },
+    { col: 'G', title: `${labels.metric3.replace(/%/g, '').trim()} %` },
     { col: 'H', title: 'Volume Bar' },
   ];
   catHeaders.forEach((ch) => {
@@ -776,7 +785,7 @@ export async function exportToProfessionalExcel(
 
   // Category Total Row (Row 67)
   dashSheet.getRow(67).height = 22;
-  dashSheet.getCell('B67').value = 'Total Portfolio:';
+  dashSheet.getCell('B67').value = `Total ${labels.categoryLabel} Portfolio:`;
   dashSheet.getCell('B67').font = { name: 'Segoe UI', size: 8.5, bold: true };
   dashSheet.getCell('C67').value = config.useLiveExcelFormulas ? { formula: 'SUM(C62:C66)' } : categorySummaries.slice(0, 5).reduce((s, c) => s + c.units, 0);
   dashSheet.getCell('C67').numFmt = '#,##0';
@@ -797,24 +806,24 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+      bottom: { style: 'double', color: { argb: primaryHeaderFill } },
     };
   });
 
   // RIGHT SIDE: SALES CHANNEL TABLE (I60:O67)
   dashSheet.mergeCells('I60:O60');
   const chanBanner = dashSheet.getCell('I60');
-  chanBanner.value = 'SALES CHANNEL REVENUE DISTRIBUTION & MIX MATRIX';
+  chanBanner.value = `CHANNEL ${labels.metric1.toUpperCase()} DISTRIBUTION & MIX MATRIX`;
   chanBanner.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
-  chanBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  chanBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   chanBanner.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(60).height = 22;
 
   const chanHeaders = [
     { col: 'I', title: 'Sales Channel', align: 'left' },
     { col: 'J', title: 'Volume Mix', align: 'right' },
-    { col: 'K', title: 'Channel Revenue', align: 'right' },
-    { col: 'L', title: 'Est. Gross Profit', align: 'right' },
+    { col: 'K', title: `Channel ${labels.metric1}`, align: 'right' },
+    { col: 'L', title: `Est. ${labels.metric2}`, align: 'right' },
     { col: 'M', title: 'Channel Margin', align: 'right' },
     { col: 'N', title: 'Status', align: 'center' },
     { col: 'O', title: 'Mix Bar', align: 'left' },
@@ -938,9 +947,9 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   dashSheet.mergeCells('B69:O69');
   const insightsTitle = dashSheet.getCell('B69');
-  insightsTitle.value = 'EXECUTIVE BI STRATEGIC INTELLIGENCE BRIEFING & C-SUITE MEMO';
+  insightsTitle.value = `${theme.name.toUpperCase()} STRATEGIC INTELLIGENCE BRIEFING & C-SUITE MEMO`;
   insightsTitle.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  insightsTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  insightsTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   insightsTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   dashSheet.getRow(69).height = 24;
 
@@ -1011,7 +1020,7 @@ export async function exportToProfessionalExcel(
   const dashShowcaseTitle = dashSheet.getCell('B78');
   dashShowcaseTitle.value = '📊 DATTA SABLE — EXECUTIVE BI DASHBOARDS & FINANCIAL MODELING PORTFOLIO';
   dashShowcaseTitle.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: COLORS.pureWhite } };
-  dashShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  dashShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   dashShowcaseTitle.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(78).height = 28;
 
@@ -1046,7 +1055,7 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const pivotSheet = workbook.addWorksheet('Pivot Table Analysis', {
     views: [{ showGridLines: true }],
-    properties: { tabColor: { argb: 'FF4338CA' } },
+    properties: { tabColor: { argb: primaryBorder || primaryTabColor } },
   });
 
   pivotSheet.columns = [
@@ -1073,9 +1082,9 @@ export async function exportToProfessionalExcel(
   // Header Banner
   pivotSheet.mergeCells('B2:R2');
   const pivTitle = pivotSheet.getCell('B2');
-  pivTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — DYNAMIC PIVOT TABLE ANALYSIS & CROSS-TABULATION MATRIX`;
+  pivTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — ${theme.name.toUpperCase()} PIVOT ANALYSIS & MATRIX`;
   pivTitle.font = { name: 'Segoe UI', size: 13, bold: true, color: { argb: COLORS.pureWhite } };
-  pivTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  pivTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   pivTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   pivotSheet.getRow(2).height = 30;
 
@@ -1090,14 +1099,14 @@ export async function exportToProfessionalExcel(
   // INTERACTIVE PIVOT SLICERS BAR (Row 4)
   pivotSheet.getRow(4).height = 26;
 
-  pivotSheet.getCell('B4').value = 'Theater Filter:';
+  pivotSheet.getCell('B4').value = `${labels.dimensionLabel}:`;
   pivotSheet.getCell('B4').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.slateMuted } };
   pivotSheet.getCell('B4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   const pivSlicReg = pivotSheet.getCell('C4');
   pivSlicReg.value = 'All Regions';
-  pivSlicReg.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.blueDark } };
-  pivSlicReg.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.blueLight } };
+  pivSlicReg.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: primaryAccentText } };
+  pivSlicReg.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryAccentFill } };
   pivSlicReg.alignment = { vertical: 'middle', horizontal: 'center' };
   pivSlicReg.border = {
     top: { style: 'thin', color: { argb: COLORS.borderDark } },
@@ -1134,7 +1143,7 @@ export async function exportToProfessionalExcel(
 
   pivotSheet.mergeCells('H4:R4');
   const pivTip = pivotSheet.getCell('H4');
-  pivTip.value = '💡 Tip: Select C4 (Theater) or F4 (Channel) to filter all Pivot Tables & adjacent Pivot Charts dynamically!';
+  pivTip.value = `💡 Tip: Select C4 (${labels.dimensionLabel}) or F4 (Channel) to filter all Pivot Tables & adjacent Pivot Charts dynamically!`;
   pivTip.font = { name: 'Segoe UI', size: 8.5, italic: true, color: { argb: COLORS.slateMuted } };
   pivTip.alignment = { vertical: 'middle', horizontal: 'left' };
 
@@ -1144,20 +1153,20 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   pivotSheet.mergeCells('B5:I5');
   const piv1Banner = pivotSheet.getCell('B5');
-  piv1Banner.value = 'PIVOT TABLE 1: GLOBAL THEATER BY SALES CHANNEL CROSS-TABULATION MATRIX';
+  piv1Banner.value = `PIVOT TABLE 1: ${labels.dimensionLabel.toUpperCase()} BY SALES CHANNEL CROSS-TABULATION MATRIX`;
   piv1Banner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  piv1Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  piv1Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   piv1Banner.alignment = { vertical: 'middle', horizontal: 'center' };
   pivotSheet.getRow(5).height = 22;
 
   const piv1Headers = [
-    { col: 'B', title: 'Global Theater' },
+    { col: 'B', title: labels.dimensionLabel },
     { col: 'C', title: 'Direct Enterprise' },
     { col: 'D', title: 'Partner Ecosystem' },
     { col: 'E', title: 'Inside Sales' },
     { col: 'F', title: 'Online Enterprise' },
-    { col: 'G', title: 'Total Gross Revenue' },
-    { col: 'H', title: 'Total Gross Profit' },
+    { col: 'G', title: `Total ${labels.metric1}` },
+    { col: 'H', title: `Total ${labels.metric2}` },
     { col: 'I', title: 'Blended Margin' },
   ];
   piv1Headers.forEach((h) => {
@@ -1222,7 +1231,7 @@ export async function exportToProfessionalExcel(
 
   // Total Row Pivot 1 (Row 11)
   pivotSheet.getRow(11).height = 20;
-  pivotSheet.getCell('B11').value = 'Total Theater Revenue:';
+  pivotSheet.getCell('B11').value = `Total ${labels.dimensionLabel} ${labels.metric1}:`;
   pivotSheet.getCell('B11').font = { name: 'Segoe UI', size: 8.5, bold: true };
   ['C', 'D', 'E', 'F', 'G', 'H'].forEach((col) => {
     const c = pivotSheet.getCell(`${col}11`);
@@ -1238,7 +1247,7 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+      bottom: { style: 'double', color: { argb: primaryHeaderFill } },
     };
   });
 
@@ -1248,21 +1257,21 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   pivotSheet.mergeCells('B13:I13');
   const piv2Banner = pivotSheet.getCell('B13');
-  piv2Banner.value = 'PIVOT TABLE 2: PRODUCT CATEGORY PORTFOLIO BY REGIONAL THEATER';
+  piv2Banner.value = `PIVOT TABLE 2: ${labels.categoryLabel.toUpperCase()} PORTFOLIO BY ${labels.dimensionLabel.toUpperCase()}`;
   piv2Banner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  piv2Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  piv2Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   piv2Banner.alignment = { vertical: 'middle', horizontal: 'center' };
   pivotSheet.getRow(13).height = 22;
 
   const piv2Headers = [
-    { col: 'B', title: 'Product Category' },
+    { col: 'B', title: labels.categoryLabel },
     { col: 'C', title: 'North America' },
     { col: 'D', title: 'EMEA' },
     { col: 'E', title: 'APAC' },
     { col: 'F', title: 'LATAM' },
-    { col: 'G', title: 'Total Revenue' },
-    { col: 'H', title: 'Total Units' },
-    { col: 'I', title: 'Gross Margin' },
+    { col: 'G', title: `Total ${labels.metric1}` },
+    { col: 'H', title: `Total ${labels.metric4}` },
+    { col: 'I', title: `${labels.metric3.replace(/%/g, '').trim()} %` },
   ];
   piv2Headers.forEach((h) => {
     const c = pivotSheet.getCell(`${h.col}14`);
@@ -1304,7 +1313,7 @@ export async function exportToProfessionalExcel(
     const uC = pivotSheet.getCell(`H${rIdx}`);
     uC.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
+          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
         }
       : cat.units;
     uC.numFmt = '#,##0';
@@ -1328,7 +1337,7 @@ export async function exportToProfessionalExcel(
 
   // Total Row Pivot 2 (Row 20)
   pivotSheet.getRow(20).height = 20;
-  pivotSheet.getCell('B20').value = 'Total Category Portfolio:';
+  pivotSheet.getCell('B20').value = `Total ${labels.categoryLabel} Portfolio:`;
   pivotSheet.getCell('B20').font = { name: 'Segoe UI', size: 8.5, bold: true };
   ['C', 'D', 'E', 'F', 'G'].forEach((col) => {
     const c = pivotSheet.getCell(`${col}20`);
@@ -1347,7 +1356,7 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+      bottom: { style: 'double', color: { argb: primaryHeaderFill } },
     };
   });
 
@@ -1357,20 +1366,20 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   pivotSheet.mergeCells('B22:I22');
   const piv3Banner = pivotSheet.getCell('B22');
-  piv3Banner.value = 'PIVOT TABLE 3: FISCAL QUARTERLY PERFORMANCE & MARGIN RUN-RATE';
+  piv3Banner.value = `PIVOT TABLE 3: FISCAL QUARTERLY ${labels.metric1.toUpperCase()} & ${labels.metric2.toUpperCase()} RUN-RATE`;
   piv3Banner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  piv3Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  piv3Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   piv3Banner.alignment = { vertical: 'middle', horizontal: 'center' };
   pivotSheet.getRow(22).height = 22;
 
   const piv3Headers = [
     { col: 'B', title: 'Fiscal Quarter' },
-    { col: 'C', title: 'Gross Revenue' },
-    { col: 'D', title: 'Total COGS' },
-    { col: 'E', title: 'Operating Profit' },
-    { col: 'F', title: 'Gross Margin %' },
+    { col: 'C', title: labels.metric1 },
+    { col: 'D', title: 'Total Direct Cost' },
+    { col: 'E', title: labels.metric2 },
+    { col: 'F', title: `${labels.metric3.replace(/%/g, '').trim()} %` },
     { col: 'G', title: 'Deals Closed' },
-    { col: 'H', title: 'Avg Deal Size' },
+    { col: 'H', title: labels.metric6 },
     { col: 'I', title: 'Attainment Trend' },
   ];
   piv3Headers.forEach((h) => {
@@ -1477,7 +1486,7 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+      bottom: { style: 'double', color: { argb: primaryHeaderFill } },
     };
   });
 
@@ -1490,7 +1499,7 @@ export async function exportToProfessionalExcel(
   const pivShowcaseTitle = pivotSheet.getCell('B32');
   pivShowcaseTitle.value = '📊 DATTA SABLE — ADVANCED PIVOT & EXECUTIVE DASHBOARDS PORTFOLIO';
   pivShowcaseTitle.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: COLORS.pureWhite } };
-  pivShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  pivShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   pivShowcaseTitle.alignment = { vertical: 'middle', horizontal: 'center' };
   pivotSheet.getRow(32).height = 28;
 
@@ -1523,7 +1532,7 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const txSheet = workbook.addWorksheet('Sales Transactions', {
     views: [{ state: 'frozen', ySplit: 2 }],
-    properties: { tabColor: { argb: COLORS.blueDark } },
+    properties: { tabColor: { argb: primaryTabColor } },
   });
 
   const txColumnsDef = [
@@ -1564,9 +1573,9 @@ export async function exportToProfessionalExcel(
   txSheet.spliceRows(1, 0, []);
   txSheet.mergeCells('A1:Y1');
   const txBanner = txSheet.getCell('A1');
-  txBanner.value = `${config.companyName.toUpperCase()} — CERTIFIED SALES TRANSACTION LEDGER (FY2024-2025)`;
+  txBanner.value = `${config.companyName.toUpperCase()} — CERTIFIED ${theme.name.toUpperCase()} TRANSACTION LEDGER (FY2024-2025)`;
   txBanner.font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: COLORS.pureWhite } };
-  txBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  txBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   txBanner.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
   txSheet.getRow(1).height = 28;
 
@@ -1683,30 +1692,30 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const regSheet = workbook.addWorksheet('Regional Performance', {
     views: [{ showGridLines: true }],
-    properties: { tabColor: { argb: COLORS.indigoDark } },
+    properties: { tabColor: { argb: primaryBorder || primaryTabColor } },
   });
 
   regSheet.columns = [
-    { header: 'Global Region', key: 'region', width: 18 },
+    { header: labels.dimensionLabel, key: 'region', width: 20 },
     { header: 'Regional Managing Director', key: 'director', width: 26 },
     { header: 'Key Markets & Countries Covered', key: 'countries', width: 34 },
     { header: 'Orders', key: 'orders', width: 12 },
-    { header: 'Quota Target ($)', key: 'targetRevenue', width: 18 },
-    { header: 'Actual Revenue ($)', key: 'actualRevenue', width: 18 },
+    { header: `Target ${labels.metric1} ($)`, key: 'targetRevenue', width: 18 },
+    { header: `Actual ${labels.metric1} ($)`, key: 'actualRevenue', width: 18 },
     { header: 'Variance ($)', key: 'variance', width: 16 },
     { header: 'Quota Attainment %', key: 'quotaAttainment', width: 20 },
-    { header: 'Gross Profit ($)', key: 'profit', width: 18 },
-    { header: 'Gross Margin %', key: 'margin', width: 16 },
+    { header: `${labels.metric2} ($)`, key: 'profit', width: 18 },
+    { header: `${labels.metric3.replace(/%/g, '').trim()} %`, key: 'margin', width: 16 },
     { header: 'YoY Growth Rate', key: 'growth', width: 16 },
-    { header: 'Avg Deal Size', key: 'dealSize', width: 16 },
+    { header: labels.metric6, key: 'dealSize', width: 16 },
   ];
 
   regSheet.spliceRows(1, 0, []);
   regSheet.mergeCells('A1:L1');
   const regBanner = regSheet.getCell('A1');
-  regBanner.value = 'GLOBAL TERRITORY PERFORMANCE & QUOTA ANALYSIS';
+  regBanner.value = `${labels.dimensionLabel.toUpperCase()} PERFORMANCE & QUOTA ANALYSIS`;
   regBanner.font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: COLORS.pureWhite } };
-  regBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  regBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   regBanner.alignment = { vertical: 'middle', indent: 1 };
   regSheet.getRow(1).height = 28;
 
@@ -1762,16 +1771,16 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const prodSheet = workbook.addWorksheet('Product Catalog', {
     views: [{ showGridLines: true }],
-    properties: { tabColor: { argb: 'FF8B5CF6' } },
+    properties: { tabColor: { argb: primaryTabColor } },
   });
 
   prodSheet.columns = [
     { header: 'Product SKU', key: 'sku', width: 16 },
     { header: 'Product Name', key: 'name', width: 34 },
-    { header: 'Category', key: 'category', width: 24 },
+    { header: labels.categoryLabel, key: 'category', width: 24 },
     { header: 'Standard Unit Cost', key: 'cost', width: 18 },
     { header: 'Standard List Price', key: 'price', width: 18 },
-    { header: 'Target Margin %', key: 'margin', width: 16 },
+    { header: `${labels.metric3.replace(/%/g, '').trim()} %`, key: 'margin', width: 16 },
     { header: 'Lead Time (Days)', key: 'leadTime', width: 16 },
     { header: 'Warehouse Stock', key: 'stock', width: 16 },
     { header: 'Commercial Status', key: 'status', width: 16 },
@@ -1780,9 +1789,9 @@ export async function exportToProfessionalExcel(
   prodSheet.spliceRows(1, 0, []);
   prodSheet.mergeCells('A1:I1');
   const prodBanner = prodSheet.getCell('A1');
-  prodBanner.value = 'ENTERPRISE PRODUCT PORTFOLIO & MARGIN DIRECTORY';
+  prodBanner.value = `${theme.name.toUpperCase()} CATALOG & SPECIFICATIONS DIRECTORY`;
   prodBanner.font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: COLORS.pureWhite } };
-  prodBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  prodBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   prodBanner.alignment = { vertical: 'middle', indent: 1 };
   prodSheet.getRow(1).height = 28;
 
@@ -1826,19 +1835,19 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   const custSheet = workbook.addWorksheet('Customer Accounts', {
     views: [{ showGridLines: true }],
-    properties: { tabColor: { argb: 'FFEC4899' } },
+    properties: { tabColor: { argb: primaryBorder || primaryTabColor } },
   });
 
   custSheet.columns = [
     { header: 'Account ID', key: 'id', width: 14 },
-    { header: 'Client Organization', key: 'name', width: 30 },
+    { header: `${labels.entityLabel} Organization`, key: 'name', width: 30 },
     { header: 'Tier Segment', key: 'tier', width: 22 },
     { header: 'Industry Vertical', key: 'industry', width: 24 },
     { header: 'Country', key: 'country', width: 16 },
     { header: 'Account Executive', key: 'rep', width: 18 },
     { header: 'Order Count', key: 'orders', width: 14 },
-    { header: 'Lifetime Revenue', key: 'revenue', width: 18 },
-    { header: 'Lifetime Profit', key: 'profit', width: 18 },
+    { header: `Lifetime ${labels.metric1}`, key: 'revenue', width: 18 },
+    { header: `Lifetime ${labels.metric2}`, key: 'profit', width: 18 },
     { header: 'Account Health', key: 'health', width: 16 },
     { header: 'Renewal Quarter', key: 'renewal', width: 16 },
   ];
@@ -1846,9 +1855,9 @@ export async function exportToProfessionalExcel(
   custSheet.spliceRows(1, 0, []);
   custSheet.mergeCells('A1:K1');
   const custBanner = custSheet.getCell('A1');
-  custBanner.value = 'KEY CLIENT ACCOUNTS & RETENTION HEALTH SCORECARD';
+  custBanner.value = `KEY ${labels.entityLabel.toUpperCase()}S & RETENTION HEALTH SCORECARD`;
   custBanner.font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: COLORS.pureWhite } };
-  custBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  custBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   custBanner.alignment = { vertical: 'middle', indent: 1 };
   custSheet.getRow(1).height = 28;
 
