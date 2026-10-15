@@ -73,6 +73,9 @@ export default function App() {
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
 
+  // Desktop sidebar toggle visibility state (Hide / Show Sidebar)
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
   const [analysisSelection, setAnalysisSelection] = useState<AnalysisSelection>({ metric: '', dimension: '', aggregation: 'count' });
 
   // Synthetic Realistic Dataset (default)
@@ -178,7 +181,7 @@ export default function App() {
   };
 
   return (
-    <div className="premium-workspace min-h-screen flex flex-col font-sans">
+    <div className={`premium-workspace min-h-screen flex flex-col font-sans ${isSidebarVisible ? '' : 'sidebar-hidden'}`}>
       {/* Top Navigation */}
       <Navbar
         config={config}
@@ -190,6 +193,8 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isCustomDataActive={!!customImportResult}
+        isSidebarVisible={isSidebarVisible}
+        onToggleSidebar={() => setIsSidebarVisible((prev) => !prev)}
       />
 
       {/* Main Content Area */}

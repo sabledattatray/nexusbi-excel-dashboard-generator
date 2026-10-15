@@ -17,6 +17,8 @@ import {
   Globe,
   Menu,
   X,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -31,6 +33,8 @@ interface NavbarProps {
   activeTab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers';
   setActiveTab: (tab: NavbarProps['activeTab']) => void;
   isCustomDataActive?: boolean;
+  isSidebarVisible: boolean;
+  onToggleSidebar: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -43,8 +47,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   isCustomDataActive,
+  isSidebarVisible,
+  onToggleSidebar,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        if (window.innerWidth <= 1024) {
+          setIsMobileMenuOpen((prev) => !prev);
+        } else {
+          onToggleSidebar();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onToggleSidebar]);
 
   const views: { id: NavbarProps['activeTab']; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'home', label: 'Home Page', icon: Home },
@@ -78,33 +100,31 @@ export const Navbar: React.FC<NavbarProps> = ({
         className={`workspace-sidebar ${isMobileMenuOpen ? 'mobile-drawer-open' : ''}`}
         aria-label="Application sidebar"
       >
-        {/* Top Header inside Sidebar: Logo & Close Button on Mobile */}
-        <div className="flex items-center justify-between w-full mb-1">
+        {/* Top Header inside Sidebar: Logo & Hide/Close Sidebar Button */}
+        <div className="flex items-center justify-between w-full mb-3 pb-2 border-b border-[#243e37]">
           <button
             onClick={() => handleSelectView('home')}
             className="brand-lockup cursor-pointer text-left flex-1"
             title="excel.dattasable.com — Home"
           >
-            <ExcelLogo size={30} tagline="excel.dattasable.com" />
+            <ExcelLogo size={28} tagline="excel.dattasable.com" />
           </button>
 
+          {/* Hide Sidebar Button (collapses sidebar on desktop / closes drawer on mobile) */}
           <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-[#203a33] transition-colors"
-            aria-label="Close sidebar menu"
+            onClick={() => {
+              if (window.innerWidth <= 1024) {
+                setIsMobileMenuOpen(false);
+              } else {
+                onToggleSidebar();
+              }
+            }}
+            className="p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-[#203a33] active:scale-95 transition-all ml-1 shrink-0"
+            aria-label="Hide sidebar"
+            title="Hide sidebar (Ctrl+B)"
           >
-            <X size={18} />
+            <PanelLeftClose size={18} />
           </button>
-        </div>
-
-        {/* Workspace Identity Pill */}
-        <div className="sidebar-workspace">
-          <span className="workspace-avatar font-bold text-emerald-400">DS</span>
-          <div>
-            <strong>excel.dattasable.com</strong>
-            <small>Executive BI Workspace</small>
-          </div>
-          <ChevronRight size={13} className="text-emerald-500/70 shrink-0" />
         </div>
 
         {/* Navigation Section */}
@@ -173,15 +193,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Workspace Sticky Topbar Header */}
       <header className="workspace-topbar" role="banner">
-        <div className="breadcrumb min-w-0 flex-1">
-          {/* Mobile Menu Toggle Button */}
+        <div className="breadcrumb min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5">
+          {/* Universal Hide / Show Sidebar Toggle Button */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0"
-            aria-label="Toggle navigation menu"
-            title="Open Menu"
+            onClick={() => {
+              if (window.innerWidth <= 1024) {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+              } else {
+                onToggleSidebar();
+              }
+            }}
+            className="p-1.5 -ml-1 rounded-lg text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 active:scale-95 transition-all flex items-center justify-center shrink-0 border border-slate-200/80 hover:border-emerald-300 shadow-xs"
+            aria-label={isSidebarVisible ? 'Hide sidebar' : 'Show sidebar'}
+            title={isSidebarVisible ? 'Hide sidebar (Ctrl+B)' : 'Show sidebar (Ctrl+B)'}
           >
-            <Menu size={18} />
+            {isSidebarVisible ? (
+              <PanelLeftClose size={17} className="text-slate-600 hover:text-emerald-800" />
+            ) : (
+              <div className="flex items-center gap-1.5 text-emerald-800 font-semibold text-xs px-1">
+                <PanelLeftOpen size={17} className="text-emerald-700" />
+                <span className="hidden sm:inline">Show Sidebar</span>
+              </div>
+            )}
           </button>
 
           <button
