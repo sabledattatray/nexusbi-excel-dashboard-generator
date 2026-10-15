@@ -9,7 +9,9 @@ import {
   Sparkles,
   BarChart,
   Table,
+  Lock,
 } from 'lucide-react';
+import { WORKBOOK_PROTECTION_PASSWORD } from '../utils/excelExporter';
 
 interface DownloadSuccessModalProps {
   isOpen: boolean;
@@ -91,6 +93,14 @@ export const DownloadSuccessModal: React.FC<DownloadSuccessModalProps> = ({
                 <Layers className="w-4 h-4 text-amber-700 shrink-0" />
                 <span>{sourceBased ? 'Analysis snapshot with source-linked charts' : 'Live Excel Formulas (=SUM, =AVERAGE, =IF)'}</span>
               </div>
+            </div>
+          </div>
+
+          {/* Password Protection Badge */}
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-950">
+            <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <strong className="font-semibold text-amber-950">Password-Protected:</strong> Worksheets &amp; structure are locked to protect formulas and charts. <strong>Filter dropdowns remain fully interactive.</strong> Password to unprotect: <code className="px-1.5 py-0.5 rounded bg-amber-200/60 font-mono font-bold text-amber-950 text-[11px] select-all">{WORKBOOK_PROTECTION_PASSWORD}</code>
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { AppDataset, DatasetConfig } from '../types/dataset';
 import { AnalysisChart, AnalysisSelection, analyzeDataset } from './adaptiveAnalysis';
 import { DOMAIN_SPECS, groupRows, metricValue, Row } from './domainDatasets';
 import { getIndustryTheme } from './industryTheme';
+import { WORKBOOK_PROTECTION_PASSWORD } from './excelExporter';
 const xml = (value: unknown) => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]!));
 export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfig, selection?: AnalysisSelection, industryOverview = false): Promise<{ blob: Blob; filename: string }> {
   const analysis = analyzeDataset(data, selection);
@@ -89,13 +90,42 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
     sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: theme.colors.excel.headerFill } };
     sheet.eachRow((row, n) => { if (n > 1 && n % 2 === 0) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; });
   }
-  workbook.eachSheet(sheet => {
+  for (const sheet of workbook.worksheets) {
     sheet.views = sheet.views.length
       ? sheet.views.map(view => ({ ...view, showGridLines: false }))
       : [{ showGridLines: false }];
-  });
+
+    await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatCells: false,
+      formatColumns: false,
+      formatRows: false,
+      insertColumns: false,
+      insertRows: false,
+      insertHyperlinks: false,
+      deleteColumns: false,
+      deleteRows: false,
+      sort: true,
+      autoFilter: true,
+      pivotTables: true,
+    });
+  }
 
   const zip = await JSZip.loadAsync(await workbook.xlsx.writeBuffer());
+  let wbXml = await zip.file('xl/workbook.xml')?.async('string');
+  const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
+  if (wbXml && sheet1ForProt && !wbXml.includes('<workbookProtection')) {
+    const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+    const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
+    const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
+    const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+    if (hash && salt) {
+      const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+      wbXml = wbXml.replace('<sheets>', `${wbProt}<sheets>`);
+      zip.file('xl/workbook.xml', wbXml);
+    }
+  }
   // ExcelJS emits font children in property-map order. Put them in the order
   // accepted by SpreadsheetML/Excel before packaging the added chart parts.
   const fontOrder = ['b', 'i', 'strike', 'condense', 'extend', 'outline', 'shadow', 'u', 'vertAlign', 'sz', 'color', 'name', 'family', 'charset', 'scheme'];

@@ -4,6 +4,9 @@ import { DatasetConfig } from '../types/dataset';
 import { injectNativeExcelCharts } from './nativeExcelChartInjector';
 import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
 
+// Standard Master Password to Lock & Protect Excel Workbooks & Worksheets
+export const WORKBOOK_PROTECTION_PASSWORD = 'Dattatray@1511';
+
 // Executive Palette for Professional Excel Workbooks
 const COLORS = {
   navyDark: 'FF0F172A',      // Slate 900
@@ -132,6 +135,10 @@ export async function exportToProfessionalExcel(
     left: { style: 'thin', color: { argb: COLORS.borderDark } },
     right: { style: 'thin', color: { argb: COLORS.borderDark } },
   };
+  // Unlock filter dropdown so users can interact with dashboard even when sheet is locked
+  slicerRegion.protection = { locked: false };
+  dashSheet.getCell('D4').protection = { locked: false };
+
   const regNames = regionalPerformance.slice(0, 4).map((r) => r.region.replace(/,/g, ' '));
   const regDropdownFormula = `"All Regions,${regNames.length ? regNames.join(',') : 'North America,EMEA,APAC,LATAM'}"`;
   slicerRegion.dataValidation = {
@@ -157,6 +164,10 @@ export async function exportToProfessionalExcel(
     left: { style: 'thin', color: { argb: COLORS.borderDark } },
     right: { style: 'thin', color: { argb: COLORS.borderDark } },
   };
+  // Unlock filter dropdown so users can interact with dashboard even when sheet is locked
+  slicerChannel.protection = { locked: false };
+  dashSheet.getCell('H4').protection = { locked: false };
+
   slicerChannel.dataValidation = {
     type: 'list',
     allowBlank: false,
@@ -1907,12 +1918,28 @@ export async function exportToProfessionalExcel(
     });
   });
 
-  // Write Excel file buffer
-  workbook.eachSheet(sheet => {
+  // Protect every worksheet with password: user cannot edit formulas or layouts, only use filters
+  for (const sheet of workbook.worksheets) {
     sheet.views = sheet.views.length
       ? sheet.views.map(view => ({ ...view, showGridLines: false }))
       : [{ showGridLines: false }];
-  });
+
+    await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatCells: false,
+      formatColumns: false,
+      formatRows: false,
+      insertColumns: false,
+      insertRows: false,
+      insertHyperlinks: false,
+      deleteColumns: false,
+      deleteRows: false,
+      sort: true,
+      autoFilter: true,
+      pivotTables: true,
+    });
+  }
 
   const buffer = await workbook.xlsx.writeBuffer();
   

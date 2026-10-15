@@ -124,6 +124,21 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   assert.ok(chart3Xml.includes('<c:dLbls>'));
   assert.ok(chart3Xml.includes('<c:showVal val="1"/>'));
   assert.ok(chart3Xml.includes('<c:dLblPos val="outEnd"/>'));
+
+  // 7. Verify worksheet and workbook protection with password
+  const sheet1Xml = await zip.file('xl/worksheets/sheet1.xml')!.async('string');
+  assert.ok(sheet1Xml.includes('<sheetProtection'));
+  assert.ok(sheet1Xml.includes('algorithmName="SHA-512"'));
+  assert.ok(sheet1Xml.includes('autoFilter="0"'));
+
+  const wbXml = await zip.file('xl/workbook.xml')!.async('string');
+  assert.ok(wbXml.includes('<workbookProtection'));
+  assert.ok(wbXml.includes('lockStructure="1"'));
+  assert.ok(wbXml.includes('algorithmName="SHA-512"'));
+
+  // Verify filter dropdown cells C4 and G4 are unlocked for user interaction
+  assert.equal(dash.getCell('C4').protection?.locked, false);
+  assert.equal(dash.getCell('G4').protection?.locked, false);
 });
 
 test('file upload enforces 25 MB limit and protects in-browser memory', async () => {

@@ -1214,6 +1214,23 @@ export async function injectNativeExcelCharts(
     zip.file('[Content_Types].xml', updatedContentTypes);
   }
 
+  // =============================================================
+  // WORKBOOK STRUCTURE PROTECTION (Lock sheet tabs with password)
+  // =============================================================
+  let workbookXml = await zip.file('xl/workbook.xml')?.async('string');
+  const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
+  if (workbookXml && sheet1ForProt && !workbookXml.includes('<workbookProtection')) {
+    const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+    const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
+    const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
+    const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+    if (hash && salt) {
+      const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+      workbookXml = workbookXml.replace('<sheets>', `${wbProt}<sheets>`);
+      zip.file('xl/workbook.xml', workbookXml);
+    }
+  }
+
   // Re-generate clean OpenXML .xlsx binary blob
   const finalBuffer = await zip.generateAsync({
     type: 'blob',
