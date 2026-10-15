@@ -24,7 +24,7 @@ export const INDUSTRY_PRESETS: Record<
   enterprise_tech: {
     name: 'Enterprise Tech & Cloud SaaS',
     description: 'High-growth B2B enterprise software, cloud infrastructure, AI models, and cybersecurity solutions.',
-    companyDefault: 'Enterprise Cloud Technologies Inc.',
+    companyDefault: 'Nexdial.io Cloud Technologies Inc.',
     products: [
       { sku: 'ET-CLD-900', name: 'Cloud Enterprise Kubernetes Engine', category: 'Cloud Infrastructure', cost: 1450, price: 4200 },
       { sku: 'ET-SEC-450', name: 'Zero-Trust Identity & Gateway Shield', category: 'Cybersecurity', cost: 680, price: 2150 },
