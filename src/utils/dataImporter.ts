@@ -69,11 +69,22 @@ export interface ImportResult {
   };
 }
 
+export const MAX_UPLOAD_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+export const MAX_UPLOAD_FILE_SIZE_MB = 25;
+export const MAX_PROCESSABLE_ROWS = 50000;
+
 /**
  * Parses an uploaded File (CSV, TSV, XLSX, XLS) into a normalized RawParsedTable
- * and runs initial schema inspection.
+ * and runs initial schema inspection with safety caps for browser memory protection.
  */
 export async function parseUploadedFile(file: File): Promise<RawParsedTable> {
+  if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    throw new Error(
+      `File size (${sizeMb} MB) exceeds the ${MAX_UPLOAD_FILE_SIZE_MB} MB limit for in-browser processing. Please upload a dataset under ${MAX_UPLOAD_FILE_SIZE_MB} MB (up to ~50,000 records) to ensure smooth performance and Excel formula recalculation.`
+    );
+  }
+
   const extension = file.name.split('.').pop()?.toLowerCase() || '';
 
   let table: RawParsedTable;
@@ -81,6 +92,12 @@ export async function parseUploadedFile(file: File): Promise<RawParsedTable> {
     table = await parseExcelFile(file);
   } else {
     table = await parseCsvFile(file);
+  }
+
+  if (table.rows.length > MAX_PROCESSABLE_ROWS) {
+    // Keep first 50,000 rows to prevent browser memory exhaustion during live Excel compilation
+    table.rows = table.rows.slice(0, MAX_PROCESSABLE_ROWS);
+    table.totalRows = MAX_PROCESSABLE_ROWS;
   }
 
   // Profile data types and classify industry

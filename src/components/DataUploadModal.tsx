@@ -29,6 +29,8 @@ import {
   RawParsedTable,
   ColumnMapping,
   ImportResult,
+  MAX_UPLOAD_FILE_SIZE_BYTES,
+  MAX_UPLOAD_FILE_SIZE_MB,
 } from '../utils/dataImporter';
 import { DatasetConfig, IndustryType, ColumnDataType } from '../types/dataset';
 import { getIndustryTheme, INDUSTRY_THEMES } from '../utils/industryTheme';
@@ -100,6 +102,13 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
     try {
       setIsProcessing(true);
       setErrorMsg(null);
+
+      if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        throw new Error(
+          `File size (${sizeMb} MB) exceeds the ${MAX_UPLOAD_FILE_SIZE_MB} MB limit for in-browser processing. Please upload a dataset under ${MAX_UPLOAD_FILE_SIZE_MB} MB (up to ~50,000 records) to ensure smooth performance and Excel formula recalculation.`
+        );
+      }
 
       const table = await parseUploadedFile(file);
 
@@ -238,11 +247,11 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span>Import your data</span>
                 <span className="text-xs px-2 py-0.5 rounded font-medium bg-emerald-500/10 text-emerald-800 border border-emerald-500/20">
-                  CSV, Excel (.xlsx, .xls), TSV
+                  CSV, Excel (.xlsx, .xls), TSV • Max 25 MB
                 </span>
               </h2>
               <p className="text-xs text-slate-500">
-                Choose your file, review its fields, and create your report.
+                Choose your file, review its fields, and create your executive report.
               </p>
             </div>
           </div>
@@ -307,6 +316,17 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                   <p className="text-xs text-slate-500">
                     Works with any dataset: Healthcare, Real Estate, Banking, SaaS, HR, Logistics, Education, Retail, or custom operations.
                   </p>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[11px] font-medium">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      ⚡ Max File Size: 25 MB
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                      📊 Up to 50,000 Records
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200">
+                      🔒 100% Client-Side Private
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 pt-2">
@@ -356,7 +376,15 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                       </span>
                     </div>
                     <div className="text-xs text-slate-500">
-                      {parsedTable.totalRows.toLocaleString()} records • {parsedTable.headers.length} columns • {(parsedTable.fileSize / 1024).toFixed(1)} KB
+                      {parsedTable.totalRows >= 50000 ? (
+                        <span className="text-amber-800 font-medium">
+                          50,000 records (optimized for browser speed &amp; live Excel formulas) • {parsedTable.headers.length} columns • {(parsedTable.fileSize / (1024 * 1024)).toFixed(2)} MB
+                        </span>
+                      ) : (
+                        <span>
+                          {parsedTable.totalRows.toLocaleString()} records • {parsedTable.headers.length} columns • {(parsedTable.fileSize / 1024).toFixed(1)} KB
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -117,3 +117,25 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   const chart1Xml = await zip.file('xl/charts/chart1.xml')!.async('string');
   assert.ok(chart1Xml.includes(theme.colors.excel.chartThemeHex[0]));
 });
+
+test('file upload enforces 25 MB limit and protects in-browser memory', async () => {
+  const { parseUploadedFile, MAX_UPLOAD_FILE_SIZE_BYTES } = await import('./dataImporter');
+
+  // Create a mock File object exceeding 25 MB
+  const oversizedFile = {
+    name: 'giant_dataset_35mb.csv',
+    size: MAX_UPLOAD_FILE_SIZE_BYTES + 1024,
+    text: async () => 'Col1,Col2\n1,2',
+  } as unknown as File;
+
+  await assert.rejects(
+    async () => {
+      await parseUploadedFile(oversizedFile);
+    },
+    (err: any) => {
+      assert.ok(err.message.includes('exceeds the 25 MB limit'));
+      return true;
+    }
+  );
+});
+
