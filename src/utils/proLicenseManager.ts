@@ -13,13 +13,14 @@ export interface ProLicense {
 const STORAGE_KEY = 'nexusbi_excel_pro_unlocked';
 
 export const UPI_PAYMENT_CONFIG = {
-  vpa: 'sabledattatray@okaxis', // Payee UPI ID (customizable)
-  name: 'Datta Sable',
+  vpa: '8010803756@upi', // Real Payee UPI ID from your official QR
+  name: 'DATTATRAY GORAKH SABLE',
   amount: 99,
   currency: 'INR',
   note: 'NexusBI Unprotected Excel Lifetime Unlock',
   formattedAmount: '₹99',
   oneTimeLabel: 'One-Time Lifetime Access',
+  qrImagePath: '/payment-qr.jpg',
 };
 
 // Known VIP passcodes for instant testing and client admin unlock

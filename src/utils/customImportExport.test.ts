@@ -196,6 +196,7 @@ test('Pro unprotected export generates 100% unlocked workbook without sheet or w
   // Verify UPI payment URL builder
   const upiUrl = buildUpiPaymentUrl();
   assert.ok(upiUrl.startsWith('upi://pay?'));
+  assert.ok(upiUrl.includes('8010803756'));
   assert.ok(upiUrl.includes('am=99'));
   assert.ok(upiUrl.includes('cu=INR'));
 });

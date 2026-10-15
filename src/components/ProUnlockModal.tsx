@@ -281,28 +281,27 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                       Scan &amp; Pay with Any UPI App
                     </span>
                     
-                    {/* The QR Image */}
-                    <div className="relative p-2 bg-white rounded-xl shadow-inner border border-slate-200 my-1">
-                      {qrDataUrl ? (
-                        <img
-                          src={qrDataUrl}
-                          alt="UPI Payment QR Code"
-                          className="w-48 h-48 sm:w-52 sm:h-52 object-contain"
-                        />
-                      ) : (
-                        <div className="w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center text-slate-400">
-                          Generating QR...
-                        </div>
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-700 text-white font-extrabold text-[11px] shadow-md border border-white">
-                          ₹99
-                        </span>
-                      </div>
+                    {/* The Official Real QR Image */}
+                    <div className="relative p-2.5 bg-black rounded-xl shadow-md border-2 border-emerald-500/30 my-1">
+                      <img
+                        src="/payment-qr.jpg"
+                        alt="Official UPI Payment QR Code"
+                        className="w-52 h-52 sm:w-56 sm:h-56 object-contain rounded-lg"
+                        onError={(e) => {
+                          if (qrDataUrl) {
+                            (e.target as HTMLImageElement).src = qrDataUrl;
+                          }
+                        }}
+                      />
                     </div>
 
-                    <div className="text-[11px] text-slate-600 font-medium mt-1">
-                      Payee: <strong>{UPI_PAYMENT_CONFIG.name}</strong>
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-xs shadow-xs border border-emerald-300">
+                        Amount: ₹99
+                      </span>
+                      <span className="text-[11px] text-slate-700 font-medium">
+                        Payee: <strong>{UPI_PAYMENT_CONFIG.name}</strong>
+                      </span>
                     </div>
 
                     {/* Supported Apps Logos Pill */}
