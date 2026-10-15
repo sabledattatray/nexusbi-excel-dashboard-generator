@@ -132,10 +132,12 @@ export async function exportToProfessionalExcel(
     left: { style: 'thin', color: { argb: COLORS.borderDark } },
     right: { style: 'thin', color: { argb: COLORS.borderDark } },
   };
+  const regNames = regionalPerformance.slice(0, 4).map((r) => r.region.replace(/,/g, ' '));
+  const regDropdownFormula = `"All Regions,${regNames.length ? regNames.join(',') : 'North America,EMEA,APAC,LATAM'}"`;
   slicerRegion.dataValidation = {
     type: 'list',
     allowBlank: false,
-    formulae: ['"All Regions,North America,EMEA,APAC,LATAM"'],
+    formulae: [regDropdownFormula],
   };
 
   // Slicer 2: Channel Selector
@@ -1117,7 +1119,7 @@ export async function exportToProfessionalExcel(
   pivSlicReg.dataValidation = {
     type: 'list',
     allowBlank: false,
-    formulae: ['"All Regions,North America,EMEA,APAC,LATAM"'],
+    formulae: [regDropdownFormula],
   };
 
   pivotSheet.getCell('E4').value = 'Channel Filter:';

@@ -100,17 +100,10 @@ export default function App() {
       let blob: Blob;
       let filename: string;
 
-      if (customImportResult) {
-        const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');
-        const res = await exportAdaptiveExcel(dataset, dataset.config, analysisSelection);
-        blob = res.blob;
-        filename = res.filename;
-      } else {
-        const { exportToProfessionalExcel } = await import('./utils/excelExporter');
-        const res = await exportToProfessionalExcel(dataset, config);
-        blob = res.blob;
-        filename = res.filename;
-      }
+      const { exportToProfessionalExcel } = await import('./utils/excelExporter');
+      const res = await exportToProfessionalExcel(dataset, dataset.config || config);
+      blob = res.blob;
+      filename = res.filename;
 
       // Trigger browser download
       const url = URL.createObjectURL(blob);
@@ -260,40 +253,29 @@ export default function App() {
               </div>
             )}
 
-            {customImportResult && (
+            {activeTab === 'excel-preview' ? (
+              <ExcelLiveViewer
+                key={(customImportResult ? customImportResult.summary.fileName : config.industry) + seedOffset}
+                data={dataset}
+                config={dataset.config || config}
+                onDownloadExcel={handleDownloadExcel}
+                isDownloading={isDownloading}
+              />
+            ) : activeTab === 'dashboard' ? (
+              <IndustryDashboard
+                key={(customImportResult ? customImportResult.summary.fileName : config.industry) + seedOffset}
+                data={dataset}
+                onRecords={() => setActiveTab('transactions')}
+              />
+            ) : (
               <AdaptiveDashboard
-                key={customImportResult.summary.fileName + customImportResult.summary.rowCount}
+                key={(customImportResult ? customImportResult.summary.fileName : config.industry) + seedOffset}
                 data={dataset}
                 selection={analysisSelection}
                 onChange={setAnalysisSelection}
                 view={activeTab}
               />
             )}
-
-            {!customImportResult &&
-              (activeTab === 'excel-preview' ? (
-                <ExcelLiveViewer
-                  key={config.industry + seedOffset}
-                  data={dataset}
-                  config={config}
-                  onDownloadExcel={handleDownloadExcel}
-                  isDownloading={isDownloading}
-                />
-              ) : activeTab === 'dashboard' ? (
-                <IndustryDashboard
-                  key={config.industry + seedOffset}
-                  data={dataset}
-                  onRecords={() => setActiveTab('transactions')}
-                />
-              ) : (
-                <AdaptiveDashboard
-                  key={config.industry + seedOffset}
-                  data={dataset}
-                  selection={analysisSelection}
-                  onChange={setAnalysisSelection}
-                  view={activeTab}
-                />
-              ))}
           </Suspense>
         )}
       </main>

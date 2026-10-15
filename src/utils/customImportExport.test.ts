@@ -1,0 +1,119 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import JSZip from 'jszip';
+import ExcelJS from 'exceljs';
+import { buildDatasetFromUpload, RawParsedTable } from './dataImporter';
+import { exportToProfessionalExcel } from './excelExporter';
+import { DatasetConfig } from '../types/dataset';
+import { getIndustryTheme } from './industryTheme';
+
+const baseConfig: DatasetConfig = {
+  companyName: 'Acme Test Corp',
+  reportTitle: 'Acme Test Analytics',
+  industry: 'healthcare_pharma',
+  recordCount: 50,
+  currency: 'USD',
+  currencySymbol: '$',
+  includeChartsInExcel: true,
+  useLiveExcelFormulas: true,
+};
+
+test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 charts and formulas', async () => {
+  const sampleHeaders = ['Invoice_No', 'Order_Date', 'Client_Hospital', 'Medical_Specialty', 'Facility_Region', 'Patient_Procedures', 'Procedure_Revenue', 'Cost_Basis'];
+  const sampleRows: Record<string, any>[] = Array.from({ length: 45 }, (_, i) => ({
+    Invoice_No: `INV-2024-${1000 + i}`,
+    Order_Date: `2024-${String((i % 12) + 1).padStart(2, '0')}-${String((i % 25) + 1).padStart(2, '0')}`,
+    Client_Hospital: `Hospital System ${String.fromCharCode(65 + (i % 8))}`,
+    Medical_Specialty: ['Cardiology', 'Neurology', 'Oncology', 'Orthopedics', 'Pediatrics'][i % 5],
+    Facility_Region: ['East Campus', 'West Campus', 'Central Hub', 'South Clinic'][i % 4],
+    Patient_Procedures: 2 + (i % 6),
+    Procedure_Revenue: 1200 + (i * 180),
+    Cost_Basis: 500 + (i * 70),
+  }));
+
+  const mockTable: RawParsedTable = {
+    headers: sampleHeaders,
+    rows: sampleRows,
+    totalRows: sampleRows.length,
+    fileName: 'hospital_surgical_procedures_2024.csv',
+    fileSize: 4096,
+    fileType: 'csv',
+  };
+
+  const importResult = buildDatasetFromUpload(
+    mockTable,
+    {
+      idCol: 'Invoice_No',
+      dateCol: 'Order_Date',
+      entityCol: 'Client_Hospital',
+      primaryCategoryCol: 'Medical_Specialty',
+      secondaryCategoryCol: 'Facility_Region',
+      volumeMetricCol: 'Patient_Procedures',
+      primaryMetricCol: 'Procedure_Revenue',
+      secondaryMetricCol: 'Cost_Basis',
+    },
+    baseConfig
+  );
+
+  const dataset = importResult.dataset;
+
+  // Verify dataset structural integrity
+  assert.equal(dataset.transactions.length, 45);
+  assert.equal(dataset.monthlyTrends.length, 12);
+  assert.equal(dataset.categorySummaries.length, 5);
+  assert.equal(dataset.regionalPerformance.length, 4);
+  assert.ok(dataset.productCatalog.length >= 5);
+  assert.ok(dataset.customerAccounts.length >= 4);
+  assert.ok(dataset.kpi.totalRevenue > 0);
+  assert.ok(dataset.kpi.totalGrossProfit > 0);
+
+  // Generate Excel workbook
+  const { blob, filename } = await exportToProfessionalExcel(dataset, dataset.config);
+  assert.ok(filename.includes('Executive_Sales_Dashboard'));
+
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  const zip = await JSZip.loadAsync(buffer);
+  const book = new ExcelJS.Workbook();
+  await book.xlsx.load(buffer as any);
+
+  // 1. Verify exact 6 worksheets
+  const expectedSheets = [
+    'Executive Dashboard',
+    'Pivot Table Analysis',
+    'Sales Transactions',
+    'Regional Performance',
+    'Product Catalog',
+    'Customer Accounts',
+  ];
+  assert.deepEqual(book.worksheets.map((s) => s.name), expectedSheets);
+
+  // 2. Verify DrawingML Charts (all 7 charts present)
+  const chartFiles = Object.keys(zip.files).filter((p) => /^xl\/charts\/chart\d+\.xml$/.test(p));
+  assert.equal(chartFiles.length, 7);
+
+  // 3. Verify Sheet 1 Slicers & Formulas
+  const dash = book.getWorksheet('Executive Dashboard')!;
+  assert.equal(dash.getCell('C4').dataValidation.type, 'list');
+  assert.equal(dash.getCell('G4').dataValidation.type, 'list');
+  assert.ok(dash.getCell('B7').formula?.includes('Sales Transactions'));
+
+  // 4. Verify Sheet 2 Pivot Slicers
+  const pivot = book.getWorksheet('Pivot Table Analysis')!;
+  assert.equal(pivot.getCell('C4').dataValidation.type, 'list');
+  assert.equal(pivot.getCell('F4').dataValidation.type, 'list');
+
+  // 5. Verify Sheet 3 Sales Transactions ledger
+  const tx = book.getWorksheet('Sales Transactions')!;
+  assert.equal(tx.getCell('A3').text, dataset.transactions[0].id);
+  assert.equal(tx.getCell('A47').text, dataset.transactions[44].id);
+  assert.equal(tx.rowCount, 48); // Header (1, 2) + 45 rows + 1 total row = 48
+  assert.equal(tx.getCell('T3').formula, 'R3*Q3*(1-S3)');
+  assert.equal(tx.getCell('U3').formula, 'R3*P3');
+  assert.equal(tx.getCell('V3').formula, 'T3-U3');
+  assert.equal(tx.getCell('W3').formula, 'V3/T3');
+
+  // 6. Verify Chart XML palette contains healthcare theme colors
+  const theme = getIndustryTheme('healthcare_pharma');
+  const chart1Xml = await zip.file('xl/charts/chart1.xml')!.async('string');
+  assert.ok(chart1Xml.includes(theme.colors.excel.chartThemeHex[0]));
+});

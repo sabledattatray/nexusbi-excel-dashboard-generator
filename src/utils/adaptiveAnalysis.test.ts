@@ -23,7 +23,7 @@ test('HR dashboard uses average salary and contains no invented trends or sales 
   assert.equal(analysis.aggregation, 'average'); assert.equal(analysis.total, 160000 / 3);
   assert.equal(analysis.charts.some(c => c.kind === 'line' || c.kind === 'composition'), false);
   assert.equal(analysis.charts[0].points.find(p => p.label === 'Engineering')?.value, 50000);
-  assert.equal(data.transactions.length, 0);
+  assert.equal(data.transactions.length, 3);
 });
 test('sales totals, signed values, invalid rows, dates and filters are exact', () => {
   const data = dataset([{ Date: '2025-01-01', Category: 'A', Revenue: 100 }, { Date: '2025-02-01', Category: 'B', Revenue: 200 }, { Date: '2025-02-02', Category: 'A', Revenue: -20 }, { Date: 'bad', Category: 'A', Revenue: null }]);
