@@ -260,7 +260,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   About the Developer — Datta Sable
                 </h3>
                 <p>
-                  Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Pune, Maharashtra. With extensive expertise spanning Microsoft Fabric, Power BI, SQL, Azure, and automated financial modeling, Datta builds modern tools that transform raw enterprise records into high-impact visual intelligence.
+                  Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Thane, Maharashtra. With extensive expertise spanning Microsoft Fabric, Power BI, SQL, Azure, and automated financial modeling, Datta builds modern tools that transform raw enterprise records into high-impact visual intelligence.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
@@ -393,7 +393,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   4. Governing Law and Jurisdiction
                 </h3>
                 <p>
-                  These Terms are governed by and construed in accordance with the laws of India. Any disputes arising in connection with the platform shall be subject to the exclusive jurisdiction of the competent courts in Pune, Maharashtra, India.
+                  These Terms are governed by and construed in accordance with the laws of India. Any disputes arising in connection with the platform shall be subject to the exclusive jurisdiction of the competent courts in Thane, Maharashtra, India.
                 </p>
               </section>
             </div>
@@ -499,7 +499,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <div className="flex items-start gap-3 text-xs text-slate-700">
                   <MapPin size={16} className="text-emerald-700 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Location:</strong> Pune, Maharashtra, India · 411014
+                    <strong>Location:</strong> Thane, Maharashtra, India 421503
                   </div>
                 </div>
 
