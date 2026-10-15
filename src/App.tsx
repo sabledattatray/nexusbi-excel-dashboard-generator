@@ -25,7 +25,7 @@ import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
-import { isProUnlocked, consumeDownloadCredit, PRO_LICENSE_EVENT } from './utils/proLicenseManager';
+import { isProUnlocked, consumeDownloadCredit, resetProLicense, PRO_LICENSE_EVENT } from './utils/proLicenseManager';
 
 // Lazy-loaded heavy components for lightning-fast initial load & maximum smoothness
 const ExcelLiveViewer = lazy(() => import('./components/ExcelLiveViewer').then((m) => ({ default: m.ExcelLiveViewer })));
@@ -75,6 +75,9 @@ export default function App() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('reset=1')) {
+      resetProLicense();
+    }
     const syncLicenseStatus = () => {
       setIsProUser(isProUnlocked());
     };
@@ -112,12 +115,20 @@ export default function App() {
 
   // Handle Download Excel with dynamic chunk import to keep initial bundle tiny
   const handleDownloadExcel = useCallback(async (unprotectedOverride?: boolean) => {
+    // Paywall all downloads: if user is not unlocked, open payment QR modal immediately!
+    const unlocked = isProUnlocked();
+    if (!unlocked && !unprotectedOverride) {
+      setIsUnlockModalOpen(true);
+      return;
+    }
+
     try {
       setIsDownloading(true);
       let blob: Blob;
       let filename: string;
 
-      const shouldBeUnprotected = unprotectedOverride !== undefined ? unprotectedOverride : isProUser;
+      // All verified paid / VIP downloads are 100% unprotected & editable
+      const shouldBeUnprotected = true;
 
       if (customImportResult) {
         const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');

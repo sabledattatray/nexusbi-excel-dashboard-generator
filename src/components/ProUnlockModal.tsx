@@ -145,14 +145,14 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  Unlock 100% Unprotected Excel
+                  Get Excel (.xlsx) Dashboard
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 uppercase tracking-wide">
-                  Zero Passwords
+                  ₹9 or ₹49
                 </span>
               </div>
               <p className="text-xs text-emerald-200/80 mt-1 leading-relaxed">
-                Unlock full formula edits, resize &amp; restyle charts, and export unrestricted spreadsheets.
+                Choose a plan below to download your 100% unlocked workbook with live native formulas, charts, and zero passwords.
               </p>
             </div>
           </div>

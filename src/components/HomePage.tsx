@@ -239,32 +239,21 @@ export const HomePage: React.FC<HomePageProps> = ({
             {!isProUnlocked ? (
               <button
                 onClick={onOpenUnlockModal}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500/25 via-emerald-500/20 to-teal-500/20 hover:from-amber-500/35 hover:to-teal-500/30 text-amber-300 hover:text-white text-sm font-bold border border-amber-400/50 shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
-                title="Unlock 100% Unprotected & Editable Excel Files from ₹9"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-950/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all w-full sm:w-auto cursor-pointer"
+                title="Get Excel Dashboard (.xlsx) — ₹9 Single File / ₹49 Lifetime Unlimited"
               >
-                <Crown size={17} className="text-amber-400" />
-                <span>Unlock Pro (from ₹9)</span>
+                <Download size={17} className="stroke-[2.5]" />
+                <span>Get Excel (.xlsx) — ₹9 / ₹49</span>
               </button>
             ) : (
               <button
                 onClick={onDownloadExcel}
                 disabled={isDownloading}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-sm font-bold shadow-lg hover:-translate-y-0.5 active:scale-[0.98] transition-all w-full sm:w-auto cursor-pointer"
                 title="Download 100% Unprotected & Editable Excel Dashboard"
               >
                 <Unlock size={17} />
                 <span>{isDownloading ? 'Compiling…' : 'Download Unprotected Excel'}</span>
-              </button>
-            )}
-
-            {!isProUnlocked && (
-              <button
-                onClick={onDownloadExcel}
-                disabled={isDownloading}
-                className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 active:scale-[0.98] text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors w-full sm:w-auto"
-              >
-                <Download size={16} />
-                <span>{isDownloading ? 'Compiling…' : 'Export Sample .XLSX'}</span>
               </button>
             )}
           </div>

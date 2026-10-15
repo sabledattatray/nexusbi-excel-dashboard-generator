@@ -327,7 +327,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ArrowUpRight size={11} />
           </a>
 
-          {/* Unlock Pro Badge / Button */}
+          {/* Get Excel (.xlsx) Badge / Button */}
           <button
             onClick={onOpenUnlockModal}
             className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium transition-all shadow-xs ${
@@ -335,13 +335,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'bg-amber-100/90 text-amber-950 border border-amber-300 font-bold'
                 : 'bg-gradient-to-r from-amber-50 to-emerald-50 text-emerald-950 border border-amber-400/50 hover:border-emerald-500 font-bold hover:scale-[1.02]'
             }`}
-            title={isProUnlocked ? 'Pro Unlimited Active — All Downloads Unprotected' : 'Unlock 100% Unprotected & Editable Excel Files from ₹9'}
+            title={isProUnlocked ? 'Pro Active — All Downloads Unprotected' : 'Get Excel Dashboard (.xlsx) — ₹9 Single / ₹49 Lifetime Unlimited'}
           >
             <Crown size={13} className={isProUnlocked ? 'text-amber-600' : 'text-amber-500'} />
-            <span>{isProUnlocked ? 'PRO UNLOCKED' : 'Unlock Pro'}</span>
+            <span>{isProUnlocked ? 'PRO UNLOCKED' : 'Get Excel (.xlsx)'}</span>
             {!isProUnlocked && (
-              <span className="text-[10px] font-mono px-1 py-0.2 bg-emerald-700 text-white rounded font-bold">
-                from ₹9
+              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-700 text-white rounded font-bold">
+                ₹9 / ₹49
               </span>
             )}
           </button>
@@ -399,36 +399,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Import</span>
           </button>
 
-          {!isProUnlocked && (
+          {!isProUnlocked ? (
             <button
-              className="secondary-button !border-amber-400/60 !bg-gradient-to-r !from-amber-50 !via-emerald-50 !to-teal-50 text-emerald-950 font-bold shadow-xs hover:border-amber-500 transition-all"
+              className="primary-button !bg-gradient-to-r !from-emerald-600 !to-teal-600 hover:!from-emerald-500 hover:!to-teal-500 !text-white font-bold shadow-md active:scale-[0.98] transition-all"
               onClick={onOpenUnlockModal}
-              title="Unlock Unprotected Excel Files (Single ₹9 · Unlimited ₹49)"
+              title="Get Excel Dashboard (.xlsx) — ₹9 Single File / ₹49 Lifetime Unlimited"
             >
-              <Crown size={14} className="text-amber-600 shrink-0" />
-              <span className="hidden sm:inline">Unlock Unprotected (from ₹9)</span>
-              <span className="sm:hidden">Pro from ₹9</span>
+              <Download size={14} className="text-amber-300" />
+              <span className="hidden sm:inline">Get Excel (.xlsx) — ₹9 / ₹49</span>
+              <span className="sm:hidden">Get Excel (₹9)</span>
+            </button>
+          ) : (
+            <button
+              className="primary-button"
+              onClick={onDownloadExcel}
+              disabled={isDownloading}
+              title="Download 100% Unprotected & Editable Excel Workbook"
+            >
+              <Unlock size={14} className="text-amber-300" />
+              <span className="hidden sm:inline">
+                {isDownloading ? 'Compiling Dashboard…' : 'Download Unprotected Excel'}
+              </span>
+              <span className="sm:hidden">
+                {isDownloading ? 'Compiling…' : 'Download Excel'}
+              </span>
             </button>
           )}
-
-          <button
-            className="primary-button"
-            onClick={onDownloadExcel}
-            disabled={isDownloading}
-            title={isProUnlocked ? 'Download 100% Unprotected & Editable Excel Workbook' : 'Download full 6-sheet Excel dashboard workbook with native charts'}
-          >
-            {isProUnlocked ? <Unlock size={14} className="text-amber-300" /> : <Download size={14} />}
-            <span className="hidden sm:inline">
-              {isDownloading
-                ? 'Compiling Dashboard…'
-                : isProUnlocked
-                ? 'Download Unprotected Excel'
-                : 'Download Excel Dashboard'}
-            </span>
-            <span className="sm:hidden">
-              {isDownloading ? 'Compiling…' : isProUnlocked ? 'Unprotected Excel' : 'Download Excel'}
-            </span>
-          </button>
         </div>
       </div>
     </>
