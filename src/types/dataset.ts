@@ -3,7 +3,71 @@ export type IndustryType =
   | 'ecommerce_retail' 
   | 'healthcare_pharma' 
   | 'industrial_manufacturing'
-  | 'finance_wealth';
+  | 'finance_wealth'
+  | 'real_estate'
+  | 'human_resources'
+  | 'hospitality_travel'
+  | 'energy_utilities'
+  | 'education_academic'
+  | 'marketing_media'
+  | 'general_business';
+
+export type ColumnDataType = 
+  | 'currency' 
+  | 'numeric' 
+  | 'percentage' 
+  | 'date' 
+  | 'categorical' 
+  | 'identifier' 
+  | 'text' 
+  | 'boolean';
+
+export interface ColumnProfile {
+  name: string;
+  normalizedName: string;
+  dataType: ColumnDataType;
+  sampleValues: any[];
+  nonNullCount: number;
+  distinctCount: number;
+  stats?: {
+    min?: number | string;
+    max?: number | string;
+    sum?: number;
+    avg?: number;
+  };
+  suggestedRole?: 
+    | 'primaryMetric' 
+    | 'secondaryMetric' 
+    | 'volumeMetric' 
+    | 'primaryCategory' 
+    | 'secondaryCategory' 
+    | 'date' 
+    | 'identifier' 
+    | 'entityName'
+    | 'status';
+}
+
+export interface DatasetSchemaProfile {
+  columns: ColumnProfile[];
+  primaryMetric: string;
+  primaryMetricLabel: string;
+  secondaryMetric?: string;
+  secondaryMetricLabel?: string;
+  volumeMetric?: string;
+  volumeMetricLabel?: string;
+  primaryCategory: string;
+  primaryCategoryLabel: string;
+  secondaryCategory?: string;
+  secondaryCategoryLabel?: string;
+  dateColumn?: string;
+  dateColumnLabel?: string;
+  identifierColumn?: string;
+  entityColumn?: string;
+  statusColumn?: string;
+  detectedIndustry: IndustryType;
+  industryConfidence: number;
+  totalRecords: number;
+}
 
 export interface Transaction {
   id: string;
@@ -11,13 +75,13 @@ export interface Transaction {
   quarter: string;
   customerId: string;
   customerName: string;
-  customerTier: 'Enterprise Strategic' | 'Mid-Market' | 'Corporate' | 'SMB';
+  customerTier: 'Enterprise Strategic' | 'Mid-Market' | 'Corporate' | 'SMB' | string;
   industry: string;
-  region: 'North America' | 'EMEA' | 'APAC' | 'LATAM';
+  region: 'North America' | 'EMEA' | 'APAC' | 'LATAM' | string;
   country: string;
   city: string;
   salesRep: string;
-  salesChannel: 'Direct Enterprise' | 'Partner Ecosystem' | 'Inside Sales' | 'Online Enterprise';
+  salesChannel: 'Direct Enterprise' | 'Partner Ecosystem' | 'Inside Sales' | 'Online Enterprise' | string;
   sku: string;
   productName: string;
   productCategory: string;
@@ -29,8 +93,10 @@ export interface Transaction {
   cogs: number;
   grossProfit: number;
   marginPct: number;
-  paymentTerms: 'Net 30' | 'Net 60' | 'Annual Prepaid' | 'Credit Card / ACH';
-  status: 'Completed' | 'Invoiced' | 'Delivered';
+  paymentTerms: 'Net 30' | 'Net 60' | 'Annual Prepaid' | 'Credit Card / ACH' | string;
+  status: 'Completed' | 'Invoiced' | 'Delivered' | string;
+  // Dynamic fields from uploaded data
+  rawRow?: Record<string, any>;
 }
 
 export interface ProductCatalogItem {
@@ -42,7 +108,7 @@ export interface ProductCatalogItem {
   standardMarginPct: number;
   leadTimeDays: number;
   stockLevel: number;
-  status: 'Active' | 'High Demand' | 'Backorder';
+  status: 'Active' | 'High Demand' | 'Backorder' | string;
 }
 
 export interface RegionalPerformance {
@@ -101,3 +167,29 @@ export interface DatasetConfig {
   includeChartsInExcel: boolean;
   useLiveExcelFormulas: boolean;
 }
+
+export interface AppDataset {
+  config: DatasetConfig;
+  transactions: Transaction[];
+  productCatalog: ProductCatalogItem[];
+  regionalPerformance: RegionalPerformance[];
+  customerAccounts: CustomerAccount[];
+  monthlyTrends: MonthlyTrend[];
+  categorySummaries: CategorySummary[];
+  kpi: {
+    totalRevenue: number;
+    totalGrossProfit: number;
+    totalCogs: number;
+    totalUnits: number;
+    orderCount: number;
+    averageDealSize: number;
+    overallMarginPct: number;
+    topRegion: string;
+    topCategory: string;
+    activeCustomers: number;
+  };
+  schemaProfile?: DatasetSchemaProfile;
+  rawRows?: Record<string, any>[];
+  originalHeaders?: string[];
+}
+

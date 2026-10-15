@@ -6,9 +6,12 @@ interface InteractiveDonutChartProps {
   categories: CategorySummary[];
   onSelectCategory?: (category: string) => void;
   selectedCategory?: string;
+  palette?: string[];
+  title?: string;
+  subtitle?: string;
 }
 
-const DONUT_COLORS = [
+const DEFAULT_DONUT_COLORS = [
   '#0284c7', // Sky
   '#10b981', // Emerald
   '#6366f1', // Indigo
@@ -22,7 +25,11 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
   categories,
   onSelectCategory,
   selectedCategory,
+  palette,
+  title = 'Category Revenue Share & Margin Donut',
+  subtitle = 'Hover slices to inspect unit margin spread and dollar contribution',
 }) => {
+  const activePalette = palette && palette.length > 0 ? palette : DEFAULT_DONUT_COLORS;
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const totalRev = categories.reduce((s, c) => s + c.revenue, 0) || 1;
@@ -68,7 +75,7 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
 
     const sliceData = {
       pathData,
-      color: DONUT_COLORS[idx % DONUT_COLORS.length],
+      color: activePalette[idx % activePalette.length],
       category: cat,
       idx,
       fraction,
@@ -90,10 +97,10 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-white">
-              Category Revenue Share & Margin Donut
+              {title}
             </h3>
             <p className="text-xs text-slate-400">
-              Hover slices to inspect unit margin spread and dollar contribution
+              {subtitle}
             </p>
           </div>
         </div>
@@ -157,7 +164,7 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
           {categories.map((c, idx) => {
             const isHovered = hoveredIdx === idx;
             const isSelected = selectedCategory === c.category;
-            const color = DONUT_COLORS[idx % DONUT_COLORS.length];
+            const color = activePalette[idx % activePalette.length];
 
             return (
               <div

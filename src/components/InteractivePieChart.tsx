@@ -6,9 +6,12 @@ interface InteractivePieChartProps {
   categories: CategorySummary[];
   onSelectCategory?: (category: string) => void;
   selectedCategory?: string;
+  palette?: string[];
+  title?: string;
+  subtitle?: string;
 }
 
-const PIE_COLORS = [
+const DEFAULT_PIE_COLORS = [
   '#0284c7', // Sky
   '#10b981', // Emerald
   '#6366f1', // Indigo
@@ -22,7 +25,11 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
   categories,
   onSelectCategory,
   selectedCategory,
+  palette,
+  title = 'Category Distribution (Interactive Pie Chart)',
+  subtitle = 'Native slice explosion & interactive percentage distribution',
 }) => {
+  const activePalette = palette && palette.length > 0 ? palette : DEFAULT_PIE_COLORS;
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const totalRev = categories.reduce((s, c) => s + c.revenue, 0) || 1;
@@ -68,7 +75,7 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
 
     const sliceData = {
       pathData,
-      color: PIE_COLORS[idx % PIE_COLORS.length],
+      color: activePalette[idx % activePalette.length],
       category: cat,
       idx,
       fraction,
@@ -93,10 +100,10 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-white">
-              Revenue Breakdown (Interactive Pie Chart)
+              {title}
             </h3>
             <p className="text-xs text-slate-400">
-              Native slice explosion &amp; interactive percentage distribution
+              {subtitle}
             </p>
           </div>
         </div>
@@ -163,7 +170,7 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
           {categories.map((c, idx) => {
             const isHovered = hoveredIdx === idx;
             const isSelected = selectedCategory === c.category;
-            const color = PIE_COLORS[idx % PIE_COLORS.length];
+            const color = activePalette[idx % activePalette.length];
 
             return (
               <div

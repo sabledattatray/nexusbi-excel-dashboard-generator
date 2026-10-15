@@ -37,6 +37,7 @@ import { CustomizerModal } from './components/CustomizerModal';
 import { DownloadSuccessModal } from './components/DownloadSuccessModal';
 import { DataUploadModal } from './components/DataUploadModal';
 import { ImportResult } from './utils/dataImporter';
+import { getIndustryTheme, getAdaptedKpiLabels } from './utils/industryTheme';
 
 export default function App() {
   // Dataset Configuration State
@@ -92,6 +93,12 @@ export default function App() {
   }, [customImportResult, syntheticDataset]);
 
   // Overall quota attainment rate
+  const industryTheme = useMemo(() => getIndustryTheme(config.industry), [config.industry]);
+  const adaptedLabels = useMemo(
+    () => getAdaptedKpiLabels(config.industry, dataset.schemaProfile),
+    [config.industry, dataset.schemaProfile]
+  );
+
   const globalTargetRevenue = useMemo(() => {
     return dataset.regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0);
   }, [dataset]);
@@ -285,11 +292,22 @@ export default function App() {
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
                     ✓ {customImportResult.summary.rowCount.toLocaleString()} Rows Imported
                   </span>
+                  <span
+                    className="text-[11px] px-2.5 py-0.5 rounded-full font-bold border flex items-center gap-1"
+                    style={{
+                      backgroundColor: `${industryTheme.colors.primary}20`,
+                      color: industryTheme.colors.primary,
+                      borderColor: `${industryTheme.colors.primary}40`,
+                    }}
+                  >
+                    <span>{industryTheme.badge}</span>
+                    <span>{customImportResult.summary.industryName || industryTheme.name}</span>
+                  </span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">
-                    {customImportResult.summary.uniqueCategories} Product Categories
+                    {customImportResult.summary.uniqueCategories} {adaptedLabels.categoryLabel} Categories
                   </span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium">
-                    {customImportResult.summary.uniqueRegions} Theaters
+                    {customImportResult.summary.uniqueDimensions} {adaptedLabels.dimensionLabel}s
                   </span>
                 </div>
                 <div className="text-sm font-bold text-white mt-1 flex items-center gap-2">
@@ -299,7 +317,7 @@ export default function App() {
                   </span>
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">
-                  Total Volume: ${(customImportResult.summary.totalRevenue).toLocaleString()} • All charts, pivot matrices, and live formulas adapted to your data!
+                  Total Volume: ${(customImportResult.summary.totalPrimaryMetric).toLocaleString()} • All charts, pivot matrices, and live formulas adapted to your data!
                 </div>
               </div>
             </div>
@@ -345,12 +363,19 @@ export default function App() {
                 categories={dataset.categorySummaries}
                 onSelectCategory={(cat) => setSelectedCategory(selectedCategory === cat ? 'ALL' : cat)}
                 selectedCategory={selectedCategory}
+                palette={industryTheme.colors.chartPalette}
+                title={`${adaptedLabels.categoryLabel} Distribution & Share`}
+                subtitle={`Interactive breakdown by ${adaptedLabels.categoryLabel.toLowerCase()} with volume contribution`}
               />
 
               <InteractiveHorizontalBarChart
                 regionalPerformance={dataset.regionalPerformance}
                 onSelectRegion={(reg) => setSelectedRegion(selectedRegion === reg ? 'ALL' : reg)}
                 selectedRegion={selectedRegion}
+                title={`${adaptedLabels.dimensionLabel} Performance & Target Variance`}
+                subtitle={`Comparative horizontal analysis evaluating ${adaptedLabels.metric1.toLowerCase()} across ${adaptedLabels.dimensionLabel.toLowerCase()}s`}
+                metricLabel={adaptedLabels.metric1}
+                primaryColor={industryTheme.colors.primary}
               />
             </div>
 
@@ -361,6 +386,9 @@ export default function App() {
                   categories={dataset.categorySummaries}
                   onSelectCategory={(cat) => setSelectedCategory(selectedCategory === cat ? 'ALL' : cat)}
                   selectedCategory={selectedCategory}
+                  palette={industryTheme.colors.chartPalette}
+                  title={`${adaptedLabels.categoryLabel} Volume & Margin Donut`}
+                  subtitle={`Relative proportion and margin profile across key ${adaptedLabels.categoryLabel.toLowerCase()} categories`}
                 />
               </div>
 

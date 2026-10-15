@@ -16,10 +16,11 @@ import {
   Calculator,
   ArrowUpRight,
 } from 'lucide-react';
-import { generateRealisticDataset } from '../utils/dataGenerator';
+import { AppDataset } from '../types/dataset';
+import { getIndustryTheme, getAdaptedKpiLabels } from '../utils/industryTheme';
 
 interface InteractiveChartsProps {
-  data: ReturnType<typeof generateRealisticDataset>;
+  data: AppDataset;
   selectedRegion: string;
   setSelectedRegion: (r: string) => void;
   selectedQuarter: string;
@@ -37,7 +38,9 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
   selectedChannel,
   setSelectedChannel,
 }) => {
-  const { monthlyTrends, regionalPerformance, categorySummaries, customerAccounts, transactions } = data;
+  const { monthlyTrends, regionalPerformance, categorySummaries, customerAccounts, transactions, config, schemaProfile } = data;
+  const theme = getIndustryTheme(config.industry);
+  const labels = getAdaptedKpiLabels(config.industry, schemaProfile);
 
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [chartViewMode, setChartViewMode] = useState<'standard' | 'movingAverage' | 'inCellFormula'>('standard');
@@ -131,7 +134,9 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
   }, [filteredTxs]);
 
   // Quarters list
-  const availableQuarters = Array.from(new Set(transactions.map((t) => t.quarter))).sort();
+  const availableQuarters = Array.from(new Set(transactions.map((t) => t.quarter))).filter(Boolean).sort();
+  const availableRegions = Array.from(new Set(transactions.map((t) => t.region))).filter(Boolean).sort();
+  const availableChannels = Array.from(new Set(transactions.map((t) => t.salesChannel))).filter(Boolean).sort();
 
   return (
     <div className="space-y-6">
@@ -151,20 +156,19 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
 
         {/* Filter Dropdowns */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Region Slicer */}
+          {/* Dimension / Region Slicer */}
           <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
             <Globe2 className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-slate-400 text-[11px]">Region:</span>
+            <span className="text-slate-400 text-[11px]">{labels.dimensionLabel}:</span>
             <select
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
             >
-              <option value="ALL">All Regions (Global)</option>
-              <option value="North America">North America</option>
-              <option value="EMEA">EMEA</option>
-              <option value="APAC">APAC</option>
-              <option value="LATAM">LATAM</option>
+              <option value="ALL">All {labels.dimensionLabel}s</option>
+              {availableRegions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
             </select>
           </div>
 
@@ -177,7 +181,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               onChange={(e) => setSelectedQuarter(e.target.value)}
               className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="ALL">All Quarters (FY24-25)</option>
+              <option value="ALL">All Periods</option>
               {availableQuarters.map((q) => (
                 <option key={q} value={q}>{q}</option>
               ))}
@@ -191,13 +195,12 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             <select
               value={selectedChannel}
               onChange={(e) => setSelectedChannel(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
             >
-              <option value="ALL">All Sales Channels</option>
-              <option value="Direct Enterprise">Direct Enterprise</option>
-              <option value="Partner Ecosystem">Partner Ecosystem</option>
-              <option value="Inside Sales">Inside Sales</option>
-              <option value="Online Enterprise">Online Enterprise</option>
+              <option value="ALL">All Channels</option>
+              {availableChannels.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
 
@@ -245,11 +248,11 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-sky-400" />
                 <h3 className="text-sm sm:text-base font-bold text-white">
-                  Monthly Revenue & Profit Run-Rate Trajectory
+                  Monthly {labels.metric1} &amp; {labels.metric2} Trajectory
                 </h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Interactive dual-series with volume indicators and margin overlay
+                Interactive dual-series with volume indicators and run-rate overlay
               </p>
             </div>
 
@@ -393,14 +396,14 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                         />
                       )}
 
-                      {/* Revenue Bar */}
+                      {/* Revenue Bar with Industry Color Grading */}
                       <div
-                        className={`w-full rounded-t-sm transition-all duration-200 ${
-                          isHovered
-                            ? 'bg-sky-400 shadow-lg shadow-sky-400/30'
-                            : 'bg-gradient-to-t from-sky-600 to-sky-500'
-                        }`}
-                        style={{ height: `${revHeight}%` }}
+                        className="w-full rounded-t-sm transition-all duration-200"
+                        style={{
+                          height: `${revHeight}%`,
+                          backgroundColor: isHovered ? theme.colors.accent : theme.colors.primary,
+                          boxShadow: isHovered ? `0 4px 14px ${theme.colors.cardGlow}` : undefined,
+                        }}
                       />
                     </div>
                   );
@@ -447,7 +450,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               <div className="flex items-center gap-2">
                 <Globe2 className="w-4 h-4 text-emerald-400" />
                 <h3 className="text-sm sm:text-base font-bold text-white">
-                  Regional Attainment & Variance
+                  {labels.dimensionLabel} Attainment &amp; Variance
                 </h3>
               </div>
               <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">
@@ -455,7 +458,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-400 mb-4">
-              Actual booked revenue compared against regional board quota
+              Actual booked {labels.metric1.toLowerCase()} compared against benchmark targets
             </p>
 
             <div className="space-y-3.5">
@@ -499,10 +502,11 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                     {/* Progress track */}
                     <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden relative">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isOver ? 'bg-emerald-500' : 'bg-sky-500'
-                        }`}
-                        style={{ width: `${Math.min(100, attainmentPct)}%` }}
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, attainmentPct)}%`,
+                          backgroundColor: isOver ? '#10B981' : theme.colors.primary,
+                        }}
                       />
                     </div>
 

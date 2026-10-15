@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { INDUSTRY_PRESETS } from '../utils/dataGenerator';
+import { getIndustryTheme } from '../utils/industryTheme';
 
 interface NavbarProps {
   config: DatasetConfig;
@@ -35,7 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   isCustomDataActive = false,
 }) => {
-  const currentIndustry = INDUSTRY_PRESETS[config.industry];
+  const theme = getIndustryTheme(config.industry);
+  const currentIndustry = INDUSTRY_PRESETS[config.industry] || { name: theme.name, description: theme.description };
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
@@ -79,8 +81,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
                 {config.companyName}
               </h1>
-              <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                {currentIndustry.name}
+              <span
+                className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border shadow-sm"
+                style={{
+                  backgroundColor: `${theme.colors.primary}18`,
+                  color: theme.colors.primary,
+                  borderColor: `${theme.colors.primary}35`,
+                }}
+              >
+                <span>{theme.badge}</span>
+                <span>{theme.name}</span>
               </span>
             </div>
             <p className="text-xs text-slate-400">

@@ -12,6 +12,15 @@ import {
   RefreshCw,
   Download,
   Info,
+  Layers,
+  ChevronDown,
+  Check,
+  ShieldCheck,
+  Tag,
+  Hash,
+  Calendar,
+  DollarSign,
+  PieChart,
 } from 'lucide-react';
 import {
   parseUploadedFile,
@@ -21,7 +30,8 @@ import {
   ColumnMapping,
   ImportResult,
 } from '../utils/dataImporter';
-import { DatasetConfig } from '../types/dataset';
+import { DatasetConfig, IndustryType, ColumnDataType } from '../types/dataset';
+import { getIndustryTheme, INDUSTRY_THEMES } from '../utils/industryTheme';
 
 interface DataUploadModalProps {
   isOpen: boolean;
@@ -43,6 +53,8 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
   // Parsed state
   const [parsedTable, setParsedTable] = useState<RawParsedTable | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>({});
+  const [selectedIndustry, setSelectedIndustry] = useState<IndustryType>('general_business');
+  const [activeView, setActiveView] = useState<'schema' | 'preview'>('schema');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when opening/closing
@@ -98,6 +110,9 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
       const inferred = inferColumnMapping(table);
       setParsedTable(table);
       setMapping(inferred);
+      if (table.schema?.detectedIndustry) {
+        setSelectedIndustry(table.schema.detectedIndustry);
+      }
     } catch (err: any) {
       console.error('Error processing uploaded file:', err);
       setErrorMsg(err.message || 'Failed to read the file. Please ensure it is a valid CSV or Excel file.');
@@ -118,7 +133,11 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
     if (!parsedTable) return;
     try {
       setIsProcessing(true);
-      const result = buildDatasetFromUpload(parsedTable, mapping, baseConfig);
+      // Pass the selected industry in baseConfig
+      const result = buildDatasetFromUpload(parsedTable, mapping, {
+        ...baseConfig,
+        industry: selectedIndustry,
+      });
       onImportComplete(result);
       handleClose();
     } catch (err: any) {
@@ -155,8 +174,59 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
 
   if (!isOpen) return null;
 
+  const currentTheme = getIndustryTheme(selectedIndustry);
+  const schema = parsedTable?.schema;
+
+  // Helper for type badges
+  const renderTypeBadge = (type: ColumnDataType) => {
+    switch (type) {
+      case 'currency':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+            <DollarSign className="w-3 h-3" /> Currency
+          </span>
+        );
+      case 'numeric':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/20">
+            <Hash className="w-3 h-3" /> Number
+          </span>
+        );
+      case 'percentage':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+            % Rate
+          </span>
+        );
+      case 'date':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+            <Calendar className="w-3 h-3" /> Date
+          </span>
+        );
+      case 'categorical':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20">
+            <Tag className="w-3 h-3" /> Category
+          </span>
+        );
+      case 'identifier':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+            ID Code
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-700/40 text-slate-300 border border-slate-700">
+            Text
+          </span>
+        );
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
@@ -172,7 +242,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Import your own sales records or financial transactions to generate the complete interactive Excel workbook &amp; dashboard.
+                Automated Data Type Profiling, Schema Inspection &amp; Industry-Wise Color Grading
               </p>
             </div>
           </div>
@@ -231,10 +301,10 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
 
                 <div className="space-y-1 max-w-md">
                   <div className="text-sm sm:text-base font-bold text-white">
-                    {isProcessing ? 'Reading and parsing file...' : 'Drop your CSV or Excel file here, or browse local drive'}
+                    {isProcessing ? 'Inspecting column types & profiling schema...' : 'Drop your CSV or Excel file here, or browse local drive'}
                   </div>
                   <p className="text-xs text-slate-400">
-                    Supports any transaction ledger, ERP export, Shopify, Stripe, Salesforce, QuickBooks, or custom spreadsheet format.
+                    Works with any dataset: Healthcare, Real Estate, Banking, SaaS, HR, Logistics, Education, Retail, or custom operations.
                   </p>
                 </div>
 
@@ -268,13 +338,13 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
             </div>
           )}
 
-          {/* STEP 2: File Loaded - Review & Column Mapping */}
+          {/* STEP 2: File Loaded - Review, Detected Industry & Schema Inspection */}
           {parsedTable && (
             <div className="space-y-6">
               {/* File Info Bar */}
               <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
@@ -285,7 +355,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                       </span>
                     </div>
                     <div className="text-xs text-slate-400">
-                      {parsedTable.totalRows.toLocaleString()} rows detected • {parsedTable.headers.length} columns • {(parsedTable.fileSize / 1024).toFixed(1)} KB
+                      {parsedTable.totalRows.toLocaleString()} records • {parsedTable.headers.length} columns • {(parsedTable.fileSize / 1024).toFixed(1)} KB
                     </div>
                   </div>
                 </div>
@@ -304,225 +374,254 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                 </div>
               </div>
 
-              {/* Smart Auto-Detection Indicator */}
-              <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 text-xs text-emerald-300">
-                <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold text-white">Smart Column Mapping Active: </span>
-                  We automatically mapped your columns based on names and content. You can fine-tune or reassign any field below before generating the Excel dashboard.
+              {/* Detected Industry & Grading Banner */}
+              <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-3.5 h-3.5 rounded-full"
+                      style={{ backgroundColor: currentTheme.colors.primary }}
+                    />
+                    <div>
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Detected Industry Domain &amp; Color Grading
+                      </div>
+                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                        <span>{currentTheme.name}</span>
+                        {schema?.industryConfidence && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            {schema.industryConfidence}% Match
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Industry override selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">Override Theme:</span>
+                    <select
+                      value={selectedIndustry}
+                      onChange={(e) => setSelectedIndustry(e.target.value as IndustryType)}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
+                    >
+                      {(Object.keys(INDUSTRY_THEMES) as IndustryType[]).map((ind) => (
+                        <option key={ind} value={ind}>
+                          {INDUSTRY_THEMES[ind].name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  {currentTheme.description} Dashboards, Excel tabs, OpenXML charts, and KPI formulas will automatically apply the{' '}
+                  <span className="font-semibold text-slate-200">{currentTheme.badge}</span> color grading.
+                </p>
+              </div>
+
+              {/* Tab Selector: Schema Inspection vs Sample Preview */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('schema')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                      activeView === 'schema'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Data Types &amp; Column Inspection ({parsedTable.headers.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('preview')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                      activeView === 'preview'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Table2 className="w-3.5 h-3.5" />
+                    <span>Raw Data Sample Preview</span>
+                  </button>
+                </div>
+
+                <div className="text-[11px] text-slate-400">
+                  Real columns preserved • No artificial field forcing
                 </div>
               </div>
 
-              {/* Mapping Grid */}
-              <div className="space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>Match Columns to BI Model Fields</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                  {/* Revenue */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Revenue / Amount *</span>
-                      <span className="text-[10px] text-emerald-400 font-mono">Core Metric</span>
-                    </label>
-                    <select
-                      value={mapping.revenueCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('revenueCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Auto-Estimate) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
+              {/* VIEW 1: DATA TYPES & SCHEMA INSPECTOR */}
+              {activeView === 'schema' && schema && (
+                <div className="space-y-4">
+                  {/* Summary Type Pills */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Rows</div>
+                      <div className="text-sm font-bold text-white font-mono mt-0.5">
+                        {schema.totalRecords.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-emerald-400 uppercase font-semibold">Currency / Value</div>
+                      <div className="text-sm font-bold text-emerald-300 font-mono mt-0.5">
+                        {schema.columns.filter((c) => c.dataType === 'currency').length} cols
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-sky-400 uppercase font-semibold">Numeric / Count</div>
+                      <div className="text-sm font-bold text-sky-300 font-mono mt-0.5">
+                        {schema.columns.filter((c) => c.dataType === 'numeric').length} cols
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-purple-400 uppercase font-semibold">Categories</div>
+                      <div className="text-sm font-bold text-purple-300 font-mono mt-0.5">
+                        {schema.columns.filter((c) => c.dataType === 'categorical').length} cols
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-blue-400 uppercase font-semibold">Dates</div>
+                      <div className="text-sm font-bold text-blue-300 font-mono mt-0.5">
+                        {schema.columns.filter((c) => c.dataType === 'date').length} cols
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Identifiers</div>
+                      <div className="text-sm font-bold text-slate-300 font-mono mt-0.5">
+                        {schema.columns.filter((c) => c.dataType === 'identifier').length} cols
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Date */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Transaction Date</span>
-                      <span className="text-[10px] text-blue-400 font-mono">Monthly Trends</span>
-                    </label>
-                    <select
-                      value={mapping.dateCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('dateCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Auto-Distribute) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Schema Inspector Table */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-hidden">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-800/80 text-slate-300 border-b border-slate-700/80">
+                        <tr>
+                          <th className="py-2.5 px-3 font-semibold">Field Name</th>
+                          <th className="py-2.5 px-3 font-semibold">Detected Data Type</th>
+                          <th className="py-2.5 px-3 font-semibold">Distinct Values</th>
+                          <th className="py-2.5 px-3 font-semibold">Sample Value</th>
+                          <th className="py-2.5 px-3 font-semibold">Assigned Dashboard Role</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60">
+                        {schema.columns.map((col) => {
+                          const isPrimaryMetric = mapping.primaryMetricCol === col.name;
+                          const isSecondaryMetric = mapping.secondaryMetricCol === col.name;
+                          const isCategory = mapping.primaryCategoryCol === col.name;
+                          const isDimension = mapping.secondaryCategoryCol === col.name;
+                          const isDate = mapping.dateCol === col.name;
+                          const isEntity = mapping.entityCol === col.name;
 
-                  {/* Category */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Product Category</span>
-                      <span className="text-[10px] text-indigo-400 font-mono">Pie Chart</span>
-                    </label>
-                    <select
-                      value={mapping.categoryCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('categoryCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Auto-Infer) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Region */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Region / Theater</span>
-                      <span className="text-[10px] text-purple-400 font-mono">Bar Chart</span>
-                    </label>
-                    <select
-                      value={mapping.regionCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('regionCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Global Theaters) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Channel */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Sales Channel</span>
-                      <span className="text-[10px] text-amber-400 font-mono">Donut Chart</span>
-                    </label>
-                    <select
-                      value={mapping.channelCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('channelCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Direct/Partner Mix) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Customer */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Customer / Account</span>
-                      <span className="text-[10px] text-sky-400 font-mono">Strategic Clients</span>
-                    </label>
-                    <select
-                      value={mapping.customerCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('customerCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Auto-Generate) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Quantity */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Quantity / Units</span>
-                      <span className="text-[10px] text-slate-400 font-mono">Volume</span>
-                    </label>
-                    <select
-                      value={mapping.quantityCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('quantityCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Default 1) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Product */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Product / Item Name</span>
-                      <span className="text-[10px] text-slate-400 font-mono">Catalog</span>
-                    </label>
-                    <select
-                      value={mapping.productCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('productCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Auto-Fill) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Profit or Cost */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                    <label className="font-bold text-slate-300 flex items-center justify-between">
-                      <span>Profit or COGS</span>
-                      <span className="text-[10px] text-emerald-400 font-mono">Margins</span>
-                    </label>
-                    <select
-                      value={mapping.profitCol || mapping.cogsCol || '__NONE__'}
-                      onChange={(e) => handleMappingChange('profitCol', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
-                    >
-                      <option value="__NONE__">— None (Benchmark 48% Margin) —</option>
-                      {parsedTable.headers.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
+                          return (
+                            <tr key={col.name} className="hover:bg-slate-800/20">
+                              <td className="py-2.5 px-3 font-bold text-white font-mono flex items-center gap-1.5">
+                                <span>{col.name}</span>
+                                {isPrimaryMetric && (
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-sans">
+                                    Primary Value
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2.5 px-3">{renderTypeBadge(col.dataType)}</td>
+                              <td className="py-2.5 px-3 text-slate-400 font-mono">
+                                {col.distinctCount.toLocaleString()}
+                              </td>
+                              <td className="py-2.5 px-3 text-slate-300 font-mono truncate max-w-[180px]">
+                                {col.sampleValues[0] !== undefined ? String(col.sampleValues[0]) : '—'}
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <select
+                                  value={
+                                    isPrimaryMetric
+                                      ? 'primaryMetric'
+                                      : isSecondaryMetric
+                                      ? 'secondaryMetric'
+                                      : isCategory
+                                      ? 'primaryCategory'
+                                      : isDimension
+                                      ? 'secondaryCategory'
+                                      : isDate
+                                      ? 'date'
+                                      : isEntity
+                                      ? 'entity'
+                                      : '__DEFAULT__'
+                                  }
+                                  onChange={(e) => {
+                                    const role = e.target.value;
+                                    if (role === 'primaryMetric') handleMappingChange('primaryMetricCol', col.name);
+                                    else if (role === 'secondaryMetric') handleMappingChange('secondaryMetricCol', col.name);
+                                    else if (role === 'primaryCategory') handleMappingChange('primaryCategoryCol', col.name);
+                                    else if (role === 'secondaryCategory') handleMappingChange('secondaryCategoryCol', col.name);
+                                    else if (role === 'date') handleMappingChange('dateCol', col.name);
+                                    else if (role === 'entity') handleMappingChange('entityCol', col.name);
+                                  }}
+                                  className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-medium"
+                                >
+                                  <option value="__DEFAULT__">Auto ({col.suggestedRole || 'Dimension'})</option>
+                                  <option value="primaryMetric">Core Metric (Primary Value)</option>
+                                  <option value="secondaryMetric">Secondary Metric (Profit / Variance)</option>
+                                  <option value="primaryCategory">Primary Category (Pie / Breakdowns)</option>
+                                  <option value="secondaryCategory">Secondary Dimension (Bars / Division)</option>
+                                  <option value="date">Time / Date (Monthly Trend)</option>
+                                  <option value="entity">Entity / Account Name</option>
+                                </select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Data Preview Table */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span className="font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <Table2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>File Sample Preview (First 5 Rows)</span>
-                  </span>
-                  <span className="text-slate-500 font-mono">
-                    Showing {Math.min(5, parsedTable.rows.length)} of {parsedTable.totalRows} rows
-                  </span>
-                </div>
+              {/* VIEW 2: RAW DATA SAMPLE PREVIEW */}
+              {activeView === 'preview' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-slate-300">
+                    <span className="font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <Table2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>File Sample Preview (First 5 Rows)</span>
+                    </span>
+                    <span className="text-slate-500 font-mono">
+                      Showing {Math.min(5, parsedTable.rows.length)} of {parsedTable.totalRows} rows
+                    </span>
+                  </div>
 
-                <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-x-auto max-h-48">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead className="bg-slate-800/80 text-slate-300 sticky top-0">
-                      <tr>
-                        <th className="py-2 px-3">#</th>
-                        {parsedTable.headers.map((h) => (
-                          <th key={h} className="py-2 px-3 whitespace-nowrap">
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                      {parsedTable.rows.slice(0, 5).map((row, idx) => (
-                        <tr key={idx} className="hover:bg-slate-800/30">
-                          <td className="py-1.5 px-3 text-slate-500">{idx + 1}</td>
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-x-auto max-h-60">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-slate-800/80 text-slate-300 sticky top-0">
+                        <tr>
+                          <th className="py-2 px-3">#</th>
                           {parsedTable.headers.map((h) => (
-                            <td key={h} className="py-1.5 px-3 whitespace-nowrap text-slate-200">
-                              {row[h] !== undefined && row[h] !== null ? String(row[h]) : '—'}
-                            </td>
+                            <th key={h} className="py-2 px-3 whitespace-nowrap">
+                              {h}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                        {parsedTable.rows.slice(0, 5).map((row, idx) => (
+                          <tr key={idx} className="hover:bg-slate-800/30">
+                            <td className="py-1.5 px-3 text-slate-500">{idx + 1}</td>
+                            {parsedTable.headers.map((h) => (
+                              <td key={h} className="py-1.5 px-3 whitespace-nowrap text-slate-200">
+                                {row[h] !== undefined && row[h] !== null ? String(row[h]) : '—'}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -542,17 +641,21 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               type="button"
               onClick={handleGenerate}
               disabled={isProcessing}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center gap-2 transition-all transform active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold shadow-lg border flex items-center gap-2 transition-all transform active:scale-95 disabled:opacity-50"
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
+                borderColor: currentTheme.colors.accent,
+              }}
             >
               {isProcessing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Processing &amp; Synthesizing BI Model...</span>
+                  <span>Synthesizing Industry Model...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Generate Dashboard &amp; Excel From My Data</span>
+                  <span>Generate {currentTheme.badge} Dashboard &amp; Excel</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

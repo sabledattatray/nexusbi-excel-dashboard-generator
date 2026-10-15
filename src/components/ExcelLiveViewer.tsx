@@ -24,11 +24,11 @@ import {
   Table as TableIcon,
   ExternalLink,
 } from 'lucide-react';
-import { generateRealisticDataset } from '../utils/dataGenerator';
-import { DatasetConfig } from '../types/dataset';
+import { AppDataset, DatasetConfig } from '../types/dataset';
+import { getIndustryTheme, getAdaptedKpiLabels } from '../utils/industryTheme';
 
 interface ExcelLiveViewerProps {
-  data: ReturnType<typeof generateRealisticDataset>;
+  data: AppDataset;
   config: DatasetConfig;
   onDownloadExcel: () => void;
   isDownloading: boolean;
@@ -40,7 +40,9 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
   onDownloadExcel,
   isDownloading,
 }) => {
-  const { monthlyTrends, categorySummaries, regionalPerformance, customerAccounts, transactions, kpi } = data;
+  const { monthlyTrends, categorySummaries, regionalPerformance, customerAccounts, transactions, kpi, schemaProfile } = data;
+  const industryTheme = getIndustryTheme(config.industry);
+  const labels = getAdaptedKpiLabels(config.industry, schemaProfile);
 
   // Active worksheet in Excel simulator
   const [activeExcelSheet, setActiveExcelSheet] = useState<
@@ -71,14 +73,14 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
 
   // Top categories for Pie
   const topCategories = categorySummaries.slice(0, 5);
-  const pieColors = ['#0284C7', '#10B981', '#6366F1', '#F59E0B', '#EC4899'];
+  const pieColors = industryTheme.colors.chartPalette || ['#0284C7', '#10B981', '#6366F1', '#F59E0B', '#EC4899'];
 
   // Channels for Donut Chart
   const channels = [
-    { name: 'Direct Enterprise', share: 0.42, revenue: kpi.totalRevenue * 0.42, color: '#0284C7' },
-    { name: 'Partner Ecosystem', share: 0.28, revenue: kpi.totalRevenue * 0.28, color: '#10B981' },
-    { name: 'Inside Sales', share: 0.18, revenue: kpi.totalRevenue * 0.18, color: '#6366F1' },
-    { name: 'Online Enterprise', share: 0.12, revenue: kpi.totalRevenue * 0.12, color: '#F59E0B' },
+    { name: 'Direct Enterprise', share: 0.42, revenue: kpi.totalRevenue * 0.42, color: pieColors[0] || '#0284C7' },
+    { name: 'Partner Ecosystem', share: 0.28, revenue: kpi.totalRevenue * 0.28, color: pieColors[1] || '#10B981' },
+    { name: 'Inside Sales', share: 0.18, revenue: kpi.totalRevenue * 0.18, color: pieColors[2] || '#6366F1' },
+    { name: 'Online Enterprise', share: 0.12, revenue: kpi.totalRevenue * 0.12, color: pieColors[3] || '#F59E0B' },
   ];
 
   // Active Formula in Excel Formula Bar based on chart selection
@@ -1066,13 +1068,13 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
               {/* KPI Cards Strip */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center">
                 {[
-                  { label: 'GROSS REVENUE', val: `$${kpi.totalRevenue.toLocaleString()}`, sub: '● Certified Actuals', color: 'text-blue-900', bg: 'bg-blue-50/80' },
-                  { label: 'GROSS PROFIT', val: `$${kpi.totalGrossProfit.toLocaleString()}`, sub: '● Net Operating', color: 'text-emerald-900', bg: 'bg-emerald-50/80' },
+                  { label: (labels.metric1 || 'GROSS REVENUE').toUpperCase(), val: `$${kpi.totalRevenue.toLocaleString()}`, sub: '● Certified Actuals', color: 'text-slate-900', bg: 'bg-slate-50' },
+                  { label: (labels.metric2 || 'GROSS PROFIT').toUpperCase(), val: `$${kpi.totalGrossProfit.toLocaleString()}`, sub: '● Net Operating', color: 'text-emerald-900', bg: 'bg-emerald-50/80' },
                   { label: 'BLENDED MARGIN', val: `${(kpi.overallMarginPct * 100).toFixed(1)}%`, sub: '● Target Attained', color: 'text-indigo-900', bg: 'bg-indigo-50/80' },
-                  { label: 'UNITS SHIPPED', val: kpi.totalUnits.toLocaleString(), sub: '● Product Volume', color: 'text-slate-800', bg: 'bg-slate-50' },
-                  { label: 'TRANSACTION COUNT', val: kpi.orderCount.toLocaleString(), sub: '● Closed Contracts', color: 'text-slate-800', bg: 'bg-slate-50' },
-                  { label: 'AVERAGE DEAL SIZE', val: `$${kpi.averageDealSize.toLocaleString()}`, sub: '● Per Contract', color: 'text-slate-800', bg: 'bg-slate-50' },
-                  { label: 'CUSTOMER ACCOUNTS', val: customerAccounts.length, sub: '● Enterprise Portfolio', color: 'text-slate-800', bg: 'bg-slate-50' },
+                  { label: (labels.metric4 || 'UNITS SHIPPED').toUpperCase(), val: kpi.totalUnits.toLocaleString(), sub: '● Volume', color: 'text-slate-800', bg: 'bg-slate-50' },
+                  { label: 'RECORD COUNT', val: kpi.orderCount.toLocaleString(), sub: '● Processed Records', color: 'text-slate-800', bg: 'bg-slate-50' },
+                  { label: 'AVERAGE VALUE', val: `$${kpi.averageDealSize.toLocaleString()}`, sub: '● Per Record', color: 'text-slate-800', bg: 'bg-slate-50' },
+                  { label: `${labels.entityLabel.toUpperCase()}S`, val: customerAccounts.length, sub: '● Distinct Accounts', color: 'text-slate-800', bg: 'bg-slate-50' },
                 ].map((k, i) => (
                   <div key={i} className={`p-2.5 rounded-lg border border-slate-300 ${k.bg} shadow-sm`}>
                     <div className="text-[10px] font-bold text-slate-500">{k.label}</div>
@@ -1092,7 +1094,7 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                   }`}
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-                    <span>Chart 1: Monthly Revenue &amp; Profit Run-Rate (B10:H25)</span>
+                    <span>Chart 1: Monthly {labels.metric1} &amp; {labels.metric2} Run-Rate (B10:H25)</span>
                     <span className="text-[10px] text-blue-600 font-mono">B10:H25</span>
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$B$46:$B$57 • Native Clustered Column</div>
@@ -1100,8 +1102,11 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                     {monthlyTrends.slice(0, 12).map((m) => (
                       <div key={m.monthKey} className="flex-1 flex flex-col items-center h-full justify-end">
                         <div
-                          style={{ height: `${Math.max(10, Math.round((m.revenue / Math.max(...monthlyTrends.map((x) => x.revenue))) * 100))}%` }}
-                          className="w-full bg-[#0284C7] rounded-t hover:bg-sky-400 transition"
+                          style={{
+                            height: `${Math.max(10, Math.round((m.revenue / Math.max(...monthlyTrends.map((x) => x.revenue))) * 100))}%`,
+                            backgroundColor: industryTheme.colors.primary,
+                          }}
+                          className="w-full rounded-t hover:opacity-80 transition"
                         />
                         <div className="text-[8px] text-slate-500 mt-1 truncate">{m.monthLabel.split(' ')[0]}</div>
                       </div>
@@ -1117,7 +1122,7 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                   }`}
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-                    <span>Chart 2: Revenue Contribution by Category (I10:O25)</span>
+                    <span>Chart 2: {labels.metric1} Contribution by {labels.categoryLabel} (I10:O25)</span>
                     <span className="text-[10px] text-emerald-600 font-mono">I10:O25</span>
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$B$62:$D$66 • Native 2D Pie</div>
@@ -1128,7 +1133,7 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                     <div className="space-y-1 text-xs font-medium">
                       {topCategories.map((c, i) => (
                         <div key={c.category} className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieColors[i] }} />
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
                           <span className="text-slate-700 truncate max-w-[120px]">{c.category}</span>
                           <span className="font-bold text-slate-900">{(c.sharePct * 100).toFixed(0)}%</span>
                         </div>
@@ -1145,7 +1150,7 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                   }`}
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-                    <span>Chart 3: Regional Quota Attainment (B27:H42)</span>
+                    <span>Chart 3: {labels.dimensionLabel} Quota &amp; Performance (B27:H42)</span>
                     <span className="text-[10px] text-indigo-600 font-mono">B27:H42</span>
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$I$46:$L$49 • Horizontal Clustered Bars</div>
@@ -1158,8 +1163,11 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                         </div>
                         <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
                           <div
-                            style={{ width: `${Math.min(100, r.quotaAttainmentPct * 100)}%` }}
-                            className="bg-[#0284C7] h-full rounded-full"
+                            style={{
+                              width: `${Math.min(100, r.quotaAttainmentPct * 100)}%`,
+                              backgroundColor: industryTheme.colors.primary,
+                            }}
+                            className="h-full rounded-full"
                           />
                         </div>
                       </div>
@@ -1536,59 +1544,93 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 </div>
               </div>
 
-              {/* Transactions Table */}
+              {/* Transactions / Source Data Table */}
               <div className="rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
                 <div className="overflow-x-auto max-h-[500px]">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead className="bg-[#334155] text-white font-semibold sticky top-0 z-10 text-[11px]">
-                      <tr>
-                        <th className="py-2 px-2.5">Tx ID ▼</th>
-                        <th className="py-2 px-2.5">Date ▼</th>
-                        <th className="py-2 px-2.5">Client Organization ▼</th>
-                        <th className="py-2 px-2.5">Region ▼</th>
-                        <th className="py-2 px-2.5">Sales Channel ▼</th>
-                        <th className="py-2 px-2.5">Product Name ▼</th>
-                        <th className="py-2 px-2.5 text-right">Qty ▼</th>
-                        <th className="py-2 px-2.5 text-right text-sky-300">Revenue ($) ▼</th>
-                        <th className="py-2 px-2.5 text-right">COGS ($) ▼</th>
-                        <th className="py-2 px-2.5 text-right text-emerald-300">Profit ($) ▼</th>
-                        <th className="py-2 px-2.5 text-center">Status ▼</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {filteredTxs.slice(0, 15).map((t, idx) => (
-                        <tr key={t.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                          <td className="py-1.5 px-2.5 font-bold text-slate-700">{t.id}</td>
-                          <td className="py-1.5 px-2.5 text-slate-600">{t.orderDate}</td>
-                          <td className="py-1.5 px-2.5 font-sans font-bold text-slate-800">{t.customerName}</td>
-                          <td className="py-1.5 px-2.5">{t.region}</td>
-                          <td className="py-1.5 px-2.5">{t.salesChannel}</td>
-                          <td className="py-1.5 px-2.5 font-sans truncate max-w-[180px]">{t.productName}</td>
-                          <td className="py-1.5 px-2.5 text-right">{t.quantity}</td>
-                          <td className="py-1.5 px-2.5 text-right font-bold text-blue-900">${t.revenue.toLocaleString()}</td>
-                          <td className="py-1.5 px-2.5 text-right text-slate-600">${t.cogs.toLocaleString()}</td>
-                          <td className="py-1.5 px-2.5 text-right font-bold text-emerald-700">${t.grossProfit.toLocaleString()}</td>
-                          <td className="py-1.5 px-2.5 text-center">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              {t.status}
-                            </span>
+                  {data.originalHeaders && data.originalHeaders.length > 0 && data.rawRows && data.rawRows.length > 0 ? (
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#1E293B] text-white font-semibold sticky top-0 z-10 text-[11px]">
+                        <tr>
+                          <th className="py-2 px-2.5">#</th>
+                          {data.originalHeaders.map((h) => (
+                            <th key={h} className="py-2 px-2.5 whitespace-nowrap font-bold text-slate-100">
+                              {h} ▼
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {data.rawRows.slice(0, 25).map((row, idx) => (
+                          <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                            <td className="py-1.5 px-2.5 text-slate-500 font-bold">{idx + 1}</td>
+                            {data.originalHeaders!.map((h) => (
+                              <td key={h} className="py-1.5 px-2.5 whitespace-nowrap text-slate-800">
+                                {row[h] !== undefined && row[h] !== null ? String(row[h]) : '—'}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold sticky bottom-0 z-10 text-slate-900">
+                        <tr>
+                          <td colSpan={data.originalHeaders.length + 1} className="py-2 px-2.5 font-sans font-black text-emerald-900">
+                            Total Records: {data.rawRows.length.toLocaleString()} rows • Primary Metric: ${kpi.totalRevenue.toLocaleString()} (=SUBTOTAL dynamic formula)
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold sticky bottom-0 z-10 text-slate-900">
-                      <tr>
-                        <td colSpan={6} className="py-2 px-2.5 font-sans font-black text-emerald-900">
-                          Total Portfolio Summary: (=SUBTOTAL(109, ...) Dynamic Formula)
-                        </td>
-                        <td className="py-2 px-2.5 text-right font-black">{txFilteredUnits.toLocaleString()}</td>
-                        <td className="py-2 px-2.5 text-right font-black text-blue-900">${txFilteredRev.toLocaleString()}</td>
-                        <td className="py-2 px-2.5 text-right font-black">${txFilteredCogs.toLocaleString()}</td>
-                        <td className="py-2 px-2.5 text-right font-black text-emerald-800">${txFilteredProfit.toLocaleString()}</td>
-                        <td></td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                      </tfoot>
+                    </table>
+                  ) : (
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#334155] text-white font-semibold sticky top-0 z-10 text-[11px]">
+                        <tr>
+                          <th className="py-2 px-2.5">Tx ID ▼</th>
+                          <th className="py-2 px-2.5">Date ▼</th>
+                          <th className="py-2 px-2.5">Client Organization ▼</th>
+                          <th className="py-2 px-2.5">{labels.dimensionLabel} ▼</th>
+                          <th className="py-2 px-2.5">Sales Channel ▼</th>
+                          <th className="py-2 px-2.5">{labels.categoryLabel} ▼</th>
+                          <th className="py-2 px-2.5 text-right">Qty ▼</th>
+                          <th className="py-2 px-2.5 text-right text-sky-300">{labels.metric1} ($) ▼</th>
+                          <th className="py-2 px-2.5 text-right">COGS ($) ▼</th>
+                          <th className="py-2 px-2.5 text-right text-emerald-300">{labels.metric2} ($) ▼</th>
+                          <th className="py-2 px-2.5 text-center">Status ▼</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {filteredTxs.slice(0, 15).map((t, idx) => (
+                          <tr key={t.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                            <td className="py-1.5 px-2.5 font-bold text-slate-700">{t.id}</td>
+                            <td className="py-1.5 px-2.5 text-slate-600">{t.orderDate}</td>
+                            <td className="py-1.5 px-2.5 font-sans font-bold text-slate-800">{t.customerName}</td>
+                            <td className="py-1.5 px-2.5">{t.region}</td>
+                            <td className="py-1.5 px-2.5">{t.salesChannel}</td>
+                            <td className="py-1.5 px-2.5 font-sans truncate max-w-[180px]">{t.productName}</td>
+                            <td className="py-1.5 px-2.5 text-right">{t.quantity}</td>
+                            <td className="py-1.5 px-2.5 text-right font-bold text-blue-900">${t.revenue.toLocaleString()}</td>
+                            <td className="py-1.5 px-2.5 text-right text-slate-600">${t.cogs.toLocaleString()}</td>
+                            <td className="py-1.5 px-2.5 text-right font-bold text-emerald-700">${t.grossProfit.toLocaleString()}</td>
+                            <td className="py-1.5 px-2.5 text-center">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                {t.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold sticky bottom-0 z-10 text-slate-900">
+                        <tr>
+                          <td colSpan={6} className="py-2 px-2.5 font-sans font-black text-emerald-900">
+                            Total Portfolio Summary: (=SUBTOTAL(109, ...) Dynamic Formula)
+                          </td>
+                          <td className="py-2 px-2.5 text-right font-black">{txFilteredUnits.toLocaleString()}</td>
+                          <td className="py-2 px-2.5 text-right font-black text-blue-900">${txFilteredRev.toLocaleString()}</td>
+                          <td className="py-2 px-2.5 text-right font-black">${txFilteredCogs.toLocaleString()}</td>
+                          <td className="py-2 px-2.5 text-right font-black text-emerald-800">${txFilteredProfit.toLocaleString()}</td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>

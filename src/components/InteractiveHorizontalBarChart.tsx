@@ -6,12 +6,20 @@ interface InteractiveHorizontalBarChartProps {
   regionalPerformance: RegionalPerformance[];
   onSelectRegion?: (region: string) => void;
   selectedRegion?: string;
+  title?: string;
+  subtitle?: string;
+  metricLabel?: string;
+  primaryColor?: string;
 }
 
 export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarChartProps> = ({
   regionalPerformance,
   onSelectRegion,
   selectedRegion,
+  title = 'Division Target vs Actual (Horizontal Bar Chart)',
+  subtitle = 'Comparative horizontal bars evaluating booked performance against targets',
+  metricLabel = 'Value',
+  primaryColor = '#0284c7',
 }) => {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'revenue' | 'attainment' | 'profit'>('revenue');
@@ -34,10 +42,10 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-white">
-              Regional Quota vs Actual (Horizontal Bar Chart)
+              {title}
             </h3>
             <p className="text-xs text-slate-400">
-              Comparative horizontal bars evaluating booked revenue against sales targets
+              {subtitle}
             </p>
           </div>
         </div>

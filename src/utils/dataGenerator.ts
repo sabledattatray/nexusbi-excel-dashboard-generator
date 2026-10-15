@@ -7,6 +7,7 @@ import {
   CategorySummary,
   IndustryType,
   DatasetConfig,
+  AppDataset,
 } from '../types/dataset';
 
 // Preset industry definitions
@@ -128,6 +129,139 @@ export const INDUSTRY_PRESETS: Record<
       { name: 'Tokyo Sovereign Asset Management', industry: 'Sovereign Wealth', tier: 'Enterprise Strategic' },
     ],
   },
+  real_estate: {
+    name: 'Real Estate & Property Management',
+    description: 'Commercial towers, multi-family residential portfolios, prime retail assets, and industrial logistics parks.',
+    companyDefault: 'Vanguard Realty Capital Partners',
+    products: [
+      { sku: 'RE-COM-01', name: 'Class-A CBD Office Tower Lease', category: 'Commercial Office', cost: 12000, price: 34000 },
+      { sku: 'RE-RES-02', name: 'Luxury Multi-Family Residential Suite', category: 'Residential High-Rise', cost: 2400, price: 6800 },
+      { sku: 'RE-IND-03', name: 'Prime Last-Mile Logistics Center', category: 'Industrial Logistics', cost: 15000, price: 42000 },
+      { sku: 'RE-RET-04', name: 'Anchor Retail Shopping Galleria', category: 'Retail Assets', cost: 8500, price: 23000 },
+      { sku: 'RE-MIX-05', name: 'Urban Transit Mixed-Use Development', category: 'Mixed-Use Developments', cost: 19000, price: 54000 },
+    ],
+    customers: [
+      { name: 'Blackstone Global Realty', industry: 'Private Equity Real Estate', tier: 'Enterprise Strategic' },
+      { name: 'Brookfield Property Partners', industry: 'Asset Management', tier: 'Enterprise Strategic' },
+      { name: 'Simon Property Group', industry: 'Retail REIT', tier: 'Corporate' },
+      { name: 'Prologis Logistics Trust', industry: 'Industrial REIT', tier: 'Enterprise Strategic' },
+      { name: 'Equitas Urban Housing', industry: 'Residential Trust', tier: 'Mid-Market' },
+    ],
+  },
+  human_resources: {
+    name: 'Human Resources & People Analytics',
+    description: 'Workforce talent management, compensation modeling, departmental headcount, and retention tracking.',
+    companyDefault: 'TalentPulse Global People Systems',
+    products: [
+      { sku: 'HR-ENG-01', name: 'Principal Cloud Systems Architect', category: 'Engineering & DevOps', cost: 14000, price: 26000 },
+      { sku: 'HR-MGT-02', name: 'Executive Director Operations', category: 'Executive Leadership', cost: 18000, price: 32000 },
+      { sku: 'HR-DAT-03', name: 'Lead Machine Learning Scientist', category: 'AI & Data Science', cost: 13500, price: 24500 },
+      { sku: 'HR-SAL-04', name: 'Strategic Enterprise Sales Director', category: 'Go-to-Market', cost: 11000, price: 22000 },
+      { sku: 'HR-OPS-05', name: 'Global People Operations Partner', category: 'People & Culture', cost: 7500, price: 14000 },
+    ],
+    customers: [
+      { name: 'Alphabet Systems Group', industry: 'Technology', tier: 'Enterprise Strategic' },
+      { name: 'McKinsey & Company Alliance', industry: 'Management Consulting', tier: 'Enterprise Strategic' },
+      { name: 'Goldman Sachs Asset Mgmt', industry: 'Investment Banking', tier: 'Enterprise Strategic' },
+      { name: 'Pfizer Global Health', industry: 'Pharmaceuticals', tier: 'Corporate' },
+      { name: 'Tesla Mobility Energy', industry: 'Automotive & EV', tier: 'Corporate' },
+    ],
+  },
+  hospitality_travel: {
+    name: 'Hospitality, Travel & Dining Operations',
+    description: 'Luxury hotel bookings, airline route yields, guest room occupancy, and culinary dining covers.',
+    companyDefault: 'Sovereign Resorts & Luxury Hospitality',
+    products: [
+      { sku: 'HOS-SUI-01', name: 'Presidential Oceanfront Penthouse Suite', category: 'Luxury Suites', cost: 650, price: 2850 },
+      { sku: 'HOS-ROO-02', name: 'Executive Club King Room', category: 'Guest Rooms', cost: 180, price: 680 },
+      { sku: 'HOS-DIN-03', name: 'Michelin Star Chef Tasting Cover', category: 'Fine Dining & Banquet', cost: 95, price: 320 },
+      { sku: 'HOS-SPA-04', name: 'Thermal Hydrotherapy Wellness Package', category: 'Wellness & Spa', cost: 80, price: 290 },
+      { sku: 'HOS-EVT-05', name: 'Grand Ballroom Corporate Gala Hosting', category: 'Events & Conferences', cost: 3400, price: 12500 },
+    ],
+    customers: [
+      { name: 'Four Seasons Global Collection', industry: 'Luxury Hotels', tier: 'Enterprise Strategic' },
+      { name: 'Ritz-Carlton Heritage Group', industry: 'Hospitality', tier: 'Enterprise Strategic' },
+      { name: 'Emirates Aviation Group', industry: 'Airlines & Travel', tier: 'Enterprise Strategic' },
+      { name: 'Marriott Luxury Residences', industry: 'Hospitality', tier: 'Corporate' },
+      { name: 'Belmond Orient Express', industry: 'Luxury Travel', tier: 'Mid-Market' },
+    ],
+  },
+  energy_utilities: {
+    name: 'Energy, Utilities & CleanTech',
+    description: 'Renewable solar grids, offshore wind turbines, peak load transmission, and smart grid meters.',
+    companyDefault: 'Helios CleanEnergy & Power Grid AG',
+    products: [
+      { sku: 'ENG-SOL-01', name: 'Utility-Scale Solar Photovoltaic Farm', category: 'Solar Energy', cost: 14000, price: 38000 },
+      { sku: 'ENG-WND-02', name: 'Offshore Direct-Drive Wind Turbine', category: 'Wind Energy', cost: 22000, price: 58000 },
+      { sku: 'ENG-BAT-03', name: 'Megawatt Grid Battery Storage Unit', category: 'Energy Storage', cost: 9500, price: 26000 },
+      { sku: 'ENG-HYD-04', name: 'Green Hydrogen Electrolyzer Station', category: 'Clean Fuels', cost: 16000, price: 44000 },
+      { sku: 'ENG-GRD-05', name: 'Smart Substation Telemetry Node', category: 'Grid Infrastructure', cost: 3200, price: 9800 },
+    ],
+    customers: [
+      { name: 'NextEra Energy Resources', industry: 'Renewable Power', tier: 'Enterprise Strategic' },
+      { name: 'Orsted Offshore Wind', industry: 'Clean Power', tier: 'Enterprise Strategic' },
+      { name: 'Iberdrola Renewables', industry: 'Utilities', tier: 'Enterprise Strategic' },
+      { name: 'National Grid UK & US', industry: 'Power Transmission', tier: 'Corporate' },
+      { name: 'Enel Green Power', industry: 'Global Utilities', tier: 'Corporate' },
+    ],
+  },
+  education_academic: {
+    name: 'Higher Education & Academic Performance',
+    description: 'University degree enrollments, tuition modeling, faculty research grants, and departmental budgets.',
+    companyDefault: 'St. Andrews Collegiate University System',
+    products: [
+      { sku: 'EDU-DEG-01', name: 'Master of Science in Artificial Intelligence', category: 'Graduate Degrees', cost: 4200, price: 16500 },
+      { sku: 'EDU-MBA-02', name: 'Executive Global MBA Fellowship', category: 'Executive Education', cost: 6800, price: 24000 },
+      { sku: 'EDU-ENG-03', name: 'Bachelor of Science in Biomedical Engineering', category: 'Undergraduate Degrees', cost: 3400, price: 13200 },
+      { sku: 'EDU-RES-04', name: 'Sponsored Clinical Genomics Research Grant', category: 'Research Programs', cost: 12000, price: 38000 },
+      { sku: 'EDU-ONL-05', name: 'Digital Data Analytics Micro-Credential', category: 'Continuing Studies', cost: 450, price: 1950 },
+    ],
+    customers: [
+      { name: 'Stanford Innovation Labs', industry: 'Research University', tier: 'Enterprise Strategic' },
+      { name: 'Harvard Medical School Consortium', industry: 'Academic Medicine', tier: 'Enterprise Strategic' },
+      { name: 'Oxford Cambridge Alliance', industry: 'Higher Education', tier: 'Enterprise Strategic' },
+      { name: 'ETH Zurich Engineering', industry: 'Polytechnic Institute', tier: 'Corporate' },
+      { name: 'National University of Singapore', industry: 'Global University', tier: 'Corporate' },
+    ],
+  },
+  marketing_media: {
+    name: 'Performance Marketing & Media ROI',
+    description: 'Multi-channel ad spend, programmatic campaigns, conversion attribution, and brand lift analytics.',
+    companyDefault: 'OmniMedia Performance Marketing Network',
+    products: [
+      { sku: 'MKT-SRC-01', name: 'High-Intent Paid Search Acquisition Suite', category: 'Search Advertising', cost: 3200, price: 9800 },
+      { sku: 'MKT-SOC-02', name: 'Algorithmic Social Video Campaign', category: 'Paid Social & Influencer', cost: 4500, price: 14200 },
+      { sku: 'MKT-PRG-03', name: 'Real-Time Programmatic Display Retargeting', category: 'Programmatic Media', cost: 2100, price: 6900 },
+      { sku: 'MKT-SEO-04', name: 'Enterprise Organic Search Authority Engine', category: 'SEO & Content', cost: 1800, price: 5400 },
+      { sku: 'MKT-OTT-05', name: 'Connected TV & Streaming Media Insertion', category: 'CTV & Video', cost: 6500, price: 19500 },
+    ],
+    customers: [
+      { name: 'Nike Global Brand Communications', industry: 'Athletic Apparel', tier: 'Enterprise Strategic' },
+      { name: 'LVMH Moët Hennessy Louis Vuitton', industry: 'Luxury Goods', tier: 'Enterprise Strategic' },
+      { name: 'Procter & Gamble Consumer Care', industry: 'Consumer Packaged Goods', tier: 'Enterprise Strategic' },
+      { name: 'Spotify Music & Podcasts', industry: 'Digital Streaming', tier: 'Corporate' },
+      { name: 'Uber Technologies Mobility', industry: 'Rideshare & Delivery', tier: 'Corporate' },
+    ],
+  },
+  general_business: {
+    name: 'General Commercial & Operations',
+    description: 'Comprehensive cross-industry enterprise model with automated schema mapping and flexible KPIs.',
+    companyDefault: 'Nexus Enterprise Operations Group',
+    products: [
+      { sku: 'GEN-OPS-01', name: 'Enterprise Operational Service Suite', category: 'Operations & Management', cost: 1200, price: 3800 },
+      { sku: 'GEN-LOG-02', name: 'Supply Logistics Delivery Module', category: 'Logistics', cost: 850, price: 2600 },
+      { sku: 'GEN-SVC-03', name: 'Professional Advisory Consultation', category: 'Professional Services', cost: 1600, price: 4900 },
+      { sku: 'GEN-SYS-04', name: 'Infrastructure Maintenance Contract', category: 'Technical Support', cost: 700, price: 2200 },
+      { sku: 'GEN-TRN-05', name: 'Workforce Capability Program', category: 'Corporate Training', cost: 550, price: 1750 },
+    ],
+    customers: [
+      { name: 'Apex Commercial Partners', industry: 'Commercial Business', tier: 'Enterprise Strategic' },
+      { name: 'Beacon Enterprise Holdings', industry: 'Conglomerate', tier: 'Enterprise Strategic' },
+      { name: 'Crestview Corporate Ventures', industry: 'Business Services', tier: 'Corporate' },
+      { name: 'Dynamic Global Solutions', industry: 'Operations', tier: 'Mid-Market' },
+      { name: 'Equitas Corporate Network', industry: 'Services', tier: 'SMB' },
+    ],
+  },
 };
 
 const REGIONAL_GEOGRAPHY: Record<
@@ -207,7 +341,7 @@ function createRng(seed = 123456789) {
   };
 }
 
-export function generateRealisticDataset(config: DatasetConfig) {
+export function generateRealisticDataset(config: DatasetConfig): AppDataset {
   const rng = createRng(42 + config.recordCount);
   const preset = INDUSTRY_PRESETS[config.industry] || INDUSTRY_PRESETS.enterprise_tech;
 

@@ -1,60 +1,21 @@
 import JSZip from 'jszip';
-import { generateRealisticDataset } from './dataGenerator';
+import { AppDataset } from '../types/dataset';
 import { getDattaSableImageBuffer } from './imageLoader';
+import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
 
 /**
  * Injects 100% REAL NATIVE OPENXML DRAWINGML EXCEL CHARTS into the .xlsx workbook using JSZip.
- * 
- * Generates authentic interactive Excel chart objects across two executive sheets:
- * 
- * --- SHEET 1: EXECUTIVE DASHBOARD ---
- * 1. Chart 1: Native Vertical Clustered Column Run-Rate Chart (<c:barChart barDir="col">)
- *    - Anchor: Columns B to H (B10:H25)
- *    - Data range: 'Executive Dashboard'!$B$46:$B$57 (Months)
- *    - Series 1: 'Executive Dashboard'!$C$46:$C$57 (Revenue)
- *    - Series 2: 'Executive Dashboard'!$E$46:$E$57 (Gross Profit)
- * 
- * 2. Chart 2: Native Excel 2D Pie Chart (<c:pieChart>)
- *    - Anchor: Columns I to O (I10:O25)
- *    - Category labels: 'Executive Dashboard'!$B$62:$B$66 (Top 5 Categories)
- *    - Values: 'Executive Dashboard'!$D$62:$D$66 (Revenue)
- * 
- * 3. Chart 3: Native Horizontal Clustered Bar Chart (<c:barChart barDir="bar">)
- *    - Anchor: Columns B to H (B27:H42)
- *    - Category labels: 'Executive Dashboard'!$I$46:$I$49 (Regions: North America, EMEA, APAC, LATAM)
- *    - Series 1: 'Executive Dashboard'!$K$46:$K$49 (Actual Rev)
- *    - Series 2: 'Executive Dashboard'!$L$46:$L$49 (Quota Target)
- * 
- * 4. Chart 4: Native Donut Chart (<c:doughnutChart holeSize="65">)
- *    - Anchor: Columns I to O (I27:O42)
- *    - Category labels: 'Executive Dashboard'!$I$62:$I$65 (Sales Channels)
- *    - Values: 'Executive Dashboard'!$K$62:$K$65 (Channel Revenue)
- * 
- * --- SHEET 2: PIVOT TABLE ANALYSIS (PIVOT CHARTS) ---
- * 5. Chart 5: Pivot Chart 1 - Global Theater by Sales Channel Matrix (<c:barChart barDir="col">)
- *    - Categories: 'Pivot Table Analysis'!$B$7:$B$10 (Theaters)
- *    - Series 1: Direct Enterprise ('Pivot Table Analysis'!$C$7:$C$10)
- *    - Series 2: Partner Ecosystem ('Pivot Table Analysis'!$D$7:$D$10)
- *    - Series 3: Inside Sales ('Pivot Table Analysis'!$E$7:$E$10)
- *    - Series 4: Online Enterprise ('Pivot Table Analysis'!$F$7:$F$10)
- * 
- * 6. Chart 6: Pivot Chart 2 - Product Category Revenue Distribution (<c:pieChart>)
- *    - Categories: 'Pivot Table Analysis'!$B$15:$B$19 (Product Categories)
- *    - Values: 'Pivot Table Analysis'!$G$15:$G$19 (Total Revenue)
- * 
- * 7. Chart 7: Pivot Chart 3 - Fiscal Quarterly Run-Rate & Margin (<c:barChart barDir="col">)
- *    - Categories: 'Pivot Table Analysis'!$B$24:$B$27 (Q1-2024 to Q4-2024)
- *    - Series 1: Gross Revenue ('Pivot Table Analysis'!$C$24:$C$27)
- *    - Series 2: Operating Profit ('Pivot Table Analysis'!$E$24:$E$27)
  */
-
 export async function injectNativeExcelCharts(
   xlsxBuffer: ArrayBuffer,
-  dataset: ReturnType<typeof generateRealisticDataset>
+  dataset: AppDataset
 ): Promise<Blob> {
   const zip = await JSZip.loadAsync(xlsxBuffer);
 
-  const { monthlyTrends, categorySummaries, regionalPerformance, kpi } = dataset;
+  const { monthlyTrends, categorySummaries, regionalPerformance, kpi, config, schemaProfile } = dataset;
+  const theme = getIndustryTheme(config.industry);
+  const hexColors = theme.colors.excel.chartThemeHex;
+  const labels = getAdaptedKpiLabels(config.industry, schemaProfile);
 
   const months = monthlyTrends.slice(0, 12);
   const mCount = months.length;
@@ -74,13 +35,13 @@ export async function injectNativeExcelCharts(
   // Channels for Donut Chart
   const totalRev = kpi.totalRevenue;
   const channelList = [
-    { name: 'Direct Enterprise', rev: Math.round(totalRev * 0.42), color: '0284C7' },
-    { name: 'Partner Ecosystem', rev: Math.round(totalRev * 0.28), color: '10B981' },
-    { name: 'Inside Sales', rev: Math.round(totalRev * 0.18), color: '6366F1' },
-    { name: 'Online Enterprise', rev: Math.round(totalRev * 0.12), color: 'F59E0B' },
+    { name: 'Direct Enterprise', rev: Math.round(totalRev * 0.42), color: hexColors[0] || '0284C7' },
+    { name: 'Partner Ecosystem', rev: Math.round(totalRev * 0.28), color: hexColors[1] || '10B981' },
+    { name: 'Inside Sales', rev: Math.round(totalRev * 0.18), color: hexColors[2] || '6366F1' },
+    { name: 'Online Enterprise', rev: Math.round(totalRev * 0.12), color: hexColors[3] || 'F59E0B' },
   ];
 
-  const pieColors = ['10B981', '0284C7', '6366F1', '8B5CF6', 'F59E0B'];
+  const pieColors = hexColors && hexColors.length >= 5 ? hexColors : ['10B981', '0284C7', '6366F1', '8B5CF6', 'F59E0B'];
   const quartersList = ['Q1-2024', 'Q2-2024', 'Q3-2024', 'Q4-2024'];
 
   // =============================================================
@@ -103,7 +64,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1200"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1200"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>Monthly Revenue &amp; Operating Profit Run-Rate</a:t>
+              <a:t>Monthly ${escapeXml(labels.metric1)} &amp; ${escapeXml(labels.metric2)} Trajectory</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -123,12 +84,12 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$C$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Revenue ($)</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric1)} ($)</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="0284C7"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="0369A1"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[0]}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>
@@ -156,12 +117,12 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$E$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Gross Profit ($)</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric2)} ($)</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="10B981"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="059669"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[1]}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[1]}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>
