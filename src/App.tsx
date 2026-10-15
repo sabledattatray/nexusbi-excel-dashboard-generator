@@ -45,7 +45,7 @@ const WorkspaceLoader = () => (
 export default function App() {
   // Dataset Configuration State
   const [config, setConfig] = useState<DatasetConfig>({
-    companyName: 'Nexus Cloud Technologies Inc.',
+    companyName: 'Enterprise Cloud Technologies Inc.',
     reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
     industry: 'enterprise_tech',
     recordCount: 1000,
@@ -162,7 +162,7 @@ export default function App() {
   const handleResetToSample = () => {
     setCustomImportResult(null);
     setConfig({
-      companyName: 'Nexus Cloud Technologies Inc.',
+      companyName: 'Enterprise Cloud Technologies Inc.',
       reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
       industry: 'enterprise_tech',
       recordCount: 1000,

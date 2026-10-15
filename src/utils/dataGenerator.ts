@@ -24,16 +24,16 @@ export const INDUSTRY_PRESETS: Record<
   enterprise_tech: {
     name: 'Enterprise Tech & Cloud SaaS',
     description: 'High-growth B2B enterprise software, cloud infrastructure, AI models, and cybersecurity solutions.',
-    companyDefault: 'Nexus Cloud Technologies Inc.',
+    companyDefault: 'Enterprise Cloud Technologies Inc.',
     products: [
-      { sku: 'NX-CLD-900', name: 'Cloud Enterprise Kubernetes Engine', category: 'Cloud Infrastructure', cost: 1450, price: 4200 },
-      { sku: 'NX-SEC-450', name: 'Zero-Trust Identity & Gateway Shield', category: 'Cybersecurity', cost: 680, price: 2150 },
-      { sku: 'NX-AI-820', name: 'Predictive LLM Vector Cluster', category: 'AI & Data Intelligence', cost: 2100, price: 5900 },
-      { sku: 'NX-DAT-310', name: 'Lakehouse Realtime Analytics Engine', category: 'Data Platform', cost: 920, price: 2850 },
-      { sku: 'NX-DEV-150', name: 'Continuous DevSecOps Pipeline Suite', category: 'Developer Tools', cost: 340, price: 1100 },
-      { sku: 'NX-API-200', name: 'Microservices Mesh Orchestrator', category: 'Cloud Infrastructure', cost: 510, price: 1650 },
-      { sku: 'NX-AUD-500', name: 'Compliance & Governance Radar', category: 'Cybersecurity', cost: 740, price: 2400 },
-      { sku: 'NX-BI-400', name: 'Executive BI Automated Reporting Node', category: 'Data Platform', cost: 480, price: 1550 },
+      { sku: 'ET-CLD-900', name: 'Cloud Enterprise Kubernetes Engine', category: 'Cloud Infrastructure', cost: 1450, price: 4200 },
+      { sku: 'ET-SEC-450', name: 'Zero-Trust Identity & Gateway Shield', category: 'Cybersecurity', cost: 680, price: 2150 },
+      { sku: 'ET-AI-820', name: 'Predictive LLM Vector Cluster', category: 'AI & Data Intelligence', cost: 2100, price: 5900 },
+      { sku: 'ET-DAT-310', name: 'Lakehouse Realtime Analytics Engine', category: 'Data Platform', cost: 920, price: 2850 },
+      { sku: 'ET-DEV-150', name: 'Continuous DevSecOps Pipeline Suite', category: 'Developer Tools', cost: 340, price: 1100 },
+      { sku: 'ET-API-200', name: 'Microservices Mesh Orchestrator', category: 'Cloud Infrastructure', cost: 510, price: 1650 },
+      { sku: 'ET-AUD-500', name: 'Compliance & Governance Radar', category: 'Cybersecurity', cost: 740, price: 2400 },
+      { sku: 'ET-BI-400', name: 'Executive BI Automated Reporting Node', category: 'Data Platform', cost: 480, price: 1550 },
     ],
     customers: [
       { name: 'Apex Global Financial Corp', industry: 'Banking & Fintech', tier: 'Enterprise Strategic' },
@@ -246,7 +246,7 @@ export const INDUSTRY_PRESETS: Record<
   general_business: {
     name: 'General Commercial & Operations',
     description: 'Comprehensive cross-industry enterprise model with automated schema mapping and flexible KPIs.',
-    companyDefault: 'Nexus Enterprise Operations Group',
+    companyDefault: 'Apex Enterprise Operations Group',
     products: [
       { sku: 'GEN-OPS-01', name: 'Enterprise Operational Service Suite', category: 'Operations & Management', cost: 1200, price: 3800 },
       { sku: 'GEN-LOG-02', name: 'Supply Logistics Delivery Module', category: 'Logistics', cost: 850, price: 2600 },
