@@ -112,10 +112,18 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   assert.equal(tx.getCell('V3').formula, 'T3-U3');
   assert.equal(tx.getCell('W3').formula, 'V3/T3');
 
-  // 6. Verify Chart XML palette contains healthcare theme colors
+  // 6. Verify Chart XML palette contains healthcare theme colors and data labels for bars
   const theme = getIndustryTheme('healthcare_pharma');
   const chart1Xml = await zip.file('xl/charts/chart1.xml')!.async('string');
   assert.ok(chart1Xml.includes(theme.colors.excel.chartThemeHex[0]));
+  assert.ok(chart1Xml.includes('<c:dLbls>'));
+  assert.ok(chart1Xml.includes('<c:showVal val="1"/>'));
+  assert.ok(chart1Xml.includes('<c:dLblPos val="outEnd"/>'));
+
+  const chart3Xml = await zip.file('xl/charts/chart3.xml')!.async('string');
+  assert.ok(chart3Xml.includes('<c:dLbls>'));
+  assert.ok(chart3Xml.includes('<c:showVal val="1"/>'));
+  assert.ok(chart3Xml.includes('<c:dLblPos val="outEnd"/>'));
 });
 
 test('file upload enforces 25 MB limit and protects in-browser memory', async () => {

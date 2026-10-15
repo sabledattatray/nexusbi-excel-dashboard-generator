@@ -144,6 +144,15 @@ export async function injectNativeExcelCharts(
             </c:numRef>
           </c:val>
         </c:ser>
+        <c:dLbls>
+          <c:dLblPos val="outEnd"/>
+          <c:showLegendKey val="0"/>
+          <c:showVal val="1"/>
+          <c:showCatName val="0"/>
+          <c:showSerName val="0"/>
+          <c:showPercent val="0"/>
+          <c:showBubbleSize val="0"/>
+        </c:dLbls>
         <c:gapWidth val="120"/>
         <c:overlap val="0"/>
         <c:axId val="100001"/>
@@ -373,6 +382,15 @@ export async function injectNativeExcelCharts(
             </c:numRef>
           </c:val>
         </c:ser>
+        <c:dLbls>
+          <c:dLblPos val="outEnd"/>
+          <c:showLegendKey val="0"/>
+          <c:showVal val="1"/>
+          <c:showCatName val="0"/>
+          <c:showSerName val="0"/>
+          <c:showPercent val="0"/>
+          <c:showBubbleSize val="0"/>
+        </c:dLbls>
         <c:gapWidth val="100"/>
         <c:overlap val="0"/>
         <c:axId val="200001"/>
