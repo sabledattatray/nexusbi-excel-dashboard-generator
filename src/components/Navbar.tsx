@@ -363,10 +363,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="primary-button"
             onClick={onDownloadExcel}
             disabled={isDownloading}
-            title="Compile & Download multi-sheet .xlsx workbook"
+            title="Download full 6-sheet Excel dashboard workbook with native charts"
           >
             <Download size={14} />
-            <span>{isDownloading ? 'Compiling…' : 'Export .XLSX'}</span>
+            <span className="hidden sm:inline">
+              {isDownloading ? 'Compiling Dashboard…' : 'Download Excel Dashboard'}
+            </span>
+            <span className="sm:hidden">
+              {isDownloading ? 'Compiling…' : 'Download Excel'}
+            </span>
           </button>
         </div>
       </div>
