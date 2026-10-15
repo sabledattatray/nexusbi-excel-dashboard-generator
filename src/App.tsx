@@ -25,7 +25,7 @@ import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
-import { isProUnlocked, consumeDownloadCredit } from './utils/proLicenseManager';
+import { isProUnlocked, consumeDownloadCredit, PRO_LICENSE_EVENT } from './utils/proLicenseManager';
 
 // Lazy-loaded heavy components for lightning-fast initial load & maximum smoothness
 const ExcelLiveViewer = lazy(() => import('./components/ExcelLiveViewer').then((m) => ({ default: m.ExcelLiveViewer })));
@@ -75,7 +75,16 @@ export default function App() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
-    setIsProUser(isProUnlocked());
+    const syncLicenseStatus = () => {
+      setIsProUser(isProUnlocked());
+    };
+    syncLicenseStatus();
+    window.addEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
+    window.addEventListener('storage', syncLicenseStatus);
+    return () => {
+      window.removeEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
+      window.removeEventListener('storage', syncLicenseStatus);
+    };
   }, []);
 
   // Custom Uploaded Dataset state
@@ -345,10 +354,13 @@ export default function App() {
         {isSuccessOpen && (
           <DownloadSuccessModal
             isOpen={isSuccessOpen}
-            onClose={() => setIsSuccessOpen(false)}
+            onClose={() => {
+              setIsSuccessOpen(false);
+              setIsProUser(isProUnlocked());
+            }}
             filename={lastDownloadedFilename}
             rowCount={config.recordCount}
-            onReDownload={() => handleDownloadExcel(isProUser)}
+            onReDownload={() => handleDownloadExcel(isProUnlocked())}
             sourceBased={!!customImportResult}
             isProUnlocked={isProUser}
             onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
@@ -358,7 +370,10 @@ export default function App() {
         {isUnlockModalOpen && (
           <ProUnlockModal
             isOpen={isUnlockModalOpen}
-            onClose={() => setIsUnlockModalOpen(false)}
+            onClose={() => {
+              setIsUnlockModalOpen(false);
+              setIsProUser(isProUnlocked());
+            }}
             onUnlockSuccess={() => {
               setIsProUser(true);
               setIsUnlockModalOpen(false);

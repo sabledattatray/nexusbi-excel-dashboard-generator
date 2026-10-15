@@ -402,13 +402,19 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                     type="text"
                     value={utrInput}
                     onChange={(e) => setUtrInput(e.target.value)}
-                    placeholder="e.g. 428938192841 or VIP Code"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleVerify();
+                      }
+                    }}
+                    placeholder="e.g. 12-digit UTR or VIP Code (e.g. Dattatray@1511)"
                     className="flex-1 px-3 py-2 rounded-xl bg-[#051713] border border-emerald-500/40 text-white placeholder-emerald-700 font-mono text-xs focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
                   />
                   <button
                     onClick={handleVerify}
                     disabled={verifying}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all shrink-0"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all shrink-0 cursor-pointer"
                   >
                     {verifying ? (
                       <span>Verifying…</span>
@@ -420,10 +426,37 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                     )}
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Info className="w-3 h-3 text-emerald-400 shrink-0" />
-                  <span>Found in your payment app under "UPI Ref No" or "UTR" immediately after payment.</span>
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-1.5 text-[10px] text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <Info className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>UPI Ref No / UTR or VIP Passcode</span>
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-emerald-400 font-medium">VIP Quick:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUtrInput('Dattatray@1511');
+                        setTimeout(handleVerify, 50);
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 font-mono text-[9.5px] border border-emerald-500/30 transition-colors"
+                      title="Quick Unlock with Dattatray@1511"
+                    >
+                      Dattatray@1511
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUtrInput('DATTA49');
+                        setTimeout(handleVerify, 50);
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 font-mono text-[9.5px] border border-amber-500/30 transition-colors"
+                      title="Quick Unlock with DATTA49"
+                    >
+                      DATTA49
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Status Message */}

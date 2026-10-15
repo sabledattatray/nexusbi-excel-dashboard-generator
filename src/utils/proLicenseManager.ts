@@ -59,6 +59,17 @@ export interface ProLicense {
 }
 
 const STORAGE_KEY = 'nexusbi_excel_pro_unlocked';
+export const PRO_LICENSE_EVENT = 'nexusbi_license_changed';
+
+export function dispatchLicenseChangedEvent(): void {
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent(PRO_LICENSE_EVENT, { detail: getProLicense() }));
+    } catch {
+      // fallback
+    }
+  }
+}
 
 export const UPI_PAYMENT_CONFIG = {
   vpa: '8010803756@upi',
@@ -69,25 +80,63 @@ export const UPI_PAYMENT_CONFIG = {
   qrImagePath: '/payment-qr.jpg',
 };
 
-// Known VIP passcodes
-const LIFETIME_VIP_PASSCODES = [
-  'NEXUS49',
+// Known VIP passcodes and keywords (all grant PERMANENT UNLIMITED LIFETIME PRO)
+export const KNOWN_VIP_PASSCODES = [
+  'DATTATRAY@1511',
+  'DATTATRAY1511',
+  'DATTA1511',
+  '1511',
+  'DATTA',
   'DATTA49',
-  'NEXUS99',
+  'DATTA9',
   'DATTA99',
   'DATTASABLE',
   'DATTASABLE49',
-  'PROUNLOCKED',
+  'DATTASABLE99',
+  'DATTATRAY',
+  'SABLE',
+  'NEXUS',
+  'NEXUS49',
+  'NEXUS9',
+  'NEXUS99',
+  'NEXUSBI',
+  'VIP',
   'VIP2026',
-  'DATTATRAY1511',
+  'VIPPASS',
+  'VIP49',
+  'VIP9',
+  'PRO',
+  'PROUNLOCKED',
+  'ADMIN',
+  'MASTER',
+  'OWNER',
+  '8010803756',
+  '8010803756@UPI',
 ];
 
-const SINGLE_VIP_PASSCODES = [
-  'NEXUS9',
-  'DATTA9',
-  'TEST9',
-  'SINGLEPASS',
-];
+/**
+ * Checks whether an input code is a VIP passcode.
+ * Performs direct check, normalized alphanumeric check, and keyword substring check.
+ */
+export function isVipPasscode(input?: string | null): boolean {
+  if (!input) return false;
+  const raw = input.trim().toUpperCase();
+  if (KNOWN_VIP_PASSCODES.includes(raw)) return true;
+
+  // Normalized: strip punctuation, whitespace, @, -, etc.
+  const norm = raw.replace(/[^A-Z0-9]/g, '');
+  if (!norm) return false;
+
+  const normalizedKnown = KNOWN_VIP_PASSCODES.map((k) => k.replace(/[^A-Z0-9]/g, ''));
+  if (normalizedKnown.includes(norm)) return true;
+
+  // Pattern checks for owner credentials and keywords
+  if (norm.includes('1511') || norm.includes('DATTATRAY') || norm.includes('DATTASABLE')) return true;
+  if (norm.startsWith('DATTA') || norm.startsWith('NEXUS') || norm.startsWith('VIP') || norm.startsWith('PRO')) return true;
+  if (norm === '8010803756') return true;
+
+  return false;
+}
 
 export function getProLicense(): ProLicense {
   if (typeof window === 'undefined' || !window.localStorage) {
@@ -98,16 +147,25 @@ export function getProLicense(): ProLicense {
     if (!raw) return { isLifetime: false, singleCredits: 0, unlockedAt: null, method: null, refId: null };
     const parsed = JSON.parse(raw);
     if (parsed) {
-      // Backwards compatibility with previous boolean `isUnlocked`
-      const isLifetime = Boolean(parsed.isLifetime || (parsed.isUnlocked && !parsed.singleCredits));
-      const singleCredits = typeof parsed.singleCredits === 'number' ? parsed.singleCredits : 0;
-      return {
+      // Auto-heal: If user unlocked via VIP pass or refId matches VIP or previous unlocked flag is set
+      const isVip = parsed.method === 'vip_pass' || isVipPasscode(parsed.refId);
+      const isLifetime = Boolean(isVip || parsed.isLifetime || (parsed.isUnlocked && !parsed.singleCredits));
+      const singleCredits = isLifetime ? 0 : typeof parsed.singleCredits === 'number' ? parsed.singleCredits : 0;
+
+      const normalizedLicense: ProLicense = {
         isLifetime,
         singleCredits,
-        unlockedAt: parsed.unlockedAt || null,
-        method: parsed.method || null,
-        refId: parsed.refId || null,
+        unlockedAt: parsed.unlockedAt || new Date().toISOString(),
+        method: isVip ? 'vip_pass' : parsed.method || (isLifetime ? 'utr_code' : null),
+        refId: parsed.refId || (isVip ? 'VIP_PASS' : null),
       };
+
+      // Persist auto-healed state if healed to lifetime
+      if (isLifetime && (!parsed.isLifetime || parsed.singleCredits > 0)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedLicense));
+      }
+
+      return normalizedLicense;
     }
   } catch (e) {
     console.warn('Error reading pro license:', e);
@@ -130,13 +188,13 @@ export function getSingleCreditsRemaining(): number {
 
 /**
  * Consumes 1 single download credit if not lifetime unlocked.
- * Returns true if allowed, false if not unlocked.
+ * Lifetime users and VIP pass holders have infinite downloads with zero deductions.
  */
 export function consumeDownloadCredit(): boolean {
   if (typeof window === 'undefined' || !window.localStorage) return false;
   const current = getProLicense();
-  if (current.isLifetime) {
-    return true; // Lifetime users have unlimited downloads
+  if (current.isLifetime || current.method === 'vip_pass' || isVipPasscode(current.refId)) {
+    return true; // Infinite downloads, zero deductions
   }
   if (current.singleCredits > 0) {
     const updated: ProLicense = {
@@ -144,6 +202,7 @@ export function consumeDownloadCredit(): boolean {
       singleCredits: current.singleCredits - 1,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    dispatchLicenseChangedEvent();
     return true;
   }
   return false;
@@ -158,7 +217,8 @@ export function unlockProLicense(
     return { success: false, message: 'Local storage unavailable.', isLifetime: false };
   }
 
-  const clean = refId.trim().toUpperCase();
+  const raw = refId.trim();
+  const clean = raw.toUpperCase();
 
   if (!clean) {
     return {
@@ -168,8 +228,8 @@ export function unlockProLicense(
     };
   }
 
-  // 1. Lifetime VIP Passcode
-  if (LIFETIME_VIP_PASSCODES.includes(clean)) {
+  // 1. VIP Passcode check -> ALWAYS grants Unlimited Lifetime Pro forever
+  if (isVipPasscode(clean)) {
     const license: ProLicense = {
       isLifetime: true,
       singleCredits: 0,
@@ -178,26 +238,18 @@ export function unlockProLicense(
       refId: clean,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(license));
-    return { success: true, message: 'VIP Lifetime Passcode verified! Unlimited Pro Unlocked forever.', isLifetime: true };
-  }
-
-  // 2. Single VIP Passcode
-  if (SINGLE_VIP_PASSCODES.includes(clean)) {
-    const current = getProLicense();
-    const license: ProLicense = {
-      isLifetime: current.isLifetime,
-      singleCredits: current.singleCredits + 1,
-      unlockedAt: new Date().toISOString(),
-      method: 'vip_pass',
-      refId: clean,
+    dispatchLicenseChangedEvent();
+    return {
+      success: true,
+      message: '👑 VIP Passcode Verified! Unlimited Lifetime Pro Unlocked forever.',
+      isLifetime: true,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(license));
-    return { success: true, message: 'Single Pass Code verified! 1 Unprotected download unlocked.', isLifetime: false };
   }
 
-  // 3. UPI 12-digit UTR verification (standard Indian UPI reference number or alphanumeric)
-  const is12DigitUtr = /^\d{12}$/.test(clean);
-  const isValidRef = clean.length >= 8 && /^[A-Z0-9]+$/.test(clean);
+  // 2. UPI 12-digit UTR verification (or standard 6+ alphanumeric reference)
+  const norm = clean.replace(/[^A-Z0-9]/g, '');
+  const is12DigitUtr = /^\d{12}$/.test(norm);
+  const isValidRef = norm.length >= 6;
 
   if (is12DigitUtr || isValidRef) {
     const isLifetime = planId === 'lifetime';
@@ -210,6 +262,7 @@ export function unlockProLicense(
       refId: clean,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(license));
+    dispatchLicenseChangedEvent();
     return {
       success: true,
       message: isLifetime
@@ -221,7 +274,7 @@ export function unlockProLicense(
 
   return {
     success: false,
-    message: 'Invalid reference. Please enter the 12-digit UPI Transaction ID (UTR) or a valid VIP code.',
+    message: 'Invalid reference. Please enter your 12-digit UPI Transaction ID (UTR) or a valid VIP code.',
     isLifetime: false,
   };
 }
@@ -229,6 +282,7 @@ export function unlockProLicense(
 export function resetProLicense(): void {
   if (typeof window !== 'undefined' && window.localStorage) {
     localStorage.removeItem(STORAGE_KEY);
+    dispatchLicenseChangedEvent();
   }
 }
 
