@@ -58,6 +58,67 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
+    <!-- Critical Anti-Flicker & Pre-Hydration Styles -->
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #f5f6f3;
+        color: #233535;
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        min-height: 100vh;
+        background-color: #f5f6f3;
+      }
+      .app-preloader {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        background-color: #f5f6f3;
+        overflow: hidden;
+      }
+      .preloader-sidebar {
+        width: 252px;
+        background-color: #172b2a;
+        flex-shrink: 0;
+        box-sizing: border-box;
+      }
+      .preloader-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .preloader-topbar {
+        height: 66px;
+        background-color: #fafbf8;
+        border-bottom: 1px solid #e2e7e2;
+        box-sizing: border-box;
+      }
+      .preloader-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .preloader-spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid rgba(16, 185, 129, 0.15);
+        border-top-color: #10b981;
+        border-radius: 50%;
+        animation: preloader-spin 0.8s linear infinite;
+      }
+      @keyframes preloader-spin {
+        to { transform: rotate(360deg); }
+      }
+      @media (max-width: 1024px) {
+        .preloader-sidebar { display: none; }
+      }
+    </style>
+
     <!-- Structured Data: Schema.org (JSON-LD) for Search Rich Results -->
     <script type="application/ld+json">
     {
@@ -211,9 +272,22 @@
     }
     </script>
   </head>
-  <body class="antialiased">
-    <!-- Semantic crawler fallback for search engine indexing before JS hydration -->
+  <body class="antialiased" style="background-color: #f5f6f3; margin: 0;">
+    <!-- Instant Shell: matches React workspace layout 1:1 with zero layout shift or color jump -->
     <div id="root">
+      <div class="app-preloader" aria-hidden="true">
+        <aside class="preloader-sidebar"></aside>
+        <div class="preloader-body">
+          <header class="preloader-topbar"></header>
+          <div class="preloader-main">
+            <div class="preloader-spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semantic fallback for search engines and users without JavaScript -->
+    <noscript>
       <main style="padding: 24px; font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; color: #1e293b;">
         <header style="margin-bottom: 24px;">
           <h1 style="font-size: 28px; font-weight: 800; color: #064e3b; margin-bottom: 8px;">
@@ -270,14 +344,12 @@
             Read complete guidance on formulas, spreadsheet privacy, supported browsers, and MIS automation at excel.dattasable.com.
           </p>
         </section>
+
+        <div style="padding: 16px; margin-top: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+          <p>Please enable JavaScript in your browser to launch the live interactive dashboard generator.</p>
+          <p>Created by <a href="https://dattasable.com/" style="color: #059669; font-weight: 600;">Datta Sable</a>.</p>
+        </div>
       </main>
-    </div>
-    <noscript>
-      <div style="padding: 20px; font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-        <h2 style="color: #064e3b;">Free Excel Dashboard Generator &amp; Automated MIS Reporting Tool</h2>
-        <p>Turn raw spreadsheets and CSV data into executive KPI dashboards with native formulas and visual charts. Please enable JavaScript in your browser to launch the live interactive dashboard generator.</p>
-        <p>Created by <a href="https://dattasable.com/" style="color: #059669; font-weight: 600;">Datta Sable</a>.</p>
-      </div>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>

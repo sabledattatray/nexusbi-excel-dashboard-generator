@@ -46,23 +46,68 @@ const WorkspaceLoader = () => (
   </div>
 );
 
+// Helper to synchronously resolve initial route state from URL to prevent post-mount re-render flicker
+const getInitialRouteState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      tab: 'home' as const,
+      industry: 'enterprise_tech' as keyof typeof INDUSTRY_PRESETS,
+      isLegalOpen: false,
+      legalTab: 'privacy' as LegalTab,
+    };
+  }
+  const path = window.location.pathname.toLowerCase();
+  let isLegal = false;
+  let lTab: LegalTab = 'privacy';
+  let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' = 'home';
+  let ind: keyof typeof INDUSTRY_PRESETS = 'enterprise_tech';
+
+  if (path.includes('about')) { isLegal = true; lTab = 'about'; }
+  else if (path.includes('privacy')) { isLegal = true; lTab = 'privacy'; }
+  else if (path.includes('terms')) { isLegal = true; lTab = 'terms'; }
+  else if (path.includes('refund')) { isLegal = true; lTab = 'refund'; }
+  else if (path.includes('contact')) { isLegal = true; lTab = 'contact'; }
+
+  if (path.includes('sales-dashboard')) {
+    tab = 'dashboard';
+    ind = 'enterprise_tech';
+  } else if (path.includes('hr-dashboard')) {
+    tab = 'dashboard';
+    ind = 'human_resources';
+  } else if (path.includes('financial-dashboard')) {
+    tab = 'dashboard';
+    ind = 'finance_wealth';
+  } else if (path.includes('kpi-dashboard') || path.includes('excel-dashboard-examples')) {
+    tab = 'dashboard';
+  } else if (path.includes('mis-report-generator') || path.includes('excel-dashboard-generator')) {
+    tab = 'excel-preview';
+  }
+
+  return { tab, industry: ind, isLegalOpen: isLegal, legalTab: lTab };
+};
+
 export default function App() {
+  const initialRoute = useMemo(getInitialRouteState, []);
+
   // Dataset Configuration State
-  const [config, setConfig] = useState<DatasetConfig>({
-    companyName: 'Nexdial.io Cloud Technologies Inc.',
-    reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
-    industry: 'enterprise_tech',
-    recordCount: 1000,
-    currency: 'USD',
-    currencySymbol: '$',
-    includeChartsInExcel: true,
-    useLiveExcelFormulas: true,
+  const [config, setConfig] = useState<DatasetConfig>(() => {
+    const preset = INDUSTRY_PRESETS[initialRoute.industry];
+    return {
+      companyName: preset?.companyDefault || 'Nexdial.io Cloud Technologies Inc.',
+      reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
+      industry: initialRoute.industry,
+      recordCount: 1000,
+      currency: 'USD',
+      currencySymbol: '$',
+      includeChartsInExcel: true,
+      useLiveExcelFormulas: true,
+    };
   });
 
-  // Active Worksheet View Tab - Default to 'home' landing page
+  // Active Worksheet View Tab
   const [activeTab, setActiveTab] = useState<
     'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
-  >('home');
+  >(initialRoute.tab);
 
   // Randomization Seed offset to allow "Refresh Data"
   const [seedOffset, setSeedOffset] = useState<number>(0);
@@ -72,8 +117,8 @@ export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
-  const [isLegalOpen, setIsLegalOpen] = useState(false);
-  const [legalTab, setLegalTab] = useState<LegalTab>('privacy');
+  const [isLegalOpen, setIsLegalOpen] = useState(initialRoute.isLegalOpen);
+  const [legalTab, setLegalTab] = useState<LegalTab>(initialRoute.legalTab);
   const [isProUser, setIsProUser] = useState<boolean>(false);
   const [lastDownloadedFilename, setLastDownloadedFilename] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -94,43 +139,11 @@ export default function App() {
     window.addEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
     window.addEventListener('storage', syncLicenseStatus);
 
-    // Deep-link route detection for dedicated SEO & legal paths
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase();
-      if (path.includes('about')) {
-        handleOpenLegal('about');
-      } else if (path.includes('privacy')) {
-        handleOpenLegal('privacy');
-      } else if (path.includes('terms')) {
-        handleOpenLegal('terms');
-      } else if (path.includes('refund')) {
-        handleOpenLegal('refund');
-      } else if (path.includes('contact')) {
-        handleOpenLegal('contact');
-      } else if (path.includes('sales-dashboard')) {
-        const preset = INDUSTRY_PRESETS['enterprise_tech'];
-        setConfig((prev) => ({ ...prev, industry: 'enterprise_tech', companyName: preset?.companyDefault || prev.companyName }));
-        setActiveTab('dashboard');
-      } else if (path.includes('hr-dashboard')) {
-        const preset = INDUSTRY_PRESETS['human_resources'];
-        setConfig((prev) => ({ ...prev, industry: 'human_resources', companyName: preset?.companyDefault || prev.companyName }));
-        setActiveTab('dashboard');
-      } else if (path.includes('financial-dashboard')) {
-        const preset = INDUSTRY_PRESETS['finance_wealth'];
-        setConfig((prev) => ({ ...prev, industry: 'finance_wealth', companyName: preset?.companyDefault || prev.companyName }));
-        setActiveTab('dashboard');
-      } else if (path.includes('kpi-dashboard') || path.includes('excel-dashboard-examples')) {
-        setActiveTab('dashboard');
-      } else if (path.includes('mis-report-generator') || path.includes('excel-dashboard-generator')) {
-        setActiveTab('excel-preview');
-      }
-    }
-
     return () => {
       window.removeEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
       window.removeEventListener('storage', syncLicenseStatus);
     };
-  }, [handleOpenLegal]);
+  }, []);
 
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
