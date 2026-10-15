@@ -14,6 +14,8 @@ import {
   Zap,
   PieChart as PieIcon,
   AlignLeft,
+  Upload,
+  RotateCcw,
 } from 'lucide-react';
 import { DatasetConfig } from './types/dataset';
 import { generateRealisticDataset, INDUSTRY_PRESETS } from './utils/dataGenerator';
@@ -33,6 +35,8 @@ import { DataGrid } from './components/DataGrid';
 import { WorkbookTabsPreview } from './components/WorkbookTabsPreview';
 import { CustomizerModal } from './components/CustomizerModal';
 import { DownloadSuccessModal } from './components/DownloadSuccessModal';
+import { DataUploadModal } from './components/DataUploadModal';
+import { ImportResult } from './utils/dataImporter';
 
 export default function App() {
   // Dataset Configuration State
@@ -63,17 +67,29 @@ export default function App() {
 
   // Modals state
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [lastDownloadedFilename, setLastDownloadedFilename] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Generate realistic dataset
-  const dataset = useMemo(() => {
+  // Custom Uploaded Dataset state
+  const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
+
+  // Synthetic Realistic Dataset (default)
+  const syntheticDataset = useMemo(() => {
     return generateRealisticDataset({
       ...config,
       recordCount: config.recordCount + seedOffset,
     });
   }, [config, seedOffset]);
+
+  // Active Dataset (either custom uploaded data or synthetic model)
+  const dataset = useMemo(() => {
+    if (customImportResult) {
+      return customImportResult.dataset;
+    }
+    return syntheticDataset;
+  }, [customImportResult, syntheticDataset]);
 
   // Overall quota attainment rate
   const globalTargetRevenue = useMemo(() => {
@@ -117,11 +133,41 @@ export default function App() {
   }, [dataset, config]);
 
   const handleRegenerateData = () => {
+    if (customImportResult) {
+      // Re-trigger import synthesis
+      return;
+    }
     setSeedOffset((prev) => (prev + 1) % 100);
   };
 
   const handleSaveConfig = (newConfig: DatasetConfig) => {
     setConfig(newConfig);
+  };
+
+  const handleImportComplete = (result: ImportResult) => {
+    setCustomImportResult(result);
+    setConfig(result.config);
+    setActiveTab('excel-preview');
+    confetti({
+      particleCount: 90,
+      spread: 75,
+      origin: { y: 0.55 },
+      colors: ['#6366F1', '#10B981', '#38BDF8', '#F59E0B'],
+    });
+  };
+
+  const handleResetToSample = () => {
+    setCustomImportResult(null);
+    setConfig({
+      companyName: 'Nexus Cloud Technologies Inc.',
+      reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
+      industry: 'enterprise_tech',
+      recordCount: 1000,
+      currency: 'USD',
+      currencySymbol: '$',
+      includeChartsInExcel: true,
+      useLiveExcelFormulas: true,
+    });
   };
 
   return (
@@ -130,11 +176,13 @@ export default function App() {
       <Navbar
         config={config}
         onOpenCustomizer={() => setIsCustomizerOpen(true)}
+        onOpenUploadModal={() => setIsUploadModalOpen(true)}
         onDownloadExcel={handleDownloadExcel}
         isDownloading={isDownloading}
         onRegenerateData={handleRegenerateData}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        isCustomDataActive={!!customImportResult}
       />
 
       {/* Main Content Area */}
@@ -162,6 +210,14 @@ export default function App() {
 
             {/* Quick Actions in Banner */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/30 border border-indigo-400/40 flex items-center gap-2 transition-all transform active:scale-95"
+              >
+                <Upload className="w-4 h-4 text-indigo-200" />
+                <span>Upload CSV / Excel</span>
+              </button>
+
               <button
                 onClick={() => setActiveTab('excel-preview')}
                 className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border flex items-center gap-2 transition-all shadow-md ${
@@ -213,6 +269,59 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* Active Custom Uploaded Dataset Banner */}
+        {customImportResult && (
+          <div className="rounded-2xl p-4 bg-gradient-to-r from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner">
+                <FileSpreadsheet className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-black uppercase tracking-wider text-indigo-300">
+                    Active Custom Dataset
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
+                    ✓ {customImportResult.summary.rowCount.toLocaleString()} Rows Imported
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">
+                    {customImportResult.summary.uniqueCategories} Product Categories
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium">
+                    {customImportResult.summary.uniqueRegions} Theaters
+                  </span>
+                </div>
+                <div className="text-sm font-bold text-white mt-1 flex items-center gap-2">
+                  <span>{customImportResult.summary.fileName}</span>
+                  <span className="text-xs text-slate-400 font-normal">
+                    ({customImportResult.summary.dateSpan})
+                  </span>
+                </div>
+                <div className="text-xs text-slate-400 mt-0.5">
+                  Total Volume: ${(customImportResult.summary.totalRevenue).toLocaleString()} • All charts, pivot matrices, and live formulas adapted to your data!
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Another File</span>
+              </button>
+              <button
+                onClick={handleResetToSample}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span>Reset to Sample Data</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab: See How Charts Look in Excel (.xlsx Live Simulator with Pivot Charts) */}
         {(activeTab === 'excel-preview' || activeTab === 'pivot') && (
@@ -375,6 +484,13 @@ export default function App() {
         onClose={() => setIsCustomizerOpen(false)}
         config={config}
         onSaveConfig={handleSaveConfig}
+      />
+
+      <DataUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        baseConfig={config}
+        onImportComplete={handleImportComplete}
       />
 
       <DownloadSuccessModal

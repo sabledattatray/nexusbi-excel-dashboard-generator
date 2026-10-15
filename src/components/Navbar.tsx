@@ -7,6 +7,7 @@ import {
   Sparkles,
   Layers,
   CheckCircle2,
+  Upload,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { INDUSTRY_PRESETS } from '../utils/dataGenerator';
@@ -14,21 +15,25 @@ import { INDUSTRY_PRESETS } from '../utils/dataGenerator';
 interface NavbarProps {
   config: DatasetConfig;
   onOpenCustomizer: () => void;
+  onOpenUploadModal: () => void;
   onDownloadExcel: () => void;
   isDownloading: boolean;
   onRegenerateData: () => void;
   activeTab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers';
   setActiveTab: (tab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers') => void;
+  isCustomDataActive?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   config,
   onOpenCustomizer,
+  onOpenUploadModal,
   onDownloadExcel,
   isDownloading,
   onRegenerateData,
   activeTab,
   setActiveTab,
+  isCustomDataActive = false,
 }) => {
   const currentIndustry = INDUSTRY_PRESETS[config.industry];
 
@@ -105,6 +110,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden sm:inline">Refresh Data</span>
+          </button>
+
+          <button
+            onClick={onOpenUploadModal}
+            className={`px-3 py-2 rounded-lg text-xs font-bold border flex items-center gap-1.5 transition-all shadow-sm ${
+              isCustomDataActive
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-400 ring-2 ring-indigo-400/50'
+                : 'bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border-indigo-500/50 hover:border-indigo-400'
+            }`}
+            title="Upload CSV or Excel file from your computer to generate dashboard"
+          >
+            <Upload className="w-3.5 h-3.5 text-indigo-300" />
+            <span>Upload Data (CSV / Excel)</span>
+            {isCustomDataActive && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            )}
           </button>
 
           <button
