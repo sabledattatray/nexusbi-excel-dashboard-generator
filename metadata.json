@@ -1,0 +1,6 @@
+{
+  "name": "NexusBI - Professional Excel & Executive Dashboard Generator",
+  "description": "Generate realistic enterprise-grade datasets and download multi-sheet Excel (.xlsx) workbooks complete with executive dashboards, KPI cards, dynamic formulas, and embedded visual charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
