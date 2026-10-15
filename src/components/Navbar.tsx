@@ -20,6 +20,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   LayoutTemplate,
+  Cpu,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -214,6 +215,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="truncate">Ready Templates</span>
             <span className="nav-badge">12 Ready</span>
           </button>
+          <a
+            href="https://fabric.dattasable.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-item group"
+            title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
+          >
+            <Cpu size={14.5} className="text-sky-400 group-hover:text-sky-300" />
+            <span className="truncate">Fabric Master</span>
+            <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/40">Fabric</span>
+            <ArrowUpRight size={11} className="ml-1 opacity-60 group-hover:opacity-100 transition-opacity" />
+          </a>
         </nav>
 
         {/* Compact Bottom Author Lockup */}
@@ -268,6 +281,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         <div className="topbar-actions shrink-0">
+          {/* Fabric Master Subdomain Link */}
+          <a
+            href="https://fabric.dattasable.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center gap-1.5 text-xs text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-1 rounded-full font-medium transition-colors"
+            title="Explore Fabric Master — Microsoft Fabric Architecture & FinOps Platform"
+          >
+            <Cpu size={13} className="text-sky-600" />
+            <span>fabric.dattasable.com</span>
+            <ArrowUpRight size={11} className="text-sky-500" />
+          </a>
+
           {/* Main Portfolio Link */}
           <a
             href="https://dattasable.com/dashboards"

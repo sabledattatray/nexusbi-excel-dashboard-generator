@@ -9,6 +9,7 @@ import {
   Globe,
   Youtube,
   Linkedin,
+  Cpu,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 
@@ -43,6 +44,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal }
               >
                 <Globe size={13} />
                 <span>dattasable.com</span>
+                <ExternalLink size={11} />
+              </a>
+              <a
+                href="https://fabric.dattasable.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#19323d] hover:bg-[#224452] text-sky-300 text-xs font-medium border border-[#2a5566] transition-colors"
+                title="Fabric Master — Microsoft Fabric Architecture & FinOps Platform"
+              >
+                <Cpu size={13} className="text-sky-400" />
+                <span>fabric.dattasable.com</span>
                 <ExternalLink size={11} />
               </a>
               <a
@@ -150,6 +162,19 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal }
                   className="hover:text-white flex items-center gap-1.5 transition-colors"
                 >
                   <span>Datta Sable Portfolio</span>
+                  <ExternalLink size={11} className="opacity-70" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://fabric.dattasable.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-1.5 transition-colors text-sky-300 hover:text-sky-200"
+                  title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
+                >
+                  <Cpu size={12} className="text-sky-400" />
+                  <span>Fabric Master (MS Fabric)</span>
                   <ExternalLink size={11} className="opacity-70" />
                 </a>
               </li>

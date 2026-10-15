@@ -22,6 +22,7 @@ import {
   Factory,
   Table,
   Check,
+  Cpu,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 import { IndustryType } from '../types/dataset';
@@ -157,7 +158,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     },
     {
       q: 'Who created excel.dattasable.com?',
-      a: 'This application was created by Datta Sable, a Business Intelligence Expert, Data Engineer, and analytics content creator. Explore more BI templates, portfolio projects, and tutorials at dattasable.com.',
+      a: 'This application was created by Datta Sable, a Business Intelligence Expert, Data Engineer, and analytics content creator. Explore more BI templates at dattasable.com, or check out Fabric Master (fabric.dattasable.com) for enterprise Microsoft Fabric architecture planning and FinOps capacity estimation.',
     },
   ];
 
@@ -626,24 +627,35 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 w-full md:w-auto">
+          <a
+            href="https://fabric.dattasable.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#183742] hover:bg-[#204957] active:scale-[0.98] text-sky-200 text-xs font-bold border border-sky-400/40 transition-all shadow-md w-full sm:w-auto"
+            title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
+          >
+            <Cpu size={14} className="text-sky-400" />
+            <span>Fabric Master</span>
+            <ExternalLink size={12} className="opacity-70" />
+          </a>
           <a
             href="https://dattasable.com/dashboards"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] active:scale-[0.98] text-slate-950 text-xs font-bold transition-all shadow-md w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] active:scale-[0.98] text-slate-950 text-xs font-bold transition-all shadow-md w-full sm:w-auto"
           >
-            <span>Explore BI Portfolio</span>
-            <ExternalLink size={13} />
+            <span>BI Portfolio</span>
+            <ExternalLink size={12} />
           </a>
           <a
             href="https://dattasable.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 active:scale-[0.98] text-emerald-200 text-xs font-semibold transition-colors w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 active:scale-[0.98] text-emerald-200 text-xs font-semibold transition-colors w-full sm:w-auto"
           >
             <span>dattasable.com</span>
-            <ArrowRight size={13} />
+            <ArrowRight size={12} />
           </a>
         </div>
       </section>
