@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { generateRealisticDataset } from './dataGenerator';
+import { getDattaSableImageBuffer } from './imageLoader';
 
 /**
  * Injects 100% REAL NATIVE OPENXML DRAWINGML EXCEL CHARTS into the .xlsx workbook using JSZip.
@@ -986,6 +987,30 @@ export async function injectNativeExcelCharts(
     <xdr:clientData/>
   </xdr:twoCellAnchor>
 
+  <!-- Anchor for Datta Sable Dashboards Showcase Image (B80 to O112) -->
+  <xdr:twoCellAnchor editAs="oneCell">
+    <xdr:from><xdr:col>1</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>79</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>
+    <xdr:to><xdr:col>15</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>112</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>
+    <xdr:pic>
+      <xdr:nvPicPr>
+        <xdr:cNvPr id="200" name="Datta Sable Dashboards Banner" descr="Explore more executive dashboards &amp; templates at https://dattasable.com/dashboards">
+          <a:hlinkClick r:id="rIdHlink1" tooltip="Visit https://dattasable.com/dashboards"/>
+        </xdr:cNvPr>
+        <xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr>
+      </xdr:nvPicPr>
+      <xdr:blipFill>
+        <a:blip r:embed="rIdImg1" cstate="print"/>
+        <a:stretch><a:fillRect/></a:stretch>
+      </xdr:blipFill>
+      <xdr:spPr>
+        <a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:ln w="12700"><a:solidFill><a:srgbClr val="CBD5E1"/></a:solidFill></a:ln>
+      </xdr:spPr>
+    </xdr:pic>
+    <xdr:clientData/>
+  </xdr:twoCellAnchor>
+
 </xdr:wsDr>`;
 
   const drawing1RelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -994,6 +1019,8 @@ export async function injectNativeExcelCharts(
   <Relationship Id="rIdChart2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart2.xml"/>
   <Relationship Id="rIdChart3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart3.xml"/>
   <Relationship Id="rIdChart4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart4.xml"/>
+  <Relationship Id="rIdImg1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
+  <Relationship Id="rIdHlink1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://dattasable.com/dashboards" TargetMode="External"/>
 </Relationships>`;
 
   // =============================================================
@@ -1068,6 +1095,30 @@ export async function injectNativeExcelCharts(
     <xdr:clientData/>
   </xdr:twoCellAnchor>
 
+  <!-- Anchor for Datta Sable Dashboards Showcase Image (B35 to R68) -->
+  <xdr:twoCellAnchor editAs="oneCell">
+    <xdr:from><xdr:col>1</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>34</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>
+    <xdr:to><xdr:col>18</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>68</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>
+    <xdr:pic>
+      <xdr:nvPicPr>
+        <xdr:cNvPr id="201" name="Datta Sable Dashboards Banner" descr="Explore more executive dashboards &amp; templates at https://dattasable.com/dashboards">
+          <a:hlinkClick r:id="rIdHlink1" tooltip="Visit https://dattasable.com/dashboards"/>
+        </xdr:cNvPr>
+        <xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr>
+      </xdr:nvPicPr>
+      <xdr:blipFill>
+        <a:blip r:embed="rIdImg1" cstate="print"/>
+        <a:stretch><a:fillRect/></a:stretch>
+      </xdr:blipFill>
+      <xdr:spPr>
+        <a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:ln w="12700"><a:solidFill><a:srgbClr val="CBD5E1"/></a:solidFill></a:ln>
+      </xdr:spPr>
+    </xdr:pic>
+    <xdr:clientData/>
+  </xdr:twoCellAnchor>
+
 </xdr:wsDr>`;
 
   const drawing2RelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1075,6 +1126,8 @@ export async function injectNativeExcelCharts(
   <Relationship Id="rIdChart5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart5.xml"/>
   <Relationship Id="rIdChart6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart6.xml"/>
   <Relationship Id="rIdChart7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart7.xml"/>
+  <Relationship Id="rIdImg1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
+  <Relationship Id="rIdHlink1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://dattasable.com/dashboards" TargetMode="External"/>
 </Relationships>`;
 
   // Write all chart and drawing files to ZIP
@@ -1144,12 +1197,22 @@ export async function injectNativeExcelCharts(
     zip.file('xl/worksheets/sheet2.xml', sheet2Xml);
   }
 
+  // Load Datta Sable Dashboards showcase image
+  const imageBuffer = await getDattaSableImageBuffer();
+  if (imageBuffer) {
+    zip.file('xl/media/image1.png', imageBuffer);
+  }
+
   // =============================================================
   // UPDATE [Content_Types].xml
   // =============================================================
   let contentTypes = await zip.file('[Content_Types].xml')?.async('string');
   if (contentTypes) {
     let updatedContentTypes = contentTypes;
+    if (!updatedContentTypes.includes('Extension="png"')) {
+      updatedContentTypes = updatedContentTypes.replace('</Types>', '<Default Extension="png" ContentType="image/png"/></Types>');
+    }
+
     const overrides = [
       '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>',
       '<Override PartName="/xl/drawings/drawing2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>',
@@ -1160,6 +1223,7 @@ export async function injectNativeExcelCharts(
       '<Override PartName="/xl/charts/chart5.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>',
       '<Override PartName="/xl/charts/chart6.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>',
       '<Override PartName="/xl/charts/chart7.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>',
+      '<Override PartName="/xl/media/image1.png" ContentType="image/png"/>',
     ];
 
     overrides.forEach((ov) => {

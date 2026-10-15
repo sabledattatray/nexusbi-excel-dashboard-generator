@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Sliders,
   Table as TableIcon,
+  ExternalLink,
 } from 'lucide-react';
 import { generateRealisticDataset } from '../utils/dataGenerator';
 import { DatasetConfig } from '../types/dataset';
@@ -942,6 +943,64 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 </div>
               </div>
 
+              {/* ========================================================= */}
+              {/* DATTA SABLE DASHBOARDS SHOWCASE & HYPERLINK BANNER */}
+              {/* ========================================================= */}
+              <div className="mt-8 rounded-xl bg-slate-900 border border-slate-700/80 p-5 shadow-xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400 font-bold shadow-inner shrink-0">
+                      <ExternalLink className="w-5 h-5 text-indigo-300" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm text-white tracking-wide flex items-center gap-2">
+                        <span>Datta Sable — Executive Dashboards &amp; Analytics Portfolio</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          Included in Download (.xlsx)
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        Interactive enterprise BI models, financial run-rate models, and advanced pivot matrix templates
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href="https://dattasable.com/dashboards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20 shrink-0"
+                  >
+                    <span>Visit dattasable.com/dashboards</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+
+                {/* Clickable Image Preview */}
+                <div className="mt-4">
+                  <a
+                    href="https://dattasable.com/dashboards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block relative overflow-hidden rounded-lg border border-slate-700/80 shadow-2xl transition-all hover:border-indigo-500 hover:shadow-indigo-500/20"
+                  >
+                    <img
+                      src="/dattasable.com.png"
+                      alt="Datta Sable Executive Dashboards"
+                      className="w-full h-auto aspect-video object-contain bg-slate-950 transition-transform duration-300 group-hover:scale-[1.01]"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-indigo-950/20 transition-colors pointer-events-none flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600/95 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 backdrop-blur-sm">
+                        <span>Open https://dattasable.com/dashboards</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </a>
+                  <div className="mt-2 text-center text-[11px] text-slate-500 italic">
+                    🔗 Click the banner above or the image to explore more dashboards • Automatically embedded &amp; hyperlinked in the downloaded Excel file
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -1379,6 +1438,65 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                   </table>
                 </div>
               </div>
+
+              {/* ========================================================= */}
+              {/* DATTA SABLE DASHBOARDS SHOWCASE & HYPERLINK BANNER */}
+              {/* ========================================================= */}
+              <div className="mt-8 rounded-xl bg-slate-900 border border-slate-700/80 p-5 shadow-xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400 font-bold shadow-inner shrink-0">
+                      <ExternalLink className="w-5 h-5 text-indigo-300" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm text-white tracking-wide flex items-center gap-2">
+                        <span>Datta Sable — Executive Dashboards &amp; Analytics Portfolio</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          Included in Download (.xlsx)
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        Interactive enterprise BI models, financial run-rate models, and advanced pivot matrix templates
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href="https://dattasable.com/dashboards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20 shrink-0"
+                  >
+                    <span>Visit dattasable.com/dashboards</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+
+                {/* Clickable Image Preview */}
+                <div className="mt-4">
+                  <a
+                    href="https://dattasable.com/dashboards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block relative overflow-hidden rounded-lg border border-slate-700/80 shadow-2xl transition-all hover:border-indigo-500 hover:shadow-indigo-500/20"
+                  >
+                    <img
+                      src="/dattasable.com.png"
+                      alt="Datta Sable Executive Dashboards"
+                      className="w-full h-auto aspect-video object-contain bg-slate-950 transition-transform duration-300 group-hover:scale-[1.01]"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-indigo-950/20 transition-colors pointer-events-none flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600/95 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 backdrop-blur-sm">
+                        <span>Open https://dattasable.com/dashboards</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </a>
+                  <div className="mt-2 text-center text-[11px] text-slate-500 italic">
+                    🔗 Click the banner above or the image to explore more dashboards • Automatically embedded &amp; hyperlinked in the downloaded Excel file
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 

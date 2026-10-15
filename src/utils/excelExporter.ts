@@ -1002,6 +1002,43 @@ export async function exportToProfessionalExcel(
   foot.alignment = { horizontal: 'center', vertical: 'middle' };
   dashSheet.getRow(75).height = 18;
 
+  // -------------------------------------------------------------
+  // EXECUTIVE SHOWCASE BANNER & PORTFOLIO: DATTA SABLE DASHBOARDS
+  // -------------------------------------------------------------
+  dashSheet.getRow(77).height = 14;
+
+  dashSheet.mergeCells('B78:O78');
+  const dashShowcaseTitle = dashSheet.getCell('B78');
+  dashShowcaseTitle.value = '📊 DATTA SABLE — EXECUTIVE BI DASHBOARDS & FINANCIAL MODELING PORTFOLIO';
+  dashShowcaseTitle.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: COLORS.pureWhite } };
+  dashShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  dashShowcaseTitle.alignment = { vertical: 'middle', horizontal: 'center' };
+  dashSheet.getRow(78).height = 28;
+
+  dashSheet.mergeCells('B79:O79');
+  const dashShowcaseSub = dashSheet.getCell('B79');
+  dashShowcaseSub.value = {
+    text: '🔗 Click here or click the portfolio preview image below to visit https://dattasable.com/dashboards',
+    hyperlink: 'https://dattasable.com/dashboards',
+    tooltip: 'Open https://dattasable.com/dashboards in browser',
+  };
+  dashShowcaseSub.font = { name: 'Segoe UI', size: 9, bold: true, underline: true, color: { argb: 'FF38BDF8' } };
+  dashShowcaseSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyMedium } };
+  dashShowcaseSub.alignment = { vertical: 'middle', horizontal: 'center' };
+  dashSheet.getRow(79).height = 24;
+
+  // Set row heights for rows 80 to 112 to provide perfectly proportioned grid canvas for 16:9 image
+  for (let r = 80; r <= 112; r++) {
+    dashSheet.getRow(r).height = 20;
+  }
+
+  dashSheet.mergeCells('B113:O113');
+  const dashShowcaseCaption = dashSheet.getCell('B113');
+  dashShowcaseCaption.value = 'Executive Analytics Portfolio • Datta Sable • Direct Link: https://dattasable.com/dashboards';
+  dashShowcaseCaption.font = { name: 'Segoe UI', size: 8, italic: true, color: { argb: COLORS.slateMuted } };
+  dashShowcaseCaption.alignment = { vertical: 'middle', horizontal: 'center' };
+  dashSheet.getRow(113).height = 18;
+
 
 
   // -------------------------------------------------------------
@@ -1443,6 +1480,43 @@ export async function exportToProfessionalExcel(
       bottom: { style: 'double', color: { argb: COLORS.navyDark } },
     };
   });
+
+  // -------------------------------------------------------------
+  // EXECUTIVE SHOWCASE BANNER & PORTFOLIO: DATTA SABLE DASHBOARDS
+  // -------------------------------------------------------------
+  pivotSheet.getRow(31).height = 14;
+
+  pivotSheet.mergeCells('B32:R32');
+  const pivShowcaseTitle = pivotSheet.getCell('B32');
+  pivShowcaseTitle.value = '📊 DATTA SABLE — ADVANCED PIVOT & EXECUTIVE DASHBOARDS PORTFOLIO';
+  pivShowcaseTitle.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: COLORS.pureWhite } };
+  pivShowcaseTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  pivShowcaseTitle.alignment = { vertical: 'middle', horizontal: 'center' };
+  pivotSheet.getRow(32).height = 28;
+
+  pivotSheet.mergeCells('B33:R33');
+  const pivShowcaseSub = pivotSheet.getCell('B33');
+  pivShowcaseSub.value = {
+    text: '🔗 Click here or click the portfolio preview image below to visit https://dattasable.com/dashboards',
+    hyperlink: 'https://dattasable.com/dashboards',
+    tooltip: 'Open https://dattasable.com/dashboards in browser',
+  };
+  pivShowcaseSub.font = { name: 'Segoe UI', size: 9, bold: true, underline: true, color: { argb: 'FF38BDF8' } };
+  pivShowcaseSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyMedium } };
+  pivShowcaseSub.alignment = { vertical: 'middle', horizontal: 'center' };
+  pivotSheet.getRow(33).height = 24;
+
+  // Set row heights for rows 34 to 68 to provide clean 16:9 canvas for image
+  for (let r = 34; r <= 68; r++) {
+    pivotSheet.getRow(r).height = 20;
+  }
+
+  pivotSheet.mergeCells('B69:R69');
+  const pivShowcaseCaption = pivotSheet.getCell('B69');
+  pivShowcaseCaption.value = 'Executive Analytics Portfolio • Datta Sable • Direct Link: https://dattasable.com/dashboards';
+  pivShowcaseCaption.font = { name: 'Segoe UI', size: 8, italic: true, color: { argb: COLORS.slateMuted } };
+  pivShowcaseCaption.alignment = { vertical: 'middle', horizontal: 'center' };
+  pivotSheet.getRow(69).height = 18;
 
   // -------------------------------------------------------------
   // SHEET 3: SALES TRANSACTIONS (RAW DATA + LIVE FORMULAS)
