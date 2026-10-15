@@ -84,6 +84,29 @@ export default function App() {
     syncLicenseStatus();
     window.addEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
     window.addEventListener('storage', syncLicenseStatus);
+
+    // Deep-link route detection for dedicated SEO landing paths
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('sales-dashboard')) {
+        const preset = INDUSTRY_PRESETS['enterprise_tech'];
+        setConfig((prev) => ({ ...prev, industry: 'enterprise_tech', companyName: preset?.companyDefault || prev.companyName }));
+        setActiveTab('dashboard');
+      } else if (path.includes('hr-dashboard')) {
+        const preset = INDUSTRY_PRESETS['human_resources'];
+        setConfig((prev) => ({ ...prev, industry: 'human_resources', companyName: preset?.companyDefault || prev.companyName }));
+        setActiveTab('dashboard');
+      } else if (path.includes('financial-dashboard')) {
+        const preset = INDUSTRY_PRESETS['finance_wealth'];
+        setConfig((prev) => ({ ...prev, industry: 'finance_wealth', companyName: preset?.companyDefault || prev.companyName }));
+        setActiveTab('dashboard');
+      } else if (path.includes('kpi-dashboard') || path.includes('excel-dashboard-examples')) {
+        setActiveTab('dashboard');
+      } else if (path.includes('mis-report-generator') || path.includes('excel-dashboard-generator')) {
+        setActiveTab('excel-preview');
+      }
+    }
+
     return () => {
       window.removeEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
       window.removeEventListener('storage', syncLicenseStatus);

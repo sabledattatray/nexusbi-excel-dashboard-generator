@@ -25,6 +25,7 @@ import {
   Cpu,
   Crown,
   Unlock,
+  Users,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 import { IndustryType } from '../types/dataset';
@@ -67,59 +68,66 @@ export const HomePage: React.FC<HomePageProps> = ({
   }[] = [
     {
       id: 'enterprise_tech',
-      name: 'SaaS & Enterprise Cloud',
+      name: 'Sales and Revenue Dashboards',
       icon: Building2,
       tagline: 'ARR, Net Revenue Retention, Subscription Cohorts, ACV',
       metric: '$9.84M ARR · 114% NRR',
     },
     {
-      id: 'healthcare_pharma',
-      name: 'Healthcare & Life Sciences',
-      icon: HeartPulse,
-      tagline: 'Patient Encounters, Treatment Value, Clinic Capacity, Bed Days',
-      metric: '18,420 Patients · 94.2% Capacity',
-    },
-    {
-      id: 'ecommerce_retail',
-      name: 'Retail & E-Commerce',
-      icon: ShoppingBag,
-      tagline: 'GMV, Average Order Value, Return Rate, Repeat Customers',
-      metric: '$6.72M GMV · $142 AOV',
+      id: 'human_resources',
+      name: 'HR and Workforce Analytics',
+      icon: Users,
+      tagline: 'Headcount, Attrition Rate, Average Salary, Diversity, Engagement Score',
+      metric: '480 FTE · 96.2% Retention',
     },
     {
       id: 'finance_wealth',
-      name: 'Banking & Financial Services',
+      name: 'Financial Performance Reports',
       icon: Landmark,
       tagline: 'Loan Originations, Net Interest Margin, Default Rates, AUM',
       metric: '$42.5M Originations · 3.8% NIM',
     },
     {
       id: 'industrial_manufacturing',
-      name: 'Manufacturing & Operations',
+      name: 'Inventory and Operations Dashboards',
       icon: Factory,
       tagline: 'Units Produced, OEE Efficiency, Scrap Rate, Lead Time',
       metric: '124K Units · 88.6% OEE',
+    },
+    {
+      id: 'ecommerce_retail',
+      name: 'Retail & E-Commerce Dashboards',
+      icon: ShoppingBag,
+      tagline: 'GMV, Average Order Value, Return Rate, Repeat Customers',
+      metric: '$6.72M GMV · $142 AOV',
+    },
+    {
+      id: 'healthcare_pharma',
+      name: 'Healthcare & Patient Analytics',
+      icon: HeartPulse,
+      tagline: 'Patient Encounters, Treatment Value, Clinic Capacity, Bed Days',
+      metric: '18,420 Patients · 94.2% Capacity',
     },
   ];
 
   const features = [
     {
+      icon: BarChart3,
+      title: 'Excel Charts and Data Visualization',
+      desc: 'Automatic generation of native Excel chart objects including clustered columns, stacked bars, trendlines, and pie breakdowns.',
+      tag: 'Native Excel Visuals',
+    },
+    {
       icon: Zap,
       title: 'Live Native Excel Formulas',
-      desc: 'Formulas like SUMIFS and AVERAGEIFS remain completely active in Excel, enabling dynamic recalculations when source data is edited.',
-      tag: 'Native Excel Engine',
+      desc: 'Formulas like SUMIFS, AVERAGEIFS, and ROUND remain completely active in Excel, enabling dynamic recalculations when data updates.',
+      tag: 'Native Formula Engine',
     },
     {
       icon: FileSpreadsheet,
-      title: 'Multi-Sheet Architecture',
-      desc: 'Exports multi-tab workbooks organized into Executive Dashboard, Pivot Summaries, Source Records, and Verification tabs.',
-      tag: 'Boardroom-Ready',
-    },
-    {
-      icon: BarChart3,
-      title: 'Boardroom-Ready Visuals',
-      desc: 'Includes high-contrast KPI metric cards, performance gauges, waterfall variance charts, and regional breakdowns.',
-      tag: 'Executive Charts',
+      title: 'Multi-Sheet Architecture (.xlsx)',
+      desc: 'Structured into an Executive Overview, Grouped Pivot Summaries, Source Records, and Verification tabs for boardroom presentation.',
+      tag: 'Multi-Tab Workbooks',
     },
     {
       icon: ShieldCheck,
@@ -129,13 +137,13 @@ export const HomePage: React.FC<HomePageProps> = ({
     },
     {
       icon: Layers,
-      title: 'Smart CSV & XLSX Parser',
+      title: 'Automated MIS Reporting from CSV',
       desc: 'Intelligent schema engine that infers dates, measures, and dimensions automatically without complex manual configuration.',
-      tag: 'Auto-Inference',
+      tag: 'Automated MIS Tool',
     },
     {
       icon: TrendingUp,
-      title: 'Cross-Platform Compatibility',
+      title: 'Universal Cross-Platform Spreadsheets',
       desc: 'Generated .xlsx files open flawlessly across Microsoft Office 365, Excel Desktop, Google Sheets, Apple Numbers, and LibreOffice.',
       tag: 'Universal .XLSX',
     },
@@ -143,28 +151,36 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const faqs = [
     {
-      q: 'What is excel.dattasable.com and how does it generate dashboards?',
-      a: 'excel.dattasable.com is a free online Excel and KPI Dashboard Generator developed by Datta Sable. It converts raw CSV files or enterprise data models into structured, multi-sheet Microsoft Excel (.xlsx) workbooks complete with executive KPI scorecards, visual charts, and dynamic spreadsheet formulas.',
+      q: 'How to create a dashboard from Excel or CSV automatically?',
+      a: 'Simply click "Import CSV / Excel" or select an industry benchmark at excel.dattasable.com. The automated schema engine analyzes your columns, detects metrics, dates, and dimensions, and compiles a complete multi-sheet Microsoft Excel (.xlsx) dashboard with native formulas and visual charts in seconds without writing code.',
     },
     {
-      q: 'Can I upload my own CSV or Excel datasets?',
-      a: 'Yes. Click the "Import CSV / Excel" button to drag and drop your own dataset. The intelligent client-side schema detector analyzes numerical metrics, categorical dimensions, and dates to automatically build grouped pivot summaries and executive KPI dashboards tailored to your dataset.',
+      q: 'Is there a free Excel dashboard generator online?',
+      a: 'Yes. excel.dattasable.com is an online Excel dashboard maker created by Datta Sable. You can explore interactive KPI dashboards, upload your own datasets, inspect live native spreadsheet formulas, and preview charts directly in your web browser with zero signup required.',
     },
     {
-      q: 'Are the formulas in the exported .xlsx file real and editable?',
-      a: 'Yes! Unlike simple CSV exports or flat image snapshots, all workbooks generated by excel.dattasable.com contain authentic, native Excel formulas (such as SUMIFS, AVERAGEIFS, ROUND, and division ratios). When you open the file in Microsoft Excel, Google Sheets, or Apple Numbers, every calculation updates dynamically as you modify cells.',
+      q: 'How does automated MIS report generation in Excel work?',
+      a: 'The automated MIS generator converts raw transaction ledgers into structured Executive KPI Overviews, Grouped Pivot Summaries, Category Breakdowns, and Audit Records. Calculations are powered by authentic native formulas (SUMIFS, AVERAGEIFS) so monthly MIS reports stay dynamically updated as numbers change.',
     },
     {
-      q: 'Is my data secure and private?',
-      a: 'Absolutely. All data processing, chart generation, and Excel file synthesis occur 100% client-side in your web browser. None of your records, transactions, or uploaded files are ever sent to an external server or cloud database.',
+      q: 'Can I generate Sales, HR, Finance, and Operations dashboards?',
+      a: 'Yes. excel.dattasable.com includes tailored enterprise dashboard templates for SaaS & Sales (ARR, NRR, ACV), Healthcare (Patient Encounters, Treatment Value), Retail & E-Commerce (GMV, AOV), Finance & Wealth (Loan Originations, NIM), and Operations/Manufacturing (OEE, Units Produced, Scrap Rate). Custom CSV uploads for any domain are also fully supported.',
     },
     {
-      q: 'Which industries and business metrics are supported?',
-      a: 'The platform includes enterprise benchmark models for Enterprise SaaS & Tech, Healthcare & Life Sciences, Retail & E-Commerce, Finance & Commercial Banking, and Manufacturing. For uploaded files, it dynamically supports custom metrics such as revenue, margins, headcount, unit costs, conversion rates, and volume.',
+      q: 'Are formulas and charts in the downloaded Excel file real and editable?',
+      a: 'Yes! Unlike flat static images or basic CSV exports, all workbooks generated by excel.dattasable.com contain real, native Excel formulas and genuine Excel chart objects. When opened in Microsoft Excel, Google Sheets, or Apple Numbers, all formulas recalculate dynamically upon editing data.',
     },
     {
-      q: 'Who created excel.dattasable.com?',
-      a: 'This application was created by Datta Sable, a Business Intelligence Expert, Data Engineer, and analytics content creator. Explore more BI templates at dattasable.com, or check out Fabric Master (fabric.dattasable.com) for enterprise Microsoft Fabric architecture planning and FinOps capacity estimation.',
+      q: 'Can I download 100% editable and unprotected Excel files?',
+      a: 'Yes. You can unlock fully unprotected and unrestricted .xlsx downloads starting from ₹9 for a single workbook pass, or ₹49 for unlimited lifetime access across all 12 templates and custom file uploads via UPI QR code.',
+    },
+    {
+      q: 'Is my company data private and secure?',
+      a: '100% private. All parsing, metric inference, and spreadsheet compilation execute strictly client-side inside your browser sandbox. None of your confidential business records, employee rosters, or revenue numbers are ever transmitted to or stored on external servers.',
+    },
+    {
+      q: 'Who built excel.dattasable.com?',
+      a: 'This platform was engineered by Datta Sable, a Business Intelligence Expert, Data Engineer, and analytics content creator. Explore more BI templates at dattasable.com, or check out Fabric Master (fabric.dattasable.com) for enterprise Microsoft Fabric architecture planning.',
     },
   ];
 
@@ -196,15 +212,16 @@ export const HomePage: React.FC<HomePageProps> = ({
 
           {/* Main H1 Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12] mb-6 font-heading">
-            Automated Excel &amp; <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#6ee7b7] to-[#34d399]">
-              KPI Dashboard Generator
+            Free Excel Dashboard Generator{' '}
+            <span className="hidden sm:inline text-emerald-400 font-light">–</span>{' '}
+            <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#6ee7b7] to-[#34d399]">
+              Create Automated KPI &amp; MIS Reports
             </span>
           </h1>
 
           {/* Value Proposition Description */}
           <p className="text-base sm:text-lg text-[#c5ded5] leading-relaxed max-w-2xl mb-8 font-normal">
-            Welcome to <strong className="text-white font-semibold">excel.dattasable.com</strong>, the free web-based workspace designed by{' '}
+            Welcome to <strong className="text-white font-semibold">excel.dattasable.com</strong>, the free online Excel dashboard generator and automated MIS reporting tool designed by{' '}
             <a
               href="https://dattasable.com/"
               target="_blank"
@@ -213,7 +230,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             >
               Datta Sable
             </a>{' '}
-            to turn raw spreadsheet records into executive-grade Microsoft Excel (.xlsx) workbooks with live native formulas,
+            to turn raw spreadsheet data into executive-grade Microsoft Excel (.xlsx) workbooks with live native formulas,
             interactive KPI metrics, and boardroom presentation layouts.
           </p>
 
@@ -291,8 +308,11 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span>Generated Workbook Architecture</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mt-1 font-heading">
-              What's Inside Your Downloaded .XLSX Spreadsheet
+              Create Professional Excel Dashboards Automatically
             </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Explore the multi-tab architecture, formulas, and visual scorecards inside your downloaded .xlsx spreadsheet.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -404,15 +424,16 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
       {/* KEY CAPABILITIES - 6 DISTINCT VALUE PILLARS (Clean Cards)                 */}
       {/* ========================================================================= */}
       <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
         <div className="max-w-2xl mb-8">
           <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
-            Key Capabilities
+            Interactive Business Intelligence
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
-            Why Professionals Choose excel.dattasable.com
+            Turn Excel Data into Interactive Business Reports
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
             Engineered for financial analysts, business intelligence developers, managers, and data engineers who need automated, reliable Excel reporting.
@@ -450,16 +471,59 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================================= */}
+      {/* AUTOMATE MIS REPORTING & KPI TRACKING SECTION                             */}
+      {/* ========================================================================= */}
+      <section className="bg-gradient-to-br from-[#172b2a] via-[#1c3830] to-[#142823] text-white border border-[#2d5246] rounded-2xl p-6 sm:p-10 shadow-lg">
+        <div className="max-w-3xl mb-8">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#86efac] font-mono">
+            Excel MIS Automation
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1 font-heading">
+            Automate MIS Reporting and KPI Tracking
+          </h2>
+          <p className="text-xs sm:text-sm text-[#c5ded5] mt-2 leading-relaxed">
+            Eliminate manual copy-pasting and formula debugging. excel.dattasable.com automatically compiles raw transaction ledgers into standardized monthly MIS reports, executive summaries, and dynamic KPI scorecards powered by live formulas.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-[#1f3f36]/70 border border-[#346255] rounded-xl p-5">
+            <div className="text-[#86efac] font-mono text-xs font-semibold mb-2">01 · DYNAMIC FORMULAS</div>
+            <h3 className="text-base font-bold text-white mb-2 font-heading">Authentic SUMIFS &amp; AVERAGEIFS</h3>
+            <p className="text-xs text-[#a9c4b9] leading-relaxed">
+              Calculations are linked with real Excel formulas. When you update your source rows, executive KPIs and category breakdowns update dynamically.
+            </p>
+          </div>
+
+          <div className="bg-[#1f3f36]/70 border border-[#346255] rounded-xl p-5">
+            <div className="text-[#86efac] font-mono text-xs font-semibold mb-2">02 · STANDARDIZED MIS TABS</div>
+            <h3 className="text-base font-bold text-white mb-2 font-heading">Multi-Sheet MIS Architecture</h3>
+            <p className="text-xs text-[#a9c4b9] leading-relaxed">
+              Every exported spreadsheet includes an Executive KPI Overview, Grouped Pivot Breakdowns, clean Raw Data Records, and Verification tabs.
+            </p>
+          </div>
+
+          <div className="bg-[#1f3f36]/70 border border-[#346255] rounded-xl p-5">
+            <div className="text-[#86efac] font-mono text-xs font-semibold mb-2">03 · ZERO CODE &amp; ZERO MACROS</div>
+            <h3 className="text-base font-bold text-white mb-2 font-heading">Universal Compatibility</h3>
+            <p className="text-xs text-[#a9c4b9] leading-relaxed">
+              No VBA macros, no security warnings, and no plugins needed. Workbooks open smoothly in Microsoft Excel 365, Google Sheets, and Apple Numbers.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
       {/* INDUSTRY BENCHMARKS PRESETS                                               */}
       {/* ========================================================================= */}
       <section className="bg-gradient-to-b from-[#f7f9f6] to-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
-              Enterprise Starters
+              Pre-Configured Models
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
-              Pre-Configured Industry Models
+              Excel Dashboard Examples for Different Industries
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1">
               Test realistic transaction ledgers, KPI ratios, and charts tailored to your sector.
@@ -497,7 +561,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <Icon size={18} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 font-heading">{ind.name}</h4>
+                    <h3 className="text-sm font-bold text-slate-900 font-heading">{ind.name}</h3>
                     <span className="text-[10px] font-mono text-emerald-700 font-medium">
                       {ind.metric}
                     </span>
@@ -537,7 +601,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             Workflow Guide
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
-            How to Convert Your Data into an Excel Dashboard
+            How to Generate an Excel Dashboard
           </h2>
         </div>
 

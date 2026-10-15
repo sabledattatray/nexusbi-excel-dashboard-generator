@@ -4,13 +4,55 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://excel.dattasable.com/</loc>
-    <lastmod>2026-10-15</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://excel.dattasable.com/og-main.png</image:loc>
-      <image:title>Excel to Dashboards — Automated Excel and KPI Dashboard Generator by Datta Sable</image:title>
-      <image:caption>Interactive executive KPI dashboard and multi-sheet Excel generator hosted at excel.dattasable.com</image:caption>
+      <image:title>Free Excel Dashboard Generator | Automated KPI Reports — excel.dattasable.com</image:title>
+      <image:caption>Create professional Excel dashboards with automated KPI reports, interactive charts and business analytics at excel.dattasable.com</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/excel-dashboard-generator</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/mis-report-generator</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/sales-dashboard</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/hr-dashboard</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/financial-dashboard</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/kpi-dashboard</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://excel.dattasable.com/excel-dashboard-examples</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
