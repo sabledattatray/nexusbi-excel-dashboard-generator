@@ -33,7 +33,8 @@ const COLORS = {
 
 export async function exportToProfessionalExcel(
   datasetData: ReturnType<typeof generateRealisticDataset>,
-  config: DatasetConfig
+  config: DatasetConfig,
+  options?: { unprotected?: boolean }
 ): Promise<{ blob: Blob; filename: string }> {
   const {
     transactions,
@@ -1918,37 +1919,46 @@ export async function exportToProfessionalExcel(
     });
   });
 
-  // Protect every worksheet with password: user cannot edit formulas or layouts, only use filters
-  for (const sheet of workbook.worksheets) {
-    sheet.views = sheet.views.length
-      ? sheet.views.map(view => ({ ...view, showGridLines: false }))
-      : [{ showGridLines: false }];
+  // Protect worksheets unless user has unlocked unprotected Pro mode
+  if (!options?.unprotected) {
+    for (const sheet of workbook.worksheets) {
+      sheet.views = sheet.views.length
+        ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+        : [{ showGridLines: false }];
 
-    await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
-      selectLockedCells: false, // Locked cells cannot be selected or copied; only unlocked filter cells can be selected
-      selectUnlockedCells: true,
-      formatCells: false,
-      formatColumns: false,
-      formatRows: false,
-      insertColumns: false,
-      insertRows: false,
-      insertHyperlinks: false,
-      deleteColumns: false,
-      deleteRows: false,
-      sort: true,
-      autoFilter: true,
-      pivotTables: true,
-    });
+      await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
+        selectLockedCells: false, // Locked cells cannot be selected or copied; only unlocked filter cells can be selected
+        selectUnlockedCells: true,
+        formatCells: false,
+        formatColumns: false,
+        formatRows: false,
+        insertColumns: false,
+        insertRows: false,
+        insertHyperlinks: false,
+        deleteColumns: false,
+        deleteRows: false,
+        sort: true,
+        autoFilter: true,
+        pivotTables: true,
+      });
+    }
+  } else {
+    for (const sheet of workbook.worksheets) {
+      sheet.views = sheet.views.length
+        ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+        : [{ showGridLines: false }];
+    }
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
   
   // Inject 100% REAL NATIVE OPENXML EXCEL CHARTS (Pie Chart, Horizontal Bar Chart, Column Run-rate Chart)
   // No image conversion - these are authentic interactive Excel chart objects!
-  const blob = await injectNativeExcelCharts(buffer as ArrayBuffer, datasetData);
+  const blob = await injectNativeExcelCharts(buffer as ArrayBuffer, datasetData, { unprotected: options?.unprotected });
 
   const cleanCompanyName = config.companyName.replace(/[^a-zA-Z0-9]/g, '_');
-  const filename = `${cleanCompanyName}_Executive_Sales_Dashboard_${new Date().getFullYear()}.xlsx`;
+  const proSuffix = options?.unprotected ? '_UNLOCKED' : '';
+  const filename = `${cleanCompanyName}_Executive_Sales_Dashboard_${new Date().getFullYear()}${proSuffix}.xlsx`;
 
   return { blob, filename };
 }

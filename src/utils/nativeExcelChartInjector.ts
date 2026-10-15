@@ -8,7 +8,8 @@ import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
  */
 export async function injectNativeExcelCharts(
   xlsxBuffer: ArrayBuffer,
-  dataset: AppDataset
+  dataset: AppDataset,
+  options?: { unprotected?: boolean }
 ): Promise<Blob> {
   const zip = await JSZip.loadAsync(xlsxBuffer);
 
@@ -1215,36 +1216,50 @@ export async function injectNativeExcelCharts(
   }
 
   // =============================================================
-  // AIRTIGHT WORKSHEET & CHART OBJECT PROTECTION
+  // WORKSHEET & WORKBOOK PROTECTION (Omitted if unprotected pro mode)
   // =============================================================
-  for (let sIdx = 1; sIdx <= 10; sIdx++) {
-    const sPath = `xl/worksheets/sheet${sIdx}.xml`;
-    let sContent = await zip.file(sPath)?.async('string');
-    if (sContent && sContent.includes('<sheetProtection')) {
-      sContent = sContent.replace(/<sheetProtection\b([^>]*)\/>/, (_match, attrs) => {
-        const algo = attrs.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
-        const hash = attrs.match(/hashValue="([^"]+)"/)?.[1] || '';
-        const salt = attrs.match(/saltValue="([^"]+)"/)?.[1] || '';
-        const spin = attrs.match(/spinCount="([^"]+)"/)?.[1] || '100000';
-        return `<sheetProtection sheet="1" objects="1" scenarios="1" formatCells="1" formatColumns="1" formatRows="1" insertColumns="1" insertRows="1" insertHyperlinks="1" deleteColumns="1" deleteRows="1" selectLockedCells="1" selectUnlockedCells="0" sort="0" autoFilter="0" pivotTables="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
-      });
-      zip.file(sPath, sContent);
+  if (!options?.unprotected) {
+    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+      const sPath = `xl/worksheets/sheet${sIdx}.xml`;
+      let sContent = await zip.file(sPath)?.async('string');
+      if (sContent && sContent.includes('<sheetProtection')) {
+        sContent = sContent.replace(/<sheetProtection\b([^>]*)\/>/, (_match, attrs) => {
+          const algo = attrs.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+          const hash = attrs.match(/hashValue="([^"]+)"/)?.[1] || '';
+          const salt = attrs.match(/saltValue="([^"]+)"/)?.[1] || '';
+          const spin = attrs.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+          return `<sheetProtection sheet="1" objects="1" scenarios="1" formatCells="1" formatColumns="1" formatRows="1" insertColumns="1" insertRows="1" insertHyperlinks="1" deleteColumns="1" deleteRows="1" selectLockedCells="1" selectUnlockedCells="0" sort="0" autoFilter="0" pivotTables="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        });
+        zip.file(sPath, sContent);
+      }
     }
-  }
 
-  // =============================================================
-  // WORKBOOK STRUCTURE PROTECTION (Lock sheet tabs with password)
-  // =============================================================
-  let workbookXml = await zip.file('xl/workbook.xml')?.async('string');
-  const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
-  if (workbookXml && sheet1ForProt && !workbookXml.includes('<workbookProtection')) {
-    const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
-    const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
-    const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
-    const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
-    if (hash && salt) {
-      const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
-      workbookXml = workbookXml.replace('<sheets>', `${wbProt}<sheets>`);
+    let workbookXml = await zip.file('xl/workbook.xml')?.async('string');
+    const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
+    if (workbookXml && sheet1ForProt && !workbookXml.includes('<workbookProtection')) {
+      const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+      const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
+      const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
+      const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+      if (hash && salt) {
+        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        workbookXml = workbookXml.replace('<sheets>', `${wbProt}<sheets>`);
+        zip.file('xl/workbook.xml', workbookXml);
+      }
+    }
+  } else {
+    // Pro Unprotected mode: remove any sheetProtection or workbookProtection tags completely
+    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+      const sPath = `xl/worksheets/sheet${sIdx}.xml`;
+      let sContent = await zip.file(sPath)?.async('string');
+      if (sContent && sContent.includes('<sheetProtection')) {
+        sContent = sContent.replace(/<sheetProtection\b[^>]*\/>/g, '');
+        zip.file(sPath, sContent);
+      }
+    }
+    let workbookXml = await zip.file('xl/workbook.xml')?.async('string');
+    if (workbookXml && workbookXml.includes('<workbookProtection')) {
+      workbookXml = workbookXml.replace(/<workbookProtection\b[^>]*\/>/g, '');
       zip.file('xl/workbook.xml', workbookXml);
     }
   }

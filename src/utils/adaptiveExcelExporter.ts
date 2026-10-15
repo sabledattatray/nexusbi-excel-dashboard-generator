@@ -6,7 +6,13 @@ import { DOMAIN_SPECS, groupRows, metricValue, Row } from './domainDatasets';
 import { getIndustryTheme } from './industryTheme';
 import { WORKBOOK_PROTECTION_PASSWORD } from './excelExporter';
 const xml = (value: unknown) => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]!));
-export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfig, selection?: AnalysisSelection, industryOverview = false): Promise<{ blob: Blob; filename: string }> {
+export async function exportAdaptiveExcel(
+  data: AppDataset,
+  config: DatasetConfig,
+  selection?: AnalysisSelection,
+  industryOverview = false,
+  options?: { unprotected?: boolean }
+): Promise<{ blob: Blob; filename: string }> {
   const analysis = analyzeDataset(data, selection);
   const theme = getIndustryTheme(data.schemaProfile?.detectedIndustry || config.industry);
   const spec = industryOverview ? DOMAIN_SPECS[config.industry] : undefined;
@@ -90,53 +96,78 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
     sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: theme.colors.excel.headerFill } };
     sheet.eachRow((row, n) => { if (n > 1 && n % 2 === 0) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; });
   }
-  for (const sheet of workbook.worksheets) {
-    sheet.views = sheet.views.length
-      ? sheet.views.map(view => ({ ...view, showGridLines: false }))
-      : [{ showGridLines: false }];
+  if (!options?.unprotected) {
+    for (const sheet of workbook.worksheets) {
+      sheet.views = sheet.views.length
+        ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+        : [{ showGridLines: false }];
 
-    await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
-      selectLockedCells: true,
-      selectUnlockedCells: true,
-      formatCells: false,
-      formatColumns: false,
-      formatRows: false,
-      insertColumns: false,
-      insertRows: false,
-      insertHyperlinks: false,
-      deleteColumns: false,
-      deleteRows: false,
-      sort: true,
-      autoFilter: true,
-      pivotTables: true,
-    });
+      await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
+        selectLockedCells: true,
+        selectUnlockedCells: true,
+        formatCells: false,
+        formatColumns: false,
+        formatRows: false,
+        insertColumns: false,
+        insertRows: false,
+        insertHyperlinks: false,
+        deleteColumns: false,
+        deleteRows: false,
+        sort: true,
+        autoFilter: true,
+        pivotTables: true,
+      });
+    }
+  } else {
+    for (const sheet of workbook.worksheets) {
+      sheet.views = sheet.views.length
+        ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+        : [{ showGridLines: false }];
+    }
   }
 
   const zip = await JSZip.loadAsync(await workbook.xlsx.writeBuffer());
-  for (let sIdx = 1; sIdx <= 10; sIdx++) {
-    const sPath = `xl/worksheets/sheet${sIdx}.xml`;
-    let sContent = await zip.file(sPath)?.async('string');
-    if (sContent && sContent.includes('<sheetProtection')) {
-      sContent = sContent.replace(/<sheetProtection\b([^>]*)\/>/, (_match, attrs) => {
-        const algo = attrs.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
-        const hash = attrs.match(/hashValue="([^"]+)"/)?.[1] || '';
-        const salt = attrs.match(/saltValue="([^"]+)"/)?.[1] || '';
-        const spin = attrs.match(/spinCount="([^"]+)"/)?.[1] || '100000';
-        return `<sheetProtection sheet="1" objects="1" scenarios="1" formatCells="1" formatColumns="1" formatRows="1" insertColumns="1" insertRows="1" insertHyperlinks="1" deleteColumns="1" deleteRows="1" selectLockedCells="1" selectUnlockedCells="0" sort="0" autoFilter="0" pivotTables="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
-      });
-      zip.file(sPath, sContent);
+
+  if (!options?.unprotected) {
+    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+      const sPath = `xl/worksheets/sheet${sIdx}.xml`;
+      let sContent = await zip.file(sPath)?.async('string');
+      if (sContent && sContent.includes('<sheetProtection')) {
+        sContent = sContent.replace(/<sheetProtection\b([^>]*)\/>/, (_match, attrs) => {
+          const algo = attrs.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+          const hash = attrs.match(/hashValue="([^"]+)"/)?.[1] || '';
+          const salt = attrs.match(/saltValue="([^"]+)"/)?.[1] || '';
+          const spin = attrs.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+          return `<sheetProtection sheet="1" objects="1" scenarios="1" formatCells="1" formatColumns="1" formatRows="1" insertColumns="1" insertRows="1" insertHyperlinks="1" deleteColumns="1" deleteRows="1" selectLockedCells="1" selectUnlockedCells="0" sort="0" autoFilter="0" pivotTables="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        });
+        zip.file(sPath, sContent);
+      }
     }
-  }
-  let wbXml = await zip.file('xl/workbook.xml')?.async('string');
-  const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
-  if (wbXml && sheet1ForProt && !wbXml.includes('<workbookProtection')) {
-    const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
-    const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
-    const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
-    const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
-    if (hash && salt) {
-      const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
-      wbXml = wbXml.replace('<sheets>', `${wbProt}<sheets>`);
+    let wbXml = await zip.file('xl/workbook.xml')?.async('string');
+    const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
+    if (wbXml && sheet1ForProt && !wbXml.includes('<workbookProtection')) {
+      const algo = sheet1ForProt.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+      const hash = sheet1ForProt.match(/hashValue="([^"]+)"/)?.[1] || '';
+      const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
+      const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+      if (hash && salt) {
+        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        wbXml = wbXml.replace('<sheets>', `${wbProt}<sheets>`);
+        zip.file('xl/workbook.xml', wbXml);
+      }
+    }
+  } else {
+    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+      const sPath = `xl/worksheets/sheet${sIdx}.xml`;
+      let sContent = await zip.file(sPath)?.async('string');
+      if (sContent && sContent.includes('<sheetProtection')) {
+        sContent = sContent.replace(/<sheetProtection\b[^>]*\/>/g, '');
+        zip.file(sPath, sContent);
+      }
+    }
+    let wbXml = await zip.file('xl/workbook.xml')?.async('string');
+    if (wbXml && wbXml.includes('<workbookProtection')) {
+      wbXml = wbXml.replace(/<workbookProtection\b[^>]*\/>/g, '');
       zip.file('xl/workbook.xml', wbXml);
     }
   }
@@ -182,6 +213,7 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
     zip.file('xl/worksheets/sheet1.xml', sheetXML.replace('</worksheet>', '<drawing r:id="rIdSourceDrawing"/></worksheet>'));
     zip.file('[Content_Types].xml', types.replace('</Types>', '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>'));
   }
-  return { blob: new Blob([await zip.generateAsync({ type: 'arraybuffer' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), filename: `${config.companyName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Analytics.xlsx` };
+  const proSuffix = options?.unprotected ? '_UNLOCKED' : '';
+  return { blob: new Blob([await zip.generateAsync({ type: 'arraybuffer' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), filename: `${config.companyName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Analytics${proSuffix}.xlsx` };
 }
 

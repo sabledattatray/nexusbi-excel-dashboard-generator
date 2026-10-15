@@ -23,6 +23,8 @@ import {
   Table,
   Check,
   Cpu,
+  Crown,
+  Unlock,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 import { IndustryType } from '../types/dataset';
@@ -35,6 +37,8 @@ interface HomePageProps {
   isDownloading: boolean;
   onSelectIndustry: (industry: IndustryType) => void;
   currentIndustry?: IndustryType;
+  isProUnlocked?: boolean;
+  onOpenUnlockModal?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -45,6 +49,8 @@ export const HomePage: React.FC<HomePageProps> = ({
   isDownloading,
   onSelectIndustry,
   currentIndustry = 'enterprise_tech',
+  isProUnlocked = false,
+  onOpenUnlockModal,
 }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -230,14 +236,37 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span>Import CSV / Excel</span>
             </button>
 
-            <button
-              onClick={onDownloadExcel}
-              disabled={isDownloading}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 active:scale-[0.98] text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors w-full sm:w-auto"
-            >
-              <Download size={16} />
-              <span>{isDownloading ? 'Compiling…' : 'Export Sample .XLSX'}</span>
-            </button>
+            {!isProUnlocked ? (
+              <button
+                onClick={onOpenUnlockModal}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500/25 via-emerald-500/20 to-teal-500/20 hover:from-amber-500/35 hover:to-teal-500/30 text-amber-300 hover:text-white text-sm font-bold border border-amber-400/50 shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                title="Unlock 100% Unprotected & Editable Excel Files for ₹99"
+              >
+                <Crown size={17} className="text-amber-400" />
+                <span>Unlock Pro (₹99)</span>
+              </button>
+            ) : (
+              <button
+                onClick={onDownloadExcel}
+                disabled={isDownloading}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                title="Download 100% Unprotected & Editable Excel Dashboard"
+              >
+                <Unlock size={17} />
+                <span>{isDownloading ? 'Compiling…' : 'Download Unprotected Excel'}</span>
+              </button>
+            )}
+
+            {!isProUnlocked && (
+              <button
+                onClick={onDownloadExcel}
+                disabled={isDownloading}
+                className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 active:scale-[0.98] text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors w-full sm:w-auto"
+              >
+                <Download size={16} />
+                <span>{isDownloading ? 'Compiling…' : 'Export Sample .XLSX'}</span>
+              </button>
+            )}
           </div>
 
           {/* Quick Trust Checks */}

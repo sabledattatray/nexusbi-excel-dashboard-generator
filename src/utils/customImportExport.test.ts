@@ -165,3 +165,38 @@ test('file upload enforces 25 MB limit and protects in-browser memory', async ()
   );
 });
 
+test('Pro unprotected export generates 100% unlocked workbook without sheet or workbook protection', async () => {
+  const { exportToProfessionalExcel } = await import('./excelExporter');
+  const { generateProfessionalDataset } = await import('./professionalPresentation');
+  const { buildUpiPaymentUrl, unlockProLicense } = await import('./proLicenseManager');
+
+  const config: DatasetConfig = {
+    companyName: 'Nexdial.io Cloud Technologies Inc.',
+    reportTitle: 'Executive Sales Dashboard',
+    industry: 'enterprise_tech',
+    recordCount: 100,
+    currency: 'USD',
+    currencySymbol: '$',
+    includeChartsInExcel: true,
+    useLiveExcelFormulas: true,
+  };
+
+  const dataset = generateProfessionalDataset(config);
+  const result = await exportToProfessionalExcel(dataset, config, { unprotected: true });
+
+  assert.ok(result.filename.includes('_UNLOCKED.xlsx'));
+
+  const zip = await JSZip.loadAsync(Buffer.from(await result.blob.arrayBuffer()));
+  const sheet1Xml = await zip.file('xl/worksheets/sheet1.xml')!.async('string');
+  assert.ok(!sheet1Xml.includes('<sheetProtection'), 'Unprotected export must not contain sheetProtection');
+
+  const wbXml = await zip.file('xl/workbook.xml')!.async('string');
+  assert.ok(!wbXml.includes('<workbookProtection'), 'Unprotected export must not contain workbookProtection');
+
+  // Verify UPI payment URL builder
+  const upiUrl = buildUpiPaymentUrl();
+  assert.ok(upiUrl.startsWith('upi://pay?'));
+  assert.ok(upiUrl.includes('am=99'));
+  assert.ok(upiUrl.includes('cu=INR'));
+});
+

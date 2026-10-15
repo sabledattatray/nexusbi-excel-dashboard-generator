@@ -25,6 +25,7 @@ import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
+import { isProUnlocked } from './utils/proLicenseManager';
 
 // Lazy-loaded heavy components for lightning-fast initial load & maximum smoothness
 const ExcelLiveViewer = lazy(() => import('./components/ExcelLiveViewer').then((m) => ({ default: m.ExcelLiveViewer })));
@@ -33,6 +34,7 @@ const AdaptiveDashboard = lazy(() => import('./components/AdaptiveDashboard').th
 const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((m) => ({ default: m.CustomizerModal })));
 const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
+const ProUnlockModal = lazy(() => import('./components/ProUnlockModal').then((m) => ({ default: m.ProUnlockModal })));
 
 const WorkspaceLoader = () => (
   <div className="flex flex-col items-center justify-center py-20 px-4 min-h-[340px] text-center" aria-live="polite">
@@ -67,8 +69,14 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [isProUser, setIsProUser] = useState<boolean>(false);
   const [lastDownloadedFilename, setLastDownloadedFilename] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    setIsProUser(isProUnlocked());
+  }, []);
 
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
@@ -94,16 +102,35 @@ export default function App() {
   useEffect(() => { setAnalysisSelection(initialSelection(dataset)); }, [dataset]);
 
   // Handle Download Excel with dynamic chunk import to keep initial bundle tiny
-  const handleDownloadExcel = useCallback(async () => {
+  const handleDownloadExcel = useCallback(async (unprotectedOverride?: boolean) => {
     try {
       setIsDownloading(true);
       let blob: Blob;
       let filename: string;
 
-      const { exportToProfessionalExcel } = await import('./utils/excelExporter');
-      const res = await exportToProfessionalExcel(dataset, dataset.config || config);
-      blob = res.blob;
-      filename = res.filename;
+      const shouldBeUnprotected = unprotectedOverride !== undefined ? unprotectedOverride : isProUser;
+
+      if (customImportResult) {
+        const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');
+        const res = await exportAdaptiveExcel(
+          dataset,
+          dataset.config || config,
+          analysisSelection,
+          false,
+          { unprotected: shouldBeUnprotected }
+        );
+        blob = res.blob;
+        filename = res.filename;
+      } else {
+        const { exportToProfessionalExcel } = await import('./utils/excelExporter');
+        const res = await exportToProfessionalExcel(
+          dataset,
+          dataset.config || config,
+          { unprotected: shouldBeUnprotected }
+        );
+        blob = res.blob;
+        filename = res.filename;
+      }
 
       // Trigger browser download
       const url = URL.createObjectURL(blob);
@@ -117,10 +144,12 @@ export default function App() {
 
       // Confetti celebration
       confetti({
-        particleCount: 90,
-        spread: 70,
+        particleCount: shouldBeUnprotected ? 130 : 90,
+        spread: 75,
         origin: { y: 0.65 },
-        colors: ['#10B981', '#0284C7', '#6366F1', '#F59E0B'],
+        colors: shouldBeUnprotected
+          ? ['#F59E0B', '#10B981', '#6366F1', '#EC4899', '#38BDF8']
+          : ['#10B981', '#0284C7', '#6366F1', '#F59E0B'],
       });
 
       setLastDownloadedFilename(filename);
@@ -131,7 +160,7 @@ export default function App() {
     } finally {
       setIsDownloading(false);
     }
-  }, [dataset, config, customImportResult, analysisSelection]);
+  }, [dataset, config, customImportResult, analysisSelection, isProUser]);
 
   const handleRegenerateData = () => {
     if (customImportResult) {
@@ -188,6 +217,8 @@ export default function App() {
         isCustomDataActive={!!customImportResult}
         isSidebarVisible={isSidebarVisible}
         onToggleSidebar={() => setIsSidebarVisible((prev) => !prev)}
+        isProUnlocked={isProUser}
+        onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -209,6 +240,8 @@ export default function App() {
               setActiveTab('dashboard');
             }}
             currentIndustry={config.industry}
+            isProUnlocked={isProUser}
+            onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
           />
         ) : (
           <Suspense fallback={<WorkspaceLoader />}>
@@ -310,8 +343,22 @@ export default function App() {
             onClose={() => setIsSuccessOpen(false)}
             filename={lastDownloadedFilename}
             rowCount={config.recordCount}
-            onReDownload={handleDownloadExcel}
+            onReDownload={() => handleDownloadExcel(isProUser)}
             sourceBased={!!customImportResult}
+            isProUnlocked={isProUser}
+            onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
+          />
+        )}
+
+        {isUnlockModalOpen && (
+          <ProUnlockModal
+            isOpen={isUnlockModalOpen}
+            onClose={() => setIsUnlockModalOpen(false)}
+            onUnlockSuccess={() => {
+              setIsProUser(true);
+              setIsUnlockModalOpen(false);
+              handleDownloadExcel(true);
+            }}
           />
         )}
       </Suspense>
