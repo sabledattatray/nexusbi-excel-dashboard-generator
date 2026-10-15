@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   X,
-  Sliders,
+  LayoutTemplate,
   Check,
   Building2,
   FileSpreadsheet,
@@ -60,11 +60,11 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-              <Sliders className="w-5 h-5" />
+              <LayoutTemplate className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">Choose an industry dashboard</h2>
-              <p className="text-xs text-slate-500">Each industry includes its own source fields, KPIs, and visual design.</p>
+              <h2 className="text-base font-bold text-slate-900">12 Ready Dashboard Templates</h2>
+              <p className="text-xs text-slate-500">Pick from 12 pre-built industry dashboard models with live formulas, or customize company branding.</p>
             </div>
           </div>
           <button
@@ -80,7 +80,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           {/* Industry Preset */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
-              Industry Vertical & Business Domain
+              Select from 12 Ready Industry Templates
             </label>
             <div className="grid grid-cols-1 gap-2">
               {(Object.keys(INDUSTRY_PRESETS) as IndustryType[]).map((indKey) => {

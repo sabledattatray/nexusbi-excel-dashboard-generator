@@ -19,6 +19,7 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  LayoutTemplate,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -97,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           id: 'transactions',
           label: 'Source Records',
           icon: Table2,
-          badge: config.rowCount ? (config.rowCount >= 1000 ? `${(config.rowCount / 1000).toFixed(0)}k` : `${config.rowCount}`) : '1k',
+          badge: config.recordCount ? (config.recordCount >= 1000 ? `${(config.recordCount / 1000).toFixed(0)}k` : `${config.recordCount}`) : '1k',
         },
         { id: 'regions', label: 'Time & Regional Trends', icon: TrendingUp },
         { id: 'products', label: 'Category Breakdowns', icon: BarChart3 },
@@ -207,11 +208,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               onOpenCustomizer();
               setIsMobileMenuOpen(false);
             }}
-            title="Customize company, report title and industry"
+            title="Browse 12 ready-to-use industry dashboard templates"
           >
-            <Settings2 size={14.5} />
-            <span className="truncate">Report Configuration</span>
-            <span className="nav-badge">Setup</span>
+            <LayoutTemplate size={14.5} />
+            <span className="truncate">Ready Templates</span>
+            <span className="nav-badge">12 Ready</span>
           </button>
         </nav>
 
@@ -287,11 +288,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             className="icon-button"
-            aria-label="Report Settings"
+            aria-label="Ready Templates"
             onClick={onOpenCustomizer}
-            title="Configure Report Settings"
+            title="Browse Ready Templates"
           >
-            <Settings2 size={17} />
+            <LayoutTemplate size={17} />
           </button>
         </div>
       </header>

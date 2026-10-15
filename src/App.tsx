@@ -8,7 +8,7 @@ import {
   BarChart3,
   Layers,
   Sparkles,
-  Sliders,
+  LayoutTemplate,
   ExternalLink,
   Table,
   Zap,
@@ -231,8 +231,8 @@ export default function App() {
                 </span>
                 {!customImportResult && (
                   <button className="secondary-button" onClick={() => setIsCustomizerOpen(true)}>
-                    <Sliders size={14} />
-                    Choose industry
+                    <LayoutTemplate size={14} />
+                    Ready Templates
                   </button>
                 )}
               </div>
