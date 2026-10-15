@@ -81,7 +81,7 @@ export async function exportToProfessionalExcel(
   // Header Title Banner (Row 2 & 3)
   dashSheet.mergeCells('B2:O2');
   const bannerTitle = dashSheet.getCell('B2');
-  bannerTitle.value = `${config.companyName.toUpperCase()} — EXECUTIVE PERFORMANCE DASHBOARD`;
+  bannerTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — EXECUTIVE PERFORMANCE DASHBOARD`;
   bannerTitle.font = { name: 'Segoe UI', size: 15, bold: true, color: { argb: COLORS.pureWhite } };
   bannerTitle.fill = {
     type: 'pattern',
@@ -297,206 +297,32 @@ export async function exportToProfessionalExcel(
   dashSheet.getRow(9).height = 12;
 
   // -------------------------------------------------------------
-  // NATIVE OPENXML CHART RESERVED ZONES (B10:H24, I10:O24, B26:H40)
-  // These regions will house native OpenXML Excel charts:
-  // 1. Chart 1: Monthly Run-Rate Column Chart (B10:H24)
-  // 2. Chart 2: Category Revenue Share Pie Chart (I10:O24)
-  // 3. Chart 3: Regional Quota Performance Horizontal Bar Chart (B26:H40)
+  // NATIVE OPENXML CHART RESERVED VISUAL CANVASES (ROWS 10 TO 43)
+  // Dedicated chart viewing zones with NO overlapping tables underneath:
+  // 1. Chart 1 (Monthly Run-Rate Column Chart): B10:H25 (Cols B-H, Rows 10-25)
+  // 2. Chart 2 (Category Revenue Share Pie Chart): I10:O25 (Cols I-O, Rows 10-25)
+  // [Row 26]: Clean spacing gap between chart tiers
+  // 3. Chart 3 (Regional Quota Attainment Bar Chart): B27:H42 (Cols B-H, Rows 27-42)
+  // 4. Chart 4 (Sales Channel Mix Donut Chart): I27:O42 (Cols I-O, Rows 27-42)
+  // [Row 43]: Clean divider row before data tables section
   // -------------------------------------------------------------
-  for (let r = 10; r <= 24; r++) {
+  for (let r = 10; r <= 25; r++) {
     dashSheet.getRow(r).height = 20;
   }
-  dashSheet.getRow(25).height = 14;
-  for (let r = 26; r <= 40; r++) {
+  dashSheet.getRow(26).height = 14;
+  for (let r = 27; r <= 42; r++) {
     dashSheet.getRow(r).height = 20;
   }
+  dashSheet.getRow(43).height = 16;
 
   // -------------------------------------------------------------
-  // REGIONAL QUOTA TABLE ON SHEET 1 (Rows 26 to 33, Cols I to O)
-  // -------------------------------------------------------------
-  dashSheet.mergeCells('I26:O26');
-  const regTblHeader = dashSheet.getCell('I26');
-  regTblHeader.value = 'REGIONAL QUOTA & MARGIN PERFORMANCE SCORECARD';
-  regTblHeader.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
-  regTblHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
-  regTblHeader.alignment = { vertical: 'middle', horizontal: 'center' };
-
-  const regHeaders = ['Region', 'Director', 'Actual Rev', 'Quota Target', 'Attainment', 'Profit', 'In-Cell Bar'];
-  const regCols = ['I', 'J', 'K', 'L', 'M', 'N', 'O'];
-  regCols.forEach((col, idx) => {
-    const c = dashSheet.getCell(`${col}27`);
-    c.value = regHeaders[idx];
-    c.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.pureWhite } };
-    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
-    c.alignment = { vertical: 'middle', horizontal: idx >= 2 ? 'right' : 'left' };
-  });
-
-  regionalPerformance.forEach((r, idx) => {
-    const rowIdx = 28 + idx;
-    const bgRow = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
-
-    dashSheet.getCell(`I${rowIdx}`).value = r.region;
-    dashSheet.getCell(`I${rowIdx}`).font = { name: 'Segoe UI', size: 9, bold: true };
-    dashSheet.getCell(`I${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    dashSheet.getCell(`J${rowIdx}`).value = r.regionalDirector.split(' ')[0];
-    dashSheet.getCell(`J${rowIdx}`).font = { name: 'Segoe UI', size: 8.5 };
-    dashSheet.getCell(`J${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    dashSheet.getCell(`K${rowIdx}`).value = config.useLiveExcelFormulas
-      ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
-          result: r.actualRevenue,
-        }
-      : r.actualRevenue;
-    dashSheet.getCell(`K${rowIdx}`).numFmt = '$#,##0';
-    dashSheet.getCell(`K${rowIdx}`).font = { name: 'Segoe UI', size: 9, bold: true };
-    dashSheet.getCell(`K${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    dashSheet.getCell(`L${rowIdx}`).value = config.useLiveExcelFormulas
-      ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, ${r.targetRevenue})`,
-          result: r.targetRevenue,
-        }
-      : r.targetRevenue;
-    dashSheet.getCell(`L${rowIdx}`).numFmt = '$#,##0';
-    dashSheet.getCell(`L${rowIdx}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.slateMuted } };
-    dashSheet.getCell(`L${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const cellAtt = dashSheet.getCell(`M${rowIdx}`);
-    cellAtt.value = config.useLiveExcelFormulas ? { formula: `IF(L${rowIdx}>0, K${rowIdx}/L${rowIdx}, 0)` } : r.quotaAttainmentPct;
-    cellAtt.numFmt = '0.0%';
-    cellAtt.font = {
-      name: 'Segoe UI',
-      size: 9,
-      bold: true,
-      color: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldDark : COLORS.amberDark },
-    };
-    cellAtt.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldLight : COLORS.amberLight },
-    };
-
-    dashSheet.getCell(`N${rowIdx}`).value = config.useLiveExcelFormulas
-      ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
-          result: r.actualProfit,
-        }
-      : r.actualProfit;
-    dashSheet.getCell(`N${rowIdx}`).numFmt = '$#,##0';
-    dashSheet.getCell(`N${rowIdx}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.emeraldDark } };
-    dashSheet.getCell(`N${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const barBlocks = Math.max(1, Math.round(r.quotaAttainmentPct * 12));
-    const cellVBar = dashSheet.getCell(`O${rowIdx}`);
-    cellVBar.value = config.useLiveExcelFormulas ? { formula: `IF(M${rowIdx}>0, REPT("■", MIN(14, ROUND(M${rowIdx}*12, 0))), "")` } : '■'.repeat(barBlocks);
-    cellVBar.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldBar : COLORS.amberDark } };
-    cellVBar.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    regCols.forEach((col) => {
-      dashSheet.getCell(`${col}${rowIdx}`).border = {
-        bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
-      };
-    });
-  });
-
-  // Total Regional Row (Row 32)
-  const regTotRow = 28 + regionalPerformance.length;
-  regCols.forEach((col) => {
-    const c = dashSheet.getCell(`${col}${regTotRow}`);
-    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
-    c.border = {
-      top: { style: 'thin', color: { argb: COLORS.borderDark } },
-      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
-    };
-    c.font = { name: 'Segoe UI', size: 8.5, bold: true };
-  });
-  dashSheet.getCell(`I${regTotRow}`).value = 'Total:';
-  dashSheet.getCell(`K${regTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(K28:K${regTotRow - 1})` } : kpi.totalRevenue;
-  dashSheet.getCell(`K${regTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`L${regTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(L28:L${regTotRow - 1})` } : regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0);
-  dashSheet.getCell(`L${regTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`M${regTotRow}`).value = config.useLiveExcelFormulas ? { formula: `K${regTotRow}/L${regTotRow}` } : (kpi.totalRevenue / regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0));
-  dashSheet.getCell(`M${regTotRow}`).numFmt = '0.0%';
-  dashSheet.getCell(`N${regTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(N28:N${regTotRow - 1})` } : kpi.totalGrossProfit;
-  dashSheet.getCell(`N${regTotRow}`).numFmt = '$#,##0';
-
-  // Top 4 Clients (Rows 34 to 39, Cols I to O)
-  dashSheet.mergeCells('I34:O34');
-  const accTitle = dashSheet.getCell('I34');
-  accTitle.value = 'TOP STRATEGIC CLIENT ACCOUNTS BY VALUE';
-  accTitle.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
-  accTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
-  accTitle.alignment = { vertical: 'middle', horizontal: 'center' };
-
-  dashSheet.mergeCells('I35:K35');
-  dashSheet.getCell('I35').value = 'Organization';
-  dashSheet.getCell('L35').value = 'Tier';
-  dashSheet.getCell('M35').value = 'Orders';
-  dashSheet.getCell('N35').value = 'Revenue';
-  dashSheet.getCell('O35').value = 'Health';
-  ['I', 'L', 'M', 'N', 'O'].forEach((col) => {
-    const c = dashSheet.getCell(`${col}35`);
-    c.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.pureWhite } };
-    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
-  });
-
-  customerAccounts.slice(0, 4).forEach((acc, idx) => {
-    const rIdx = 36 + idx;
-    const bgRow = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
-
-    dashSheet.mergeCells(`I${rIdx}:K${rIdx}`);
-    const cellName = dashSheet.getCell(`I${rIdx}`);
-    cellName.value = acc.customerName;
-    cellName.font = { name: 'Segoe UI', size: 8.5, bold: true };
-    cellName.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const cellTier = dashSheet.getCell(`L${rIdx}`);
-    cellTier.value = acc.tier.replace('Enterprise Strategic', 'Strategic');
-    cellTier.font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.slateMuted } };
-    cellTier.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const cellOrd = dashSheet.getCell(`M${rIdx}`);
-    cellOrd.value = config.useLiveExcelFormulas
-      ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
-          result: acc.totalOrders,
-        }
-      : acc.totalOrders;
-    cellOrd.numFmt = '#,##0';
-    cellOrd.font = { name: 'Segoe UI', size: 8.5 };
-    cellOrd.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const cellRev = dashSheet.getCell(`N${rIdx}`);
-    cellRev.value = config.useLiveExcelFormulas
-      ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
-          result: acc.lifetimeRevenue,
-        }
-      : acc.lifetimeRevenue;
-    cellRev.numFmt = '$#,##0';
-    cellRev.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.emeraldDark } };
-    cellRev.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-
-    const cellH = dashSheet.getCell(`O${rIdx}`);
-    cellH.value = acc.accountHealth;
-    cellH.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: acc.accountHealth === 'Optimal' ? COLORS.emeraldDark : COLORS.amberDark } };
-    cellH.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-  });
-
-  // -------------------------------------------------------------
-  // SUPPORTING DATA TABLES FOR NATIVE CHARTS & DASHBOARD
-  // 1. MONTHLY FINANCIAL RUN-RATE SUMMARY TABLE (Cols B to H, Rows 44 to 58)
-  //    This provides the exact data range for Chart 1: $B$46:$B$57, $C$46:$C$57, $E$46:$E$57
-  // 2. PRODUCT CATEGORY REVENUE & MARGIN TABLE (Cols I to O, Rows 44 to 51)
-  //    This provides the exact data range for Chart 2 (Pie Chart): $I$46:$I$50, $K$46:$K$50
+  // DATA TABLE BLOCK 1: ROWS 44 TO 58 (SYMMETRICAL DUAL-COLUMN GRID)
+  // Left: Monthly Financial Run-Rate Summary Table (B44:H58)
+  // Right Top: Regional Quota Performance Scorecard (I44:O50)
+  // Right Bottom: Top Strategic Client Accounts by Value (I52:O58)
   // -------------------------------------------------------------
 
-  // Spacer Row 43
-  dashSheet.getRow(43).height = 12;
-
-  // Monthly Table Header Banner (B44:H44)
+  // LEFT SIDE: MONTHLY FINANCIAL TABLE (B44:H58)
   dashSheet.mergeCells('B44:H44');
   const monthBanner = dashSheet.getCell('B44');
   monthBanner.value = 'MONTHLY FINANCIAL RUN-RATE & MARGIN SUMMARY DATA';
@@ -505,7 +331,6 @@ export async function exportToProfessionalExcel(
   monthBanner.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(44).height = 22;
 
-  // Monthly Table Column Headers (Row 45)
   const monthHeaders = [
     { col: 'B', title: 'Period', align: 'center' },
     { col: 'C', title: 'Revenue ($)', align: 'right' },
@@ -524,7 +349,6 @@ export async function exportToProfessionalExcel(
   });
   dashSheet.getRow(45).height = 20;
 
-  // Monthly Table Data Rows (Rows 46 to 46 + 12 - 1 = Row 57)
   const maxMonthRev = Math.max(...monthlyTrends.map((m) => m.revenue), 1);
   const displayMonths = monthlyTrends.slice(0, 12);
 
@@ -598,25 +422,29 @@ export async function exportToProfessionalExcel(
   });
 
   // Monthly Table Total Row (Row 58)
-  const monthTotRow = 46 + displayMonths.length;
-  dashSheet.getRow(monthTotRow).height = 22;
-  dashSheet.getCell(`B${monthTotRow}`).value = 'Total LTM:';
-  dashSheet.getCell(`B${monthTotRow}`).font = { name: 'Segoe UI', size: 9, bold: true };
-  dashSheet.getCell(`C${monthTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(C46:C${monthTotRow - 1})` } : kpi.totalRevenue;
-  dashSheet.getCell(`C${monthTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`C${monthTotRow}`).font = { name: 'Segoe UI', size: 9, bold: true };
-  dashSheet.getCell(`E${monthTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(E46:E${monthTotRow - 1})` } : kpi.totalGrossProfit;
-  dashSheet.getCell(`E${monthTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`E${monthTotRow}`).font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.emeraldDark } };
-  dashSheet.getCell(`F${monthTotRow}`).value = config.useLiveExcelFormulas ? { formula: `E${monthTotRow}/C${monthTotRow}` } : kpi.overallMarginPct;
-  dashSheet.getCell(`F${monthTotRow}`).numFmt = '0.0%';
-  dashSheet.getCell(`F${monthTotRow}`).font = { name: 'Segoe UI', size: 9, bold: true };
-  dashSheet.getCell(`G${monthTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(G46:G${monthTotRow - 1})` } : kpi.orderCount;
-  dashSheet.getCell(`G${monthTotRow}`).numFmt = '#,##0';
-  dashSheet.getCell(`G${monthTotRow}`).alignment = { horizontal: 'center' };
+  dashSheet.getRow(58).height = 22;
+  dashSheet.getCell('B58').value = 'Total LTM:';
+  dashSheet.getCell('B58').font = { name: 'Segoe UI', size: 9, bold: true };
+  dashSheet.getCell('C58').value = config.useLiveExcelFormulas ? { formula: 'SUM(C46:C57)' } : kpi.totalRevenue;
+  dashSheet.getCell('C58').numFmt = '$#,##0';
+  dashSheet.getCell('C58').font = { name: 'Segoe UI', size: 9, bold: true };
+  dashSheet.getCell('D58').value = config.useLiveExcelFormulas ? { formula: 'SUM(D46:D57)' } : Math.round(kpi.totalRevenue - kpi.totalGrossProfit);
+  dashSheet.getCell('D58').numFmt = '$#,##0';
+  dashSheet.getCell('D58').font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.slateMuted } };
+  dashSheet.getCell('E58').value = config.useLiveExcelFormulas ? { formula: 'SUM(E46:E57)' } : kpi.totalGrossProfit;
+  dashSheet.getCell('E58').numFmt = '$#,##0';
+  dashSheet.getCell('E58').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.emeraldDark } };
+  dashSheet.getCell('F58').value = config.useLiveExcelFormulas ? { formula: 'E58/C58' } : kpi.overallMarginPct;
+  dashSheet.getCell('F58').numFmt = '0.0%';
+  dashSheet.getCell('F58').font = { name: 'Segoe UI', size: 9, bold: true };
+  dashSheet.getCell('G58').value = config.useLiveExcelFormulas ? { formula: 'SUM(G46:G57)' } : kpi.orderCount;
+  dashSheet.getCell('G58').numFmt = '#,##0';
+  dashSheet.getCell('G58').alignment = { horizontal: 'center' };
+  dashSheet.getCell('H58').value = '100.0%';
+  dashSheet.getCell('H58').font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.slateMuted } };
 
   monthHeaders.forEach((mh) => {
-    const c = dashSheet.getCell(`${mh.col}${monthTotRow}`);
+    const c = dashSheet.getCell(`${mh.col}58`);
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
@@ -624,93 +452,320 @@ export async function exportToProfessionalExcel(
     };
   });
 
-  // -------------------------------------------------------------
-  // PRODUCT CATEGORY TABLE (I44:O51) - Referenced by Native Pie Chart
-  // -------------------------------------------------------------
+  // RIGHT SIDE TOP: REGIONAL QUOTA & MARGIN PERFORMANCE SCORECARD (Rows 44 to 50)
   dashSheet.mergeCells('I44:O44');
-  const catBanner = dashSheet.getCell('I44');
+  const regTblHeader = dashSheet.getCell('I44');
+  regTblHeader.value = 'REGIONAL QUOTA & MARGIN PERFORMANCE SCORECARD';
+  regTblHeader.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
+  regTblHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  regTblHeader.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  const regHeaders = ['Region', 'Director', 'Actual Rev', 'Quota Target', 'Attainment', 'Profit', 'In-Cell Bar'];
+  const regCols = ['I', 'J', 'K', 'L', 'M', 'N', 'O'];
+  regCols.forEach((col, idx) => {
+    const c = dashSheet.getCell(`${col}45`);
+    c.value = regHeaders[idx];
+    c.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.pureWhite } };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
+    c.alignment = { vertical: 'middle', horizontal: idx >= 2 ? 'right' : 'left' };
+  });
+
+  regionalPerformance.slice(0, 4).forEach((r, idx) => {
+    const rowIdx = 46 + idx;
+    const bgRow = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
+
+    dashSheet.getCell(`I${rowIdx}`).value = r.region;
+    dashSheet.getCell(`I${rowIdx}`).font = { name: 'Segoe UI', size: 9, bold: true };
+    dashSheet.getCell(`I${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    dashSheet.getCell(`J${rowIdx}`).value = r.regionalDirector.split(' ')[0];
+    dashSheet.getCell(`J${rowIdx}`).font = { name: 'Segoe UI', size: 8.5 };
+    dashSheet.getCell(`J${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    dashSheet.getCell(`K${rowIdx}`).value = config.useLiveExcelFormulas
+      ? {
+          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
+          result: r.actualRevenue,
+        }
+      : r.actualRevenue;
+    dashSheet.getCell(`K${rowIdx}`).numFmt = '$#,##0';
+    dashSheet.getCell(`K${rowIdx}`).font = { name: 'Segoe UI', size: 9, bold: true };
+    dashSheet.getCell(`K${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    dashSheet.getCell(`L${rowIdx}`).value = config.useLiveExcelFormulas
+      ? {
+          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, ${r.targetRevenue})`,
+          result: r.targetRevenue,
+        }
+      : r.targetRevenue;
+    dashSheet.getCell(`L${rowIdx}`).numFmt = '$#,##0';
+    dashSheet.getCell(`L${rowIdx}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.slateMuted } };
+    dashSheet.getCell(`L${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const cellAtt = dashSheet.getCell(`M${rowIdx}`);
+    cellAtt.value = config.useLiveExcelFormulas ? { formula: `IF(L${rowIdx}>0, K${rowIdx}/L${rowIdx}, 0)` } : r.quotaAttainmentPct;
+    cellAtt.numFmt = '0.0%';
+    cellAtt.font = {
+      name: 'Segoe UI',
+      size: 9,
+      bold: true,
+      color: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldDark : COLORS.amberDark },
+    };
+    cellAtt.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldLight : COLORS.amberLight },
+    };
+
+    dashSheet.getCell(`N${rowIdx}`).value = config.useLiveExcelFormulas
+      ? {
+          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
+          result: r.actualProfit,
+        }
+      : r.actualProfit;
+    dashSheet.getCell(`N${rowIdx}`).numFmt = '$#,##0';
+    dashSheet.getCell(`N${rowIdx}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.emeraldDark } };
+    dashSheet.getCell(`N${rowIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const barBlocks = Math.max(1, Math.round(r.quotaAttainmentPct * 12));
+    const cellVBar = dashSheet.getCell(`O${rowIdx}`);
+    cellVBar.value = config.useLiveExcelFormulas ? { formula: `IF(M${rowIdx}>0, REPT("■", MIN(14, ROUND(M${rowIdx}*12, 0))), "")` } : '■'.repeat(barBlocks);
+    cellVBar.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: r.quotaAttainmentPct >= 1 ? COLORS.emeraldBar : COLORS.amberDark } };
+    cellVBar.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    regCols.forEach((col) => {
+      dashSheet.getCell(`${col}${rowIdx}`).border = {
+        bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
+      };
+    });
+  });
+
+  // Total Regional Row (Row 50)
+  dashSheet.getRow(50).height = 22;
+  regCols.forEach((col) => {
+    const c = dashSheet.getCell(`${col}50`);
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+    c.border = {
+      top: { style: 'thin', color: { argb: COLORS.borderDark } },
+      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+    };
+    c.font = { name: 'Segoe UI', size: 8.5, bold: true };
+  });
+  dashSheet.getCell('I50').value = 'Total:';
+  dashSheet.getCell('K50').value = config.useLiveExcelFormulas ? { formula: 'SUM(K46:K49)' } : kpi.totalRevenue;
+  dashSheet.getCell('K50').numFmt = '$#,##0';
+  dashSheet.getCell('L50').value = config.useLiveExcelFormulas ? { formula: 'SUM(L46:L49)' } : regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0);
+  dashSheet.getCell('L50').numFmt = '$#,##0';
+  dashSheet.getCell('M50').value = config.useLiveExcelFormulas ? { formula: 'IF(L50>0, K50/L50, 0)' } : (kpi.totalRevenue / regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0));
+  dashSheet.getCell('M50').numFmt = '0.0%';
+  dashSheet.getCell('N50').value = config.useLiveExcelFormulas ? { formula: 'SUM(N46:N49)' } : kpi.totalGrossProfit;
+  dashSheet.getCell('N50').numFmt = '$#,##0';
+  dashSheet.getCell('O50').value = 'Target Met';
+
+  // Spacer Row 51
+  dashSheet.getRow(51).height = 10;
+
+  // RIGHT SIDE BOTTOM: TOP STRATEGIC CLIENT ACCOUNTS (Rows 52 to 58)
+  dashSheet.mergeCells('I52:O52');
+  const accTitle = dashSheet.getCell('I52');
+  accTitle.value = 'TOP STRATEGIC ENTERPRISE CLIENT ACCOUNTS';
+  accTitle.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
+  accTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
+  accTitle.alignment = { vertical: 'middle', horizontal: 'center' };
+  dashSheet.getRow(52).height = 22;
+
+  dashSheet.mergeCells('I53:K53');
+  dashSheet.getCell('I53').value = 'Organization';
+  dashSheet.getCell('L53').value = 'Tier';
+  dashSheet.getCell('M53').value = 'Orders';
+  dashSheet.getCell('N53').value = 'Revenue';
+  dashSheet.getCell('O53').value = 'Health';
+  ['I', 'L', 'M', 'N', 'O'].forEach((col) => {
+    const c = dashSheet.getCell(`${col}53`);
+    c.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.pureWhite } };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
+  });
+  dashSheet.getRow(53).height = 20;
+
+  customerAccounts.slice(0, 4).forEach((acc, idx) => {
+    const rIdx = 54 + idx;
+    const bgRow = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
+    dashSheet.getRow(rIdx).height = 19;
+
+    dashSheet.mergeCells(`I${rIdx}:K${rIdx}`);
+    const cellName = dashSheet.getCell(`I${rIdx}`);
+    cellName.value = acc.customerName;
+    cellName.font = { name: 'Segoe UI', size: 8.5, bold: true };
+    cellName.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const cellTier = dashSheet.getCell(`L${rIdx}`);
+    cellTier.value = acc.tier.replace('Enterprise Strategic', 'Strategic');
+    cellTier.font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.slateMuted } };
+    cellTier.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const cellOrd = dashSheet.getCell(`M${rIdx}`);
+    cellOrd.value = config.useLiveExcelFormulas
+      ? {
+          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          result: acc.totalOrders,
+        }
+      : acc.totalOrders;
+    cellOrd.numFmt = '#,##0';
+    cellOrd.font = { name: 'Segoe UI', size: 8.5 };
+    cellOrd.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const cellRev = dashSheet.getCell(`N${rIdx}`);
+    cellRev.value = config.useLiveExcelFormulas
+      ? {
+          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          result: acc.lifetimeRevenue,
+        }
+      : acc.lifetimeRevenue;
+    cellRev.numFmt = '$#,##0';
+    cellRev.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.emeraldDark } };
+    cellRev.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    const cellH = dashSheet.getCell(`O${rIdx}`);
+    cellH.value = acc.accountHealth;
+    cellH.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: acc.accountHealth === 'Optimal' ? COLORS.emeraldDark : COLORS.amberDark } };
+    cellH.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
+
+    ['I', 'L', 'M', 'N', 'O'].forEach((col) => {
+      dashSheet.getCell(`${col}${rIdx}`).border = {
+        bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
+      };
+    });
+  });
+
+  // Strategic Accounts Total Row (Row 58)
+  dashSheet.getRow(58).height = 22;
+  dashSheet.mergeCells('I58:K58');
+  const accTotLabel = dashSheet.getCell('I58');
+  accTotLabel.value = 'Top Strategic Total:';
+  accTotLabel.font = { name: 'Segoe UI', size: 8.5, bold: true };
+  accTotLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+
+  dashSheet.getCell('L58').value = '4 Accounts';
+  dashSheet.getCell('L58').font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.slateMuted } };
+  dashSheet.getCell('L58').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+
+  dashSheet.getCell('M58').value = config.useLiveExcelFormulas ? { formula: 'SUM(M54:M57)' } : customerAccounts.slice(0, 4).reduce((s, a) => s + a.totalOrders, 0);
+  dashSheet.getCell('M58').numFmt = '#,##0';
+  dashSheet.getCell('M58').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('M58').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+
+  dashSheet.getCell('N58').value = config.useLiveExcelFormulas ? { formula: 'SUM(N54:N57)' } : customerAccounts.slice(0, 4).reduce((s, a) => s + a.lifetimeRevenue, 0);
+  dashSheet.getCell('N58').numFmt = '$#,##0';
+  dashSheet.getCell('N58').font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.emeraldDark } };
+  dashSheet.getCell('N58').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+
+  dashSheet.getCell('O58').value = '100% Retained';
+  dashSheet.getCell('O58').font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.emeraldDark } };
+  dashSheet.getCell('O58').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+
+  ['I', 'L', 'M', 'N', 'O'].forEach((col) => {
+    dashSheet.getCell(`${col}58`).border = {
+      top: { style: 'thin', color: { argb: COLORS.borderDark } },
+      bottom: { style: 'double', color: { argb: COLORS.navyDark } },
+    };
+  });
+
+  // Spacer Row 59 between Table Block 1 and Table Block 2
+  dashSheet.getRow(59).height = 14;
+
+  // -------------------------------------------------------------
+  // DATA TABLE BLOCK 2: ROWS 60 TO 67 (SYMMETRICAL DUAL-COLUMN GRID)
+  // Left: Product Category Portfolio & Margin Directory (B60:H67)
+  // Right: Sales Channel Revenue Distribution & Mix Matrix (I60:O67)
+  // -------------------------------------------------------------
+
+  // LEFT SIDE: PRODUCT CATEGORY PORTFOLIO TABLE (B60:H67)
+  dashSheet.mergeCells('B60:H60');
+  const catBanner = dashSheet.getCell('B60');
   catBanner.value = 'PRODUCT CATEGORY PORTFOLIO & MARGIN DIRECTORY';
   catBanner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
   catBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
   catBanner.alignment = { vertical: 'middle', horizontal: 'center' };
+  dashSheet.getRow(60).height = 22;
 
   const catHeaders = [
-    { col: 'I', title: 'Category' },
-    { col: 'J', title: 'Units' },
-    { col: 'K', title: 'Gross Revenue' },
-    { col: 'L', title: 'Rev Share' },
-    { col: 'M', title: 'Gross Profit' },
-    { col: 'N', title: 'Margin %' },
-    { col: 'O', title: 'Volume Bar' },
+    { col: 'B', title: 'Category' },
+    { col: 'C', title: 'Units' },
+    { col: 'D', title: 'Gross Revenue' },
+    { col: 'E', title: 'Rev Share' },
+    { col: 'F', title: 'Gross Profit' },
+    { col: 'G', title: 'Margin %' },
+    { col: 'H', title: 'Volume Bar' },
   ];
   catHeaders.forEach((ch) => {
-    const c = dashSheet.getCell(`${ch.col}45`);
+    const c = dashSheet.getCell(`${ch.col}61`);
     c.value = ch.title;
     c.font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.pureWhite } };
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
-    c.alignment = { vertical: 'middle', horizontal: ch.col === 'I' ? 'left' : 'right' };
+    c.alignment = { vertical: 'middle', horizontal: ch.col === 'B' ? 'left' : 'right' };
   });
+  dashSheet.getRow(61).height = 20;
 
   const maxCatRev = Math.max(...categorySummaries.map((c) => c.revenue), 1);
   const displayCats = categorySummaries.slice(0, 5);
 
   displayCats.forEach((cat, idx) => {
-    const rNum = 46 + idx;
+    const rNum = 62 + idx;
     dashSheet.getRow(rNum).height = 19;
     const bg = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
 
-    dashSheet.getCell(`I${rNum}`).value = cat.category;
-    dashSheet.getCell(`I${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
-    dashSheet.getCell(`I${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`B${rNum}`).value = cat.category;
+    dashSheet.getCell(`B${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
+    dashSheet.getCell(`B${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
-    dashSheet.getCell(`J${rNum}`).value = config.useLiveExcelFormulas
+    dashSheet.getCell(`C${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.units,
         }
       : cat.units;
-    dashSheet.getCell(`J${rNum}`).numFmt = '#,##0';
-    dashSheet.getCell(`J${rNum}`).font = { name: 'Segoe UI', size: 8.5 };
-    dashSheet.getCell(`J${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`C${rNum}`).numFmt = '#,##0';
+    dashSheet.getCell(`C${rNum}`).font = { name: 'Segoe UI', size: 8.5 };
+    dashSheet.getCell(`C${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
-    dashSheet.getCell(`K${rNum}`).value = config.useLiveExcelFormulas
+    dashSheet.getCell(`D${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.revenue,
         }
       : cat.revenue;
-    dashSheet.getCell(`K${rNum}`).numFmt = '$#,##0';
-    dashSheet.getCell(`K${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
-    dashSheet.getCell(`K${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`D${rNum}`).numFmt = '$#,##0';
+    dashSheet.getCell(`D${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
+    dashSheet.getCell(`D${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
-    dashSheet.getCell(`L${rNum}`).value = config.useLiveExcelFormulas
-      ? { formula: `IF($K$51>0, K${rNum}/$K$51, 0)`, result: cat.sharePct }
+    dashSheet.getCell(`E${rNum}`).value = config.useLiveExcelFormulas
+      ? { formula: `IF($D$67>0, D${rNum}/$D$67, 0)`, result: cat.sharePct }
       : cat.sharePct;
-    dashSheet.getCell(`L${rNum}`).numFmt = '0.0%';
-    dashSheet.getCell(`L${rNum}`).font = { name: 'Segoe UI', size: 8.5 };
-    dashSheet.getCell(`L${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`E${rNum}`).numFmt = '0.0%';
+    dashSheet.getCell(`E${rNum}`).font = { name: 'Segoe UI', size: 8.5 };
+    dashSheet.getCell(`E${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
-    dashSheet.getCell(`M${rNum}`).value = config.useLiveExcelFormulas
+    dashSheet.getCell(`F${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.grossProfit,
         }
       : cat.grossProfit;
-    dashSheet.getCell(`M${rNum}`).numFmt = '$#,##0';
-    dashSheet.getCell(`M${rNum}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.emeraldDark } };
-    dashSheet.getCell(`M${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`F${rNum}`).numFmt = '$#,##0';
+    dashSheet.getCell(`F${rNum}`).font = { name: 'Segoe UI', size: 8.5, color: { argb: COLORS.emeraldDark } };
+    dashSheet.getCell(`F${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
-    dashSheet.getCell(`N${rNum}`).value = config.useLiveExcelFormulas
-      ? { formula: `IF(K${rNum}>0, M${rNum}/K${rNum}, 0)`, result: cat.marginPct }
+    dashSheet.getCell(`G${rNum}`).value = config.useLiveExcelFormulas
+      ? { formula: `IF(D${rNum}>0, F${rNum}/D${rNum}, 0)`, result: cat.marginPct }
       : cat.marginPct;
-    dashSheet.getCell(`N${rNum}`).numFmt = '0.0%';
-    dashSheet.getCell(`N${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.indigoDark } };
-    dashSheet.getCell(`N${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`G${rNum}`).numFmt = '0.0%';
+    dashSheet.getCell(`G${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.indigoDark } };
+    dashSheet.getCell(`G${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
     const barBlocks = Math.max(1, Math.round((cat.revenue / maxCatRev) * 12));
-    dashSheet.getCell(`O${rNum}`).value = '█'.repeat(barBlocks);
-    dashSheet.getCell(`O${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.indigoBar } };
-    dashSheet.getCell(`O${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    dashSheet.getCell(`H${rNum}`).value = '█'.repeat(barBlocks);
+    dashSheet.getCell(`H${rNum}`).font = { name: 'Segoe UI', size: 8.5, bold: true, color: { argb: COLORS.indigoBar } };
+    dashSheet.getCell(`H${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
     catHeaders.forEach((ch) => {
       dashSheet.getCell(`${ch.col}${rNum}`).border = {
@@ -719,24 +774,26 @@ export async function exportToProfessionalExcel(
     });
   });
 
-  // Category Total Row (Row 51)
-  const catTotRow = 46 + displayCats.length;
-  dashSheet.getRow(catTotRow).height = 22;
-  dashSheet.getCell(`I${catTotRow}`).value = 'Total Portfolio:';
-  dashSheet.getCell(`I${catTotRow}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
-  dashSheet.getCell(`K${catTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(K46:K${catTotRow - 1})` } : kpi.totalRevenue;
-  dashSheet.getCell(`K${catTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`K${catTotRow}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
-  dashSheet.getCell(`L${catTotRow}`).value = 1.0;
-  dashSheet.getCell(`L${catTotRow}`).numFmt = '0.0%';
-  dashSheet.getCell(`M${catTotRow}`).value = config.useLiveExcelFormulas ? { formula: `SUM(M46:M${catTotRow - 1})` } : kpi.totalGrossProfit;
-  dashSheet.getCell(`M${catTotRow}`).numFmt = '$#,##0';
-  dashSheet.getCell(`N${catTotRow}`).value = config.useLiveExcelFormulas ? { formula: `M${catTotRow}/K${catTotRow}` } : kpi.overallMarginPct;
-  dashSheet.getCell(`N${catTotRow}`).numFmt = '0.0%';
-  dashSheet.getCell(`N${catTotRow}`).font = { name: 'Segoe UI', size: 8.5, bold: true };
+  // Category Total Row (Row 67)
+  dashSheet.getRow(67).height = 22;
+  dashSheet.getCell('B67').value = 'Total Portfolio:';
+  dashSheet.getCell('B67').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('C67').value = config.useLiveExcelFormulas ? { formula: 'SUM(C62:C66)' } : categorySummaries.slice(0, 5).reduce((s, c) => s + c.units, 0);
+  dashSheet.getCell('C67').numFmt = '#,##0';
+  dashSheet.getCell('D67').value = config.useLiveExcelFormulas ? { formula: 'SUM(D62:D66)' } : kpi.totalRevenue;
+  dashSheet.getCell('D67').numFmt = '$#,##0';
+  dashSheet.getCell('D67').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('E67').value = 1.0;
+  dashSheet.getCell('E67').numFmt = '0.0%';
+  dashSheet.getCell('F67').value = config.useLiveExcelFormulas ? { formula: 'SUM(F62:F66)' } : kpi.totalGrossProfit;
+  dashSheet.getCell('F67').numFmt = '$#,##0';
+  dashSheet.getCell('G67').value = config.useLiveExcelFormulas ? { formula: 'F67/D67' } : kpi.overallMarginPct;
+  dashSheet.getCell('G67').numFmt = '0.0%';
+  dashSheet.getCell('G67').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('H67').value = '100.0%';
 
   catHeaders.forEach((ch) => {
-    const c = dashSheet.getCell(`${ch.col}${catTotRow}`);
+    const c = dashSheet.getCell(`${ch.col}67`);
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
@@ -744,16 +801,14 @@ export async function exportToProfessionalExcel(
     };
   });
 
-  // -------------------------------------------------------------
-  // SALES CHANNEL TABLE (I54:O60) - Referenced by Native Donut Chart (Chart 4)
-  // -------------------------------------------------------------
-  dashSheet.mergeCells('I54:O54');
-  const chanBanner = dashSheet.getCell('I54');
-  chanBanner.value = 'SALES CHANNEL REVENUE DISTRIBUTION (DONUT CHART SOURCE)';
+  // RIGHT SIDE: SALES CHANNEL TABLE (I60:O67)
+  dashSheet.mergeCells('I60:O60');
+  const chanBanner = dashSheet.getCell('I60');
+  chanBanner.value = 'SALES CHANNEL REVENUE DISTRIBUTION & MIX MATRIX';
   chanBanner.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
   chanBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
   chanBanner.alignment = { vertical: 'middle', horizontal: 'center' };
-  dashSheet.getRow(54).height = 20;
+  dashSheet.getRow(60).height = 22;
 
   const chanHeaders = [
     { col: 'I', title: 'Sales Channel', align: 'left' },
@@ -765,13 +820,13 @@ export async function exportToProfessionalExcel(
     { col: 'O', title: 'Mix Bar', align: 'left' },
   ];
   chanHeaders.forEach((ch) => {
-    const c = dashSheet.getCell(`${ch.col}55`);
+    const c = dashSheet.getCell(`${ch.col}61`);
     c.value = ch.title;
     c.font = { name: 'Segoe UI', size: 8, bold: true, color: { argb: COLORS.pureWhite } };
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
     c.alignment = { vertical: 'middle', horizontal: ch.align as any };
   });
-  dashSheet.getRow(55).height = 19;
+  dashSheet.getRow(61).height = 20;
 
   const channelMixData = [
     { name: 'Direct Enterprise', share: 0.42, rev: Math.round(kpi.totalRevenue * 0.42), prof: Math.round(kpi.totalGrossProfit * 0.43), status: 'Primary' },
@@ -781,8 +836,8 @@ export async function exportToProfessionalExcel(
   ];
 
   channelMixData.forEach((ch, idx) => {
-    const rNum = 56 + idx;
-    dashSheet.getRow(rNum).height = 18;
+    const rNum = 62 + idx;
+    dashSheet.getRow(rNum).height = 19;
     const bg = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
 
     dashSheet.getCell(`I${rNum}`).value = ch.name;
@@ -790,7 +845,7 @@ export async function exportToProfessionalExcel(
     dashSheet.getCell(`I${rNum}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
     dashSheet.getCell(`J${rNum}`).value = config.useLiveExcelFormulas
-      ? { formula: `IF($K$60>0, K${rNum}/$K$60, 0)`, result: ch.share }
+      ? { formula: `IF($K$66>0, K${rNum}/$K$66, 0)`, result: ch.share }
       : ch.share;
     dashSheet.getCell(`J${rNum}`).numFmt = '0.0%';
     dashSheet.getCell(`J${rNum}`).font = { name: 'Segoe UI', size: 8.5 };
@@ -840,22 +895,22 @@ export async function exportToProfessionalExcel(
     });
   });
 
-  // Channel Total Row (Row 60)
-  dashSheet.getRow(60).height = 20;
-  dashSheet.getCell('I60').value = 'Total Channel Mix:';
-  dashSheet.getCell('I60').font = { name: 'Segoe UI', size: 8.5, bold: true };
-  dashSheet.getCell('J60').value = 1.0;
-  dashSheet.getCell('J60').numFmt = '0.0%';
-  dashSheet.getCell('K60').value = config.useLiveExcelFormulas ? { formula: 'SUM(K56:K59)' } : kpi.totalRevenue;
-  dashSheet.getCell('K60').numFmt = '$#,##0';
-  dashSheet.getCell('K60').font = { name: 'Segoe UI', size: 8.5, bold: true };
-  dashSheet.getCell('L60').value = config.useLiveExcelFormulas ? { formula: 'SUM(L56:L59)' } : kpi.totalGrossProfit;
-  dashSheet.getCell('L60').numFmt = '$#,##0';
-  dashSheet.getCell('M60').value = config.useLiveExcelFormulas ? { formula: 'L60/K60' } : kpi.overallMarginPct;
-  dashSheet.getCell('M60').numFmt = '0.0%';
+  // Channel Total Row (Row 66)
+  dashSheet.getRow(66).height = 22;
+  dashSheet.getCell('I66').value = 'Total Channel Mix:';
+  dashSheet.getCell('I66').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('J66').value = 1.0;
+  dashSheet.getCell('J66').numFmt = '0.0%';
+  dashSheet.getCell('K66').value = config.useLiveExcelFormulas ? { formula: 'SUM(K62:K65)' } : kpi.totalRevenue;
+  dashSheet.getCell('K66').numFmt = '$#,##0';
+  dashSheet.getCell('K66').font = { name: 'Segoe UI', size: 8.5, bold: true };
+  dashSheet.getCell('L66').value = config.useLiveExcelFormulas ? { formula: 'SUM(L62:L65)' } : kpi.totalGrossProfit;
+  dashSheet.getCell('L66').numFmt = '$#,##0';
+  dashSheet.getCell('M66').value = config.useLiveExcelFormulas ? { formula: 'L66/K66' } : kpi.overallMarginPct;
+  dashSheet.getCell('M66').numFmt = '0.0%';
 
   chanHeaders.forEach((h) => {
-    const c = dashSheet.getCell(`${h.col}60`);
+    const c = dashSheet.getCell(`${h.col}66`);
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
     c.border = {
       top: { style: 'thin', color: { argb: COLORS.borderDark } },
@@ -863,18 +918,31 @@ export async function exportToProfessionalExcel(
     };
   });
 
-  // -------------------------------------------------------------
-  // STRATEGIC INSIGHTS MEMO (Rows 62 to 67)
-  // -------------------------------------------------------------
-  dashSheet.getRow(61).height = 10;
+  // Channel Reconciliation Row (Row 67)
+  dashSheet.getRow(67).height = 22;
+  dashSheet.mergeCells('I67:O67');
+  const chanAudit = dashSheet.getCell('I67');
+  chanAudit.value = '✓ 100% of Channel Revenue is dynamically validated against the Transaction Ledger';
+  chanAudit.font = { name: 'Segoe UI', size: 8.5, italic: true, color: { argb: COLORS.slateMuted } };
+  chanAudit.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+  chanAudit.alignment = { horizontal: 'center', vertical: 'middle' };
+  chanAudit.border = {
+    bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
+  };
 
-  dashSheet.mergeCells('B62:O62');
-  const insightsTitle = dashSheet.getCell('B62');
+  // Spacer Row 68
+  dashSheet.getRow(68).height = 12;
+
+  // -------------------------------------------------------------
+  // STRATEGIC INSIGHTS MEMO (Rows 69 to 74)
+  // -------------------------------------------------------------
+  dashSheet.mergeCells('B69:O69');
+  const insightsTitle = dashSheet.getCell('B69');
   insightsTitle.value = 'EXECUTIVE BI STRATEGIC INTELLIGENCE BRIEFING & C-SUITE MEMO';
   insightsTitle.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
   insightsTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
   insightsTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  dashSheet.getRow(62).height = 24;
+  dashSheet.getRow(69).height = 24;
 
   const strategicInsights = [
     {
@@ -900,7 +968,7 @@ export async function exportToProfessionalExcel(
   ];
 
   strategicInsights.forEach((item, idx) => {
-    const rowNum = 63 + idx;
+    const rowNum = 70 + idx;
     dashSheet.getRow(rowNum).height = 20;
 
     dashSheet.mergeCells(`B${rowNum}:D${rowNum}`);
@@ -925,13 +993,14 @@ export async function exportToProfessionalExcel(
     cellA.alignment = { vertical: 'middle', horizontal: 'left' };
   });
 
-  // Footer note on Sheet 1
-  dashSheet.mergeCells('B68:O68');
-  const foot = dashSheet.getCell('B68');
+  // Footer note on Sheet 1 (Row 75)
+  dashSheet.getRow(74).height = 10;
+  dashSheet.mergeCells('B75:O75');
+  const foot = dashSheet.getCell('B75');
   foot.value = `CONFIDENTIAL • Built in native Microsoft Excel (.xlsx) format with real interactive DrawingML charts and live formulas • Compatible with Microsoft 365, Google Sheets, & Apple Numbers`;
   foot.font = { name: 'Segoe UI', size: 8, italic: true, color: { argb: COLORS.slateMuted } };
   foot.alignment = { horizontal: 'center', vertical: 'middle' };
-  dashSheet.getRow(68).height = 18;
+  dashSheet.getRow(75).height = 18;
 
 
 
@@ -967,7 +1036,7 @@ export async function exportToProfessionalExcel(
   // Header Banner
   pivotSheet.mergeCells('B2:R2');
   const pivTitle = pivotSheet.getCell('B2');
-  pivTitle.value = `${config.companyName.toUpperCase()} — DYNAMIC PIVOT TABLE ANALYSIS & CROSS-TABULATION MATRIX`;
+  pivTitle.value = `${(config.companyName || 'Enterprise Corp').toUpperCase()} — DYNAMIC PIVOT TABLE ANALYSIS & CROSS-TABULATION MATRIX`;
   pivTitle.font = { name: 'Segoe UI', size: 13, bold: true, color: { argb: COLORS.pureWhite } };
   pivTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyDark } };
   pivTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };

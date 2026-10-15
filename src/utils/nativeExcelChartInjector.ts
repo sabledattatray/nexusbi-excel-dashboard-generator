@@ -8,22 +8,26 @@ import { generateRealisticDataset } from './dataGenerator';
  * 
  * --- SHEET 1: EXECUTIVE DASHBOARD ---
  * 1. Chart 1: Native Vertical Clustered Column Run-Rate Chart (<c:barChart barDir="col">)
+ *    - Anchor: Columns B to H (B10:H25)
  *    - Data range: 'Executive Dashboard'!$B$46:$B$57 (Months)
  *    - Series 1: 'Executive Dashboard'!$C$46:$C$57 (Revenue)
  *    - Series 2: 'Executive Dashboard'!$E$46:$E$57 (Gross Profit)
  * 
  * 2. Chart 2: Native Excel 2D Pie Chart (<c:pieChart>)
- *    - Category labels: 'Executive Dashboard'!$I$46:$I$50 (Top 5 Categories)
- *    - Values: 'Executive Dashboard'!$K$46:$K$50 (Revenue)
+ *    - Anchor: Columns I to O (I10:O25)
+ *    - Category labels: 'Executive Dashboard'!$B$62:$B$66 (Top 5 Categories)
+ *    - Values: 'Executive Dashboard'!$D$62:$D$66 (Revenue)
  * 
  * 3. Chart 3: Native Horizontal Clustered Bar Chart (<c:barChart barDir="bar">)
- *    - Category labels: 'Executive Dashboard'!$I$28:$I$31 (Regions: North America, EMEA, APAC, LATAM)
- *    - Series 1: 'Executive Dashboard'!$K$28:$K$31 (Actual Rev)
- *    - Series 2: 'Executive Dashboard'!$L$28:$L$31 (Quota Target)
+ *    - Anchor: Columns B to H (B27:H42)
+ *    - Category labels: 'Executive Dashboard'!$I$46:$I$49 (Regions: North America, EMEA, APAC, LATAM)
+ *    - Series 1: 'Executive Dashboard'!$K$46:$K$49 (Actual Rev)
+ *    - Series 2: 'Executive Dashboard'!$L$46:$L$49 (Quota Target)
  * 
  * 4. Chart 4: Native Donut Chart (<c:doughnutChart holeSize="65">)
- *    - Category labels: 'Executive Dashboard'!$I$56:$I$59 (Sales Channels)
- *    - Values: 'Executive Dashboard'!$K$56:$K$59 (Channel Revenue)
+ *    - Anchor: Columns I to O (I27:O42)
+ *    - Category labels: 'Executive Dashboard'!$I$62:$I$65 (Sales Channels)
+ *    - Values: 'Executive Dashboard'!$K$62:$K$65 (Channel Revenue)
  * 
  * --- SHEET 2: PIVOT TABLE ANALYSIS (PIVOT CHARTS) ---
  * 5. Chart 5: Pivot Chart 1 - Global Theater by Sales Channel Matrix (<c:barChart barDir="col">)
@@ -54,17 +58,17 @@ export async function injectNativeExcelCharts(
   const months = monthlyTrends.slice(0, 12);
   const mCount = months.length;
   const startMonthRow = 46;
-  const endMonthRow = startMonthRow + mCount - 1;
+  const endMonthRow = startMonthRow + mCount - 1; // 46 to 57
 
   const topCats = categorySummaries.slice(0, 5);
   const cCount = topCats.length;
-  const startCatRow = 46;
-  const endCatRow = startCatRow + cCount - 1;
+  const startCatRow = 62; // Aligned with Table Block 2: B62:H66
+  const endCatRow = startCatRow + cCount - 1; // 62 to 66
 
   const regions = regionalPerformance.slice(0, 4);
   const rCount = regions.length;
-  const startRegRow = 28;
-  const endRegRow = startRegRow + rCount - 1;
+  const startRegRow = 46; // Aligned with Table Block 1: I46:O49
+  const endRegRow = startRegRow + rCount - 1; // 46 to 49
 
   // Channels for Donut Chart
   const totalRev = kpi.totalRevenue;
@@ -257,7 +261,7 @@ export async function injectNativeExcelCharts(
           <c:order val="0"/>
           <c:tx>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$K$45</c:f>
+              <c:f>'Executive Dashboard'!$D$61</c:f>
               <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Gross Revenue</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
@@ -271,7 +275,7 @@ export async function injectNativeExcelCharts(
           </c:dPt>`).join('')}
           <c:cat>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$I$${startCatRow}:$I$${endCatRow}</c:f>
+              <c:f>'Executive Dashboard'!$B$${startCatRow}:$B$${endCatRow}</c:f>
               <c:strCache>
                 <c:ptCount val="${cCount}"/>
                 ${topCats.map((c, i) => `<c:pt idx="${i}"><c:v>${escapeXml(c.category)}</c:v></c:pt>`).join('')}
@@ -280,7 +284,7 @@ export async function injectNativeExcelCharts(
           </c:cat>
           <c:val>
             <c:numRef>
-              <c:f>'Executive Dashboard'!$K$${startCatRow}:$K$${endCatRow}</c:f>
+              <c:f>'Executive Dashboard'!$D$${startCatRow}:$D$${endCatRow}</c:f>
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="${cCount}"/>
@@ -346,7 +350,7 @@ export async function injectNativeExcelCharts(
           <c:order val="0"/>
           <c:tx>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$K$27</c:f>
+              <c:f>'Executive Dashboard'!$K$45</c:f>
               <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Actual Rev</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
@@ -379,7 +383,7 @@ export async function injectNativeExcelCharts(
           <c:order val="1"/>
           <c:tx>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$L$27</c:f>
+              <c:f>'Executive Dashboard'!$L$45</c:f>
               <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Target Rev</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
@@ -486,7 +490,7 @@ export async function injectNativeExcelCharts(
           <c:order val="0"/>
           <c:tx>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$K$55</c:f>
+              <c:f>'Executive Dashboard'!$K$61</c:f>
               <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Channel Revenue</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
@@ -500,7 +504,7 @@ export async function injectNativeExcelCharts(
           </c:dPt>`).join('')}
           <c:cat>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$I$56:$I$59</c:f>
+              <c:f>'Executive Dashboard'!$I$62:$I$65</c:f>
               <c:strCache>
                 <c:ptCount val="4"/>
                 ${channelList.map((ch, i) => `<c:pt idx="${i}"><c:v>${escapeXml(ch.name)}</c:v></c:pt>`).join('')}
@@ -509,7 +513,7 @@ export async function injectNativeExcelCharts(
           </c:cat>
           <c:val>
             <c:numRef>
-              <c:f>'Executive Dashboard'!$K$56:$K$59</c:f>
+              <c:f>'Executive Dashboard'!$K$62:$K$65</c:f>
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="4"/>

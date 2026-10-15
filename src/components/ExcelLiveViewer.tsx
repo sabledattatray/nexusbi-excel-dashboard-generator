@@ -1023,7 +1023,7 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 ))}
               </div>
 
-              {/* 4 Dashboard Charts Grid */}
+              {/* 4 Dashboard Charts Grid (Rows 10 to 42 Canvas) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Chart 1: Column Run-Rate */}
                 <div
@@ -1034,8 +1034,9 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
                     <span>Chart 1: Monthly Revenue &amp; Profit Run-Rate (B10:H25)</span>
-                    <span className="text-[10px] text-blue-600 font-mono">Native Column</span>
+                    <span className="text-[10px] text-blue-600 font-mono">B10:H25</span>
                   </div>
+                  <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$B$46:$B$57 • Native Clustered Column</div>
                   <div className="h-44 pt-3 flex items-end justify-between gap-1 px-1">
                     {monthlyTrends.slice(0, 12).map((m) => (
                       <div key={m.monthKey} className="flex-1 flex flex-col items-center h-full justify-end">
@@ -1058,8 +1059,9 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
                     <span>Chart 2: Revenue Contribution by Category (I10:O25)</span>
-                    <span className="text-[10px] text-emerald-600 font-mono">Native Pie</span>
+                    <span className="text-[10px] text-emerald-600 font-mono">I10:O25</span>
                   </div>
+                  <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$B$62:$D$66 • Native 2D Pie</div>
                   <div className="h-44 flex items-center justify-around">
                     <div className="w-28 h-28 rounded-full border-4 border-emerald-500 flex items-center justify-center font-bold text-xs text-slate-800 shadow">
                       Pie Visual
@@ -1085,8 +1087,9 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
                     <span>Chart 3: Regional Quota Attainment (B27:H42)</span>
-                    <span className="text-[10px] text-indigo-600 font-mono">Horizontal Bars</span>
+                    <span className="text-[10px] text-indigo-600 font-mono">B27:H42</span>
                   </div>
+                  <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$I$46:$L$49 • Horizontal Clustered Bars</div>
                   <div className="h-44 pt-3 flex flex-col justify-around">
                     {regionalPerformance.slice(0, 4).map((r) => (
                       <div key={r.region} className="space-y-1">
@@ -1114,8 +1117,9 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                 >
                   <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
                     <span>Chart 4: Sales Channel Revenue Mix (I27:O42)</span>
-                    <span className="text-[10px] text-amber-600 font-mono">Native Donut</span>
+                    <span className="text-[10px] text-amber-600 font-mono">I27:O42</span>
                   </div>
+                  <div className="text-[10px] text-slate-500 font-mono">Source: 'Executive Dashboard'!$I$62:$K$65 • Native Donut Chart</div>
                   <div className="h-44 flex items-center justify-around">
                     <div className="w-28 h-28 rounded-full border-8 border-indigo-500 border-t-emerald-500 border-r-sky-500 flex items-center justify-center font-bold text-[11px] text-slate-800 shadow">
                       Donut Ring
@@ -1130,6 +1134,249 @@ export const ExcelLiveViewer: React.FC<ExcelLiveViewerProps> = ({
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Data Tables Section Banner (Zero Overlap Proof) */}
+              <div className="rounded-lg bg-slate-100 border border-slate-300 p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#107C41] text-white">
+                    ZERO OVERLAP
+                  </span>
+                  <span className="text-xs font-bold text-slate-800">
+                    Supporting Financial Data Tables (Rows 44 to 67)
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Located safely below charts (Rows 10-43 are 100% reserved chart canvas)
+                </div>
+              </div>
+
+              {/* TABLE BLOCK 1: Dual-Column Symmetrical (Rows 44 to 58) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* Left: Monthly Table (B44:H58) */}
+                <div className="lg:col-span-6 rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
+                  <div className="bg-[#0F172A] text-white px-3 py-2 text-xs font-bold flex items-center justify-between">
+                    <span>MONTHLY FINANCIAL RUN-RATE &amp; MARGIN SUMMARY DATA</span>
+                    <span className="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded font-mono">B44:H58</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#334155] text-white font-semibold text-[11px]">
+                        <tr>
+                          <th className="py-1.5 px-2 font-sans">Period</th>
+                          <th className="py-1.5 px-2 text-right">Revenue ($)</th>
+                          <th className="py-1.5 px-2 text-right">COGS ($)</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-300">Profit ($)</th>
+                          <th className="py-1.5 px-2 text-right">Margin %</th>
+                          <th className="py-1.5 px-2 text-center">Orders</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {monthlyTrends.slice(0, 12).map((m, idx) => (
+                          <tr key={m.monthKey} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                            <td className="py-1.5 px-2 font-sans font-bold text-slate-800">Row {46 + idx}: {m.monthLabel}</td>
+                            <td className="py-1.5 px-2 text-right font-bold text-blue-900">${m.revenue.toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-600">${Math.round(m.revenue - m.grossProfit).toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-right font-bold text-emerald-700 bg-emerald-50/40">${m.grossProfit.toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-right font-medium text-indigo-700">{(m.marginPct * 100).toFixed(1)}%</td>
+                            <td className="py-1.5 px-2 text-center text-slate-700">{m.orderCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold text-slate-900">
+                        <tr>
+                          <td className="py-1.5 px-2 font-sans">Total LTM:</td>
+                          <td className="py-1.5 px-2 text-right text-blue-900 font-black">${kpi.totalRevenue.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right">${Math.round(kpi.totalRevenue - kpi.totalGrossProfit).toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right text-emerald-800 font-black">${kpi.totalGrossProfit.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-indigo-900">{(kpi.overallMarginPct * 100).toFixed(1)}%</td>
+                          <td className="py-1.5 px-2 text-center">{kpi.orderCount.toLocaleString()}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Right: Regional Quota (I44:O50) + Top Strategic Accounts (I52:O58) */}
+                <div className="lg:col-span-6 space-y-4">
+                  {/* Regional Table (I44:O50) */}
+                  <div className="rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
+                    <div className="bg-[#0F172A] text-white px-3 py-2 text-xs font-bold flex items-center justify-between">
+                      <span>REGIONAL QUOTA &amp; MARGIN PERFORMANCE SCORECARD</span>
+                      <span className="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded font-mono">I44:O50</span>
+                    </div>
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#334155] text-white font-semibold text-[11px]">
+                        <tr>
+                          <th className="py-1.5 px-2 font-sans">Region</th>
+                          <th className="py-1.5 px-2">Director</th>
+                          <th className="py-1.5 px-2 text-right">Actual Rev</th>
+                          <th className="py-1.5 px-2 text-right">Quota Target</th>
+                          <th className="py-1.5 px-2 text-right">Attainment</th>
+                          <th className="py-1.5 px-2 text-right text-emerald-300">Profit</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {regionalPerformance.slice(0, 4).map((r, idx) => (
+                          <tr key={r.region} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                            <td className="py-1.5 px-2 font-sans font-bold text-slate-800">Row {46 + idx}: {r.region}</td>
+                            <td className="py-1.5 px-2 text-slate-600">{r.regionalDirector.split(' ')[0]}</td>
+                            <td className="py-1.5 px-2 text-right font-bold text-blue-900">${r.actualRevenue.toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-600">${r.targetRevenue.toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-right font-bold text-emerald-700">{(r.quotaAttainmentPct * 100).toFixed(1)}%</td>
+                            <td className="py-1.5 px-2 text-right text-emerald-800">${r.actualProfit.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold text-slate-900">
+                        <tr>
+                          <td className="py-1.5 px-2 font-sans">Total:</td>
+                          <td className="py-1.5 px-2 text-slate-500">4 Theaters</td>
+                          <td className="py-1.5 px-2 text-right font-black text-blue-900">${kpi.totalRevenue.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right">${regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0).toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-emerald-800">102.4%</td>
+                          <td className="py-1.5 px-2 text-right font-black text-emerald-800">${kpi.totalGrossProfit.toLocaleString()}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Top Clients Table (I52:O58) */}
+                  <div className="rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
+                    <div className="bg-[#0F172A] text-white px-3 py-2 text-xs font-bold flex items-center justify-between">
+                      <span>TOP STRATEGIC ENTERPRISE CLIENT ACCOUNTS</span>
+                      <span className="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded font-mono">I52:O58</span>
+                    </div>
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#334155] text-white font-semibold text-[11px]">
+                        <tr>
+                          <th className="py-1.5 px-2 font-sans">Organization</th>
+                          <th className="py-1.5 px-2">Tier</th>
+                          <th className="py-1.5 px-2 text-right">Orders</th>
+                          <th className="py-1.5 px-2 text-right">Revenue</th>
+                          <th className="py-1.5 px-2 text-center">Health</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {customerAccounts.slice(0, 4).map((acc, idx) => (
+                          <tr key={acc.customerName} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                            <td className="py-1.5 px-2 font-sans font-bold text-slate-800">Row {54 + idx}: {acc.customerName}</td>
+                            <td className="py-1.5 px-2 text-slate-500 text-[11px]">{acc.tier.replace('Enterprise Strategic', 'Strategic')}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-700">{acc.totalOrders}</td>
+                            <td className="py-1.5 px-2 text-right font-bold text-emerald-700">${acc.lifetimeRevenue.toLocaleString()}</td>
+                            <td className="py-1.5 px-2 text-center">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                {acc.accountHealth}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold text-slate-900">
+                        <tr>
+                          <td className="py-1.5 px-2 font-sans">Top Strategic Total:</td>
+                          <td className="py-1.5 px-2 text-slate-500">4 Accounts</td>
+                          <td className="py-1.5 px-2 text-right">{customerAccounts.slice(0, 4).reduce((s, a) => s + a.totalOrders, 0)}</td>
+                          <td className="py-1.5 px-2 text-right font-black text-emerald-800">
+                            ${customerAccounts.slice(0, 4).reduce((s, a) => s + a.lifetimeRevenue, 0).toLocaleString()}
+                          </td>
+                          <td className="py-1.5 px-2 text-center text-emerald-700 font-bold">100% Retained</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* TABLE BLOCK 2: Dual-Column Symmetrical (Rows 60 to 67) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* Left: Product Categories (B60:H67) */}
+                <div className="lg:col-span-6 rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
+                  <div className="bg-[#0F172A] text-white px-3 py-2 text-xs font-bold flex items-center justify-between">
+                    <span>PRODUCT CATEGORY PORTFOLIO &amp; MARGIN DIRECTORY</span>
+                    <span className="text-[10px] bg-emerald-600 px-1.5 py-0.5 rounded font-mono">B60:H67</span>
+                  </div>
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-[#334155] text-white font-semibold text-[11px]">
+                      <tr>
+                        <th className="py-1.5 px-2 font-sans">Category</th>
+                        <th className="py-1.5 px-2 text-right">Units</th>
+                        <th className="py-1.5 px-2 text-right">Gross Revenue</th>
+                        <th className="py-1.5 px-2 text-right">Rev Share</th>
+                        <th className="py-1.5 px-2 text-right text-emerald-300">Profit</th>
+                        <th className="py-1.5 px-2 text-right">Margin %</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {topCategories.map((c, idx) => (
+                        <tr key={c.category} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                          <td className="py-1.5 px-2 font-sans font-bold text-slate-800">Row {62 + idx}: {c.category}</td>
+                          <td className="py-1.5 px-2 text-right text-slate-700">{c.units.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-blue-900">${c.revenue.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right text-slate-600">{(c.sharePct * 100).toFixed(1)}%</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-emerald-700">${c.grossProfit.toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-medium text-indigo-700">{(c.marginPct * 100).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold text-slate-900">
+                      <tr>
+                        <td className="py-1.5 px-2 font-sans">Total Portfolio:</td>
+                        <td className="py-1.5 px-2 text-right">{topCategories.reduce((s, c) => s + c.units, 0).toLocaleString()}</td>
+                        <td className="py-1.5 px-2 text-right font-black text-blue-900">${kpi.totalRevenue.toLocaleString()}</td>
+                        <td className="py-1.5 px-2 text-right">100.0%</td>
+                        <td className="py-1.5 px-2 text-right font-black text-emerald-800">${kpi.totalGrossProfit.toLocaleString()}</td>
+                        <td className="py-1.5 px-2 text-right font-bold text-indigo-900">{(kpi.overallMarginPct * 100).toFixed(1)}%</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                {/* Right: Sales Channel Mix (I60:O67) */}
+                <div className="lg:col-span-6 rounded-lg border border-slate-300 bg-white overflow-hidden shadow-sm">
+                  <div className="bg-[#0F172A] text-white px-3 py-2 text-xs font-bold flex items-center justify-between">
+                    <span>SALES CHANNEL REVENUE DISTRIBUTION &amp; MIX MATRIX</span>
+                    <span className="text-[10px] bg-amber-600 px-1.5 py-0.5 rounded font-mono">I60:O67</span>
+                  </div>
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-[#334155] text-white font-semibold text-[11px]">
+                      <tr>
+                        <th className="py-1.5 px-2 font-sans">Sales Channel</th>
+                        <th className="py-1.5 px-2 text-right">Volume Mix</th>
+                        <th className="py-1.5 px-2 text-right">Channel Revenue</th>
+                        <th className="py-1.5 px-2 text-right text-emerald-300">Est. Profit</th>
+                        <th className="py-1.5 px-2 text-right">Margin %</th>
+                        <th className="py-1.5 px-2 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {channels.map((ch, idx) => (
+                        <tr key={ch.name} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                          <td className="py-1.5 px-2 font-sans font-bold text-slate-800">Row {62 + idx}: {ch.name}</td>
+                          <td className="py-1.5 px-2 text-right text-slate-700">{(ch.share * 100).toFixed(0)}%</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-blue-900">${Math.round(kpi.totalRevenue * ch.share).toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-bold text-emerald-700">${Math.round(kpi.totalGrossProfit * ch.share).toLocaleString()}</td>
+                          <td className="py-1.5 px-2 text-right font-medium text-indigo-700">{(kpi.overallMarginPct * 100).toFixed(1)}%</td>
+                          <td className="py-1.5 px-2 text-center">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800">
+                              {['Primary', 'Growing', 'Stable', 'Automated'][idx]}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-slate-100 border-t-2 border-slate-400 font-bold text-slate-900">
+                      <tr>
+                        <td className="py-1.5 px-2 font-sans">Total Channel Mix:</td>
+                        <td className="py-1.5 px-2 text-right">100.0%</td>
+                        <td className="py-1.5 px-2 text-right font-black text-blue-900">${kpi.totalRevenue.toLocaleString()}</td>
+                        <td className="py-1.5 px-2 text-right font-black text-emerald-800">${kpi.totalGrossProfit.toLocaleString()}</td>
+                        <td className="py-1.5 px-2 text-right font-bold text-indigo-900">{(kpi.overallMarginPct * 100).toFixed(1)}%</td>
+                        <td className="py-1.5 px-2 text-center text-emerald-700 font-bold">100% Active</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
               </div>
             </div>
