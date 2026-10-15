@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Download,
@@ -17,22 +17,30 @@ import {
   Upload,
   RotateCcw,
 } from 'lucide-react';
-import { ExcelLiveViewer } from './components/ExcelLiveViewer';
-import { IndustryDashboard } from './components/IndustryDashboard';
 import { generateProfessionalDataset } from './utils/professionalPresentation';
-import { exportToProfessionalExcel } from './utils/excelExporter';
-import { AdaptiveDashboard } from './components/AdaptiveDashboard';
 import { AnalysisSelection, initialSelection } from './utils/adaptiveAnalysis';
-import { exportAdaptiveExcel } from './utils/adaptiveExcelExporter';
 import { DatasetConfig } from './types/dataset';
 import { Navbar } from './components/Navbar';
-import { CustomizerModal } from './components/CustomizerModal';
-import { DownloadSuccessModal } from './components/DownloadSuccessModal';
-import { DataUploadModal } from './components/DataUploadModal';
 import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
+
+// Lazy-loaded heavy components for lightning-fast initial load & maximum smoothness
+const ExcelLiveViewer = lazy(() => import('./components/ExcelLiveViewer').then((m) => ({ default: m.ExcelLiveViewer })));
+const IndustryDashboard = lazy(() => import('./components/IndustryDashboard').then((m) => ({ default: m.IndustryDashboard })));
+const AdaptiveDashboard = lazy(() => import('./components/AdaptiveDashboard').then((m) => ({ default: m.AdaptiveDashboard })));
+const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((m) => ({ default: m.CustomizerModal })));
+const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
+const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
+
+const WorkspaceLoader = () => (
+  <div className="flex flex-col items-center justify-center py-20 px-4 min-h-[340px] text-center" aria-live="polite">
+    <div className="w-10 h-10 border-3 border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin mb-3" />
+    <span className="text-xs font-mono font-medium text-emerald-800">Loading analytics workspace…</span>
+    <span className="text-[11px] text-slate-500 mt-1">Preparing interactive charts and datasets</span>
+  </div>
+);
 
 export default function App() {
   // Dataset Configuration State
@@ -54,8 +62,6 @@ export default function App() {
 
   // Randomization Seed offset to allow "Refresh Data"
   const [seedOffset, setSeedOffset] = useState<number>(0);
-
-  // Slicer Filters
 
   // Modals state
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
@@ -84,11 +90,24 @@ export default function App() {
 
   useEffect(() => { setAnalysisSelection(initialSelection(dataset)); }, [dataset]);
 
-  // Handle Download Excel
+  // Handle Download Excel with dynamic chunk import to keep initial bundle tiny
   const handleDownloadExcel = useCallback(async () => {
     try {
       setIsDownloading(true);
-      const { blob, filename } = await (customImportResult ? exportAdaptiveExcel(dataset, dataset.config, analysisSelection) : exportToProfessionalExcel(dataset, config));
+      let blob: Blob;
+      let filename: string;
+
+      if (customImportResult) {
+        const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');
+        const res = await exportAdaptiveExcel(dataset, dataset.config, analysisSelection);
+        blob = res.blob;
+        filename = res.filename;
+      } else {
+        const { exportToProfessionalExcel } = await import('./utils/excelExporter');
+        const res = await exportToProfessionalExcel(dataset, config);
+        blob = res.blob;
+        filename = res.filename;
+      }
 
       // Trigger browser download
       const url = URL.createObjectURL(blob);
@@ -120,7 +139,6 @@ export default function App() {
 
   const handleRegenerateData = () => {
     if (customImportResult) {
-      // Re-trigger import synthesis
       return;
     }
     setSeedOffset((prev) => (prev + 1) % 100);
@@ -143,15 +161,6 @@ export default function App() {
       origin: { y: 0.55 },
       colors: ['#6366F1', '#10B981', '#38BDF8', '#F59E0B'],
     });
-  };
-
-  const handleExample = async (name: 'workforce' | 'sales') => {
-    try {
-      const response = await fetch(`/examples/${name}.csv`);
-      if (!response.ok) throw new Error('Example file could not be loaded.');
-      const table = await parseUploadedFile(new File([await response.text()], `${name}.csv`, { type: 'text/csv' }));
-      handleImportComplete(buildDatasetFromUpload(table, inferColumnMapping(table), { ...config, industry: table.schema!.detectedIndustry }));
-    } catch (error) { alert(error instanceof Error ? error.message : 'Could not load example.'); }
   };
 
   const handleResetToSample = () => {
@@ -204,7 +213,7 @@ export default function App() {
             currentIndustry={config.industry}
           />
         ) : (
-          <>
+          <Suspense fallback={<WorkspaceLoader />}>
             <div className="section-heading">
               <div>
                 <div className="eyebrow">YOUR WORKSPACE</div>
@@ -280,36 +289,45 @@ export default function App() {
                   view={activeTab}
                 />
               ))}
-          </>
+          </Suspense>
         )}
       </main>
 
       {/* Comprehensive Modern Footer */}
       <Footer onSelectTab={setActiveTab} onOpenUploadModal={() => setIsUploadModalOpen(true)} />
 
-      {/* Modals */}
-      <CustomizerModal key={config.industry + config.companyName + isCustomizerOpen}
-        isOpen={isCustomizerOpen}
-        onClose={() => setIsCustomizerOpen(false)}
-        config={config}
-        onSaveConfig={handleSaveConfig}
-      />
+      {/* Lazy-Loaded Modals */}
+      <Suspense fallback={null}>
+        {isCustomizerOpen && (
+          <CustomizerModal
+            key={config.industry + config.companyName + isCustomizerOpen}
+            isOpen={isCustomizerOpen}
+            onClose={() => setIsCustomizerOpen(false)}
+            config={config}
+            onSaveConfig={handleSaveConfig}
+          />
+        )}
 
-      <DataUploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        baseConfig={config}
-        onImportComplete={handleImportComplete}
-      />
+        {isUploadModalOpen && (
+          <DataUploadModal
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            baseConfig={config}
+            onImportComplete={handleImportComplete}
+          />
+        )}
 
-      <DownloadSuccessModal
-        isOpen={isSuccessOpen}
-        onClose={() => setIsSuccessOpen(false)}
-        filename={lastDownloadedFilename}
-        rowCount={config.recordCount}
-        onReDownload={handleDownloadExcel}
-        sourceBased={!!customImportResult}
-      />
+        {isSuccessOpen && (
+          <DownloadSuccessModal
+            isOpen={isSuccessOpen}
+            onClose={() => setIsSuccessOpen(false)}
+            filename={lastDownloadedFilename}
+            rowCount={config.recordCount}
+            onReDownload={handleDownloadExcel}
+            sourceBased={!!customImportResult}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

@@ -211,10 +211,10 @@ export const HomePage: React.FC<HomePageProps> = ({
           </p>
 
           {/* Primary Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3.5 mb-8">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5 mb-8">
             <button
               onClick={onOpenDashboard}
-              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-sm font-bold shadow-lg shadow-emerald-950/40 hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] active:scale-[0.98] text-slate-950 text-sm font-bold shadow-lg shadow-emerald-950/40 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
             >
               <LayoutDashboard size={17} />
               <span>Launch Live Dashboard</span>
@@ -223,7 +223,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             <button
               onClick={onOpenUploadModal}
-              className="inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-[#244b3f] hover:bg-[#2e5e4f] text-white text-sm font-semibold border border-[#3b7563] shadow-md transition-all"
+              className="inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-[#244b3f] hover:bg-[#2e5e4f] active:scale-[0.98] text-white text-sm font-semibold border border-[#3b7563] shadow-md transition-all w-full sm:w-auto"
             >
               <Upload size={17} />
               <span>Import CSV / Excel</span>
@@ -232,7 +232,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               onClick={onDownloadExcel}
               disabled={isDownloading}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 active:scale-[0.98] text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors w-full sm:w-auto"
             >
               <Download size={16} />
               <span>{isDownloading ? 'Compiling…' : 'Export Sample .XLSX'}</span>
@@ -240,22 +240,22 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Quick Trust Checks */}
-          <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-[#9bb3a8]">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-y-2.5 gap-x-6 text-xs text-[#9bb3a8]">
             <span className="flex items-center gap-1.5">
-              <Check size={14} className="text-[#86efac]" />
-              No signup required
+              <Check size={14} className="text-[#86efac] shrink-0" />
+              <span>No signup required</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <Check size={14} className="text-[#86efac]" />
-              100% Client-side privacy
+              <Check size={14} className="text-[#86efac] shrink-0" />
+              <span>100% Client-side privacy</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <Check size={14} className="text-[#86efac]" />
-              Live editable SUMIFS formulas
+              <Check size={14} className="text-[#86efac] shrink-0" />
+              <span>Live editable formulas</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <Check size={14} className="text-[#86efac]" />
-              Multi-sheet Excel (.xlsx) output
+              <Check size={14} className="text-[#86efac] shrink-0" />
+              <span>Multi-sheet .xlsx</span>
             </span>
           </div>
         </div>
@@ -264,7 +264,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* ========================================================================= */}
       {/* WORKBOOK ARCHITECTURE PREVIEW CARD (Visual representation of what you get) */}
       {/* ========================================================================= */}
-      <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-8 shadow-xs">
+      <section className="bg-white border border-[#dfe5da] rounded-2xl p-5 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 mb-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800">
@@ -272,23 +272,23 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span>Generated Workbook Architecture</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mt-1 font-heading">
-              What Inside Your Downloaded .XLSX Spreadsheet
+              What's Inside Your Downloaded .XLSX Spreadsheet
             </h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={onOpenExcelView}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
             >
               <Table size={14} />
-              <span>Open Spreadsheet View</span>
+              <span>Spreadsheet View</span>
             </button>
             <button
               onClick={onOpenDashboard}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#172b2a] hover:bg-[#203a35] text-white text-xs font-semibold transition-colors"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#172b2a] hover:bg-[#203a35] text-white text-xs font-semibold transition-colors"
             >
-              <span>Explore Dashboard</span>
+              <span>Live Dashboard</span>
               <ArrowRight size={13} />
             </button>
           </div>
@@ -297,7 +297,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* Mock Excel Sheet Container */}
         <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shadow-inner">
           {/* Simulated Workbook Tabs Bar */}
-          <div className="flex items-center gap-1 px-4 py-2.5 bg-slate-200/80 border-b border-slate-300 overflow-x-auto text-xs font-medium">
+          <div className="flex items-center gap-1 px-4 py-2.5 bg-slate-200/80 border-b border-slate-300 overflow-x-auto text-xs font-medium scrollbar-thin">
             <span className="px-3 py-1 rounded bg-white text-slate-900 border border-slate-300 font-semibold shadow-xs flex items-center gap-1.5 shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-600" />
               1. Executive Dashboard
@@ -320,62 +320,62 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Simulated Excel Grid & KPI Cards */}
-          <div className="p-6 bg-[#fbfdfa] space-y-6">
+          <div className="p-4 sm:p-6 bg-[#fbfdfa] space-y-5 sm:space-y-6">
             {/* Live Formula Bar Preview */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-200 font-mono text-xs text-slate-600">
-              <span className="font-bold text-slate-400 select-none">fx</span>
-              <span className="text-slate-400 select-none">|</span>
-              <span className="text-emerald-700 font-medium">
+            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-200 font-mono text-xs text-slate-600 overflow-x-auto">
+              <span className="font-bold text-slate-400 select-none shrink-0">fx</span>
+              <span className="text-slate-400 select-none shrink-0">|</span>
+              <span className="text-emerald-700 font-medium whitespace-nowrap">
                 =SUMIFS(Transactions!$G:$G, Transactions!$C:$C, $B$4, Transactions!$E:$E, C$2)
               </span>
             </div>
 
             {/* Simulated 4 High-Impact KPI Scorecards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-xs">
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
                   Gross Revenue
                 </span>
-                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                <span className="text-lg sm:text-2xl font-extrabold text-slate-900 block mt-1">
                   $9,842,500
                 </span>
-                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
-                  ▲ +14.2% YoY Target
+                <span className="text-[10px] sm:text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                  ▲ +14.2% YoY
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-xs">
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
                   Gross Margin %
                 </span>
-                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                <span className="text-lg sm:text-2xl font-extrabold text-slate-900 block mt-1">
                   76.4%
                 </span>
-                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
-                  ▲ +2.8 pts Variance
+                <span className="text-[10px] sm:text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                  ▲ +2.8 pts
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-xs">
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
                   Active Accounts
                 </span>
-                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                <span className="text-lg sm:text-2xl font-extrabold text-slate-900 block mt-1">
                   1,420
                 </span>
-                <span className="text-[11px] text-slate-500 font-medium block mt-1">
-                  Enterprise Client Base
+                <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block mt-1">
+                  Enterprise Base
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/90 shadow-xs">
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
                   Avg Order Value
                 </span>
-                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                <span className="text-lg sm:text-2xl font-extrabold text-slate-900 block mt-1">
                   $6,930
                 </span>
-                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                <span className="text-[10px] sm:text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
                   ▲ +8.4% MoM
                 </span>
               </div>
@@ -611,9 +611,9 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* ========================================================================= */}
       {/* AUTHOR / DEVELOPER CARD (DATTA SABLE)                                     */}
       {/* ========================================================================= */}
-      <section className="bg-gradient-to-r from-[#172b2a] via-[#1b342e] to-[#142823] text-white rounded-2xl p-6 sm:p-10 border border-[#2e5044] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md">
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-2xl shrink-0 shadow-sm">
+      <section className="bg-gradient-to-r from-[#172b2a] via-[#1b342e] to-[#142823] text-white rounded-2xl p-5 sm:p-10 border border-[#2e5044] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-xl sm:text-2xl shrink-0 shadow-sm">
             DS
           </div>
           <div>
@@ -626,12 +626,12 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
           <a
             href="https://dattasable.com/dashboards"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-md"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] active:scale-[0.98] text-slate-950 text-xs font-bold transition-all shadow-md w-full sm:w-auto"
           >
             <span>Explore BI Portfolio</span>
             <ExternalLink size={13} />
@@ -640,7 +640,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             href="https://dattasable.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 text-emerald-200 text-xs font-semibold transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 active:scale-[0.98] text-emerald-200 text-xs font-semibold transition-colors w-full sm:w-auto"
           >
             <span>dattasable.com</span>
             <ArrowRight size={13} />

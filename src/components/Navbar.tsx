@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Home,
   ArrowUpRight,
@@ -13,10 +13,10 @@ import {
   Table2,
   TrendingUp,
   Upload,
-  PanelLeft,
   CircleCheck,
-  FolderOpen,
   Globe,
+  Menu,
+  X,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -44,6 +44,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   isCustomDataActive,
 }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const views: { id: NavbarProps['activeTab']; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'home', label: 'Home Page', icon: Home },
     { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard },
@@ -55,18 +57,45 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'customers', label: 'Data Verification', icon: CircleCheck },
   ];
 
+  const handleSelectView = (id: NavbarProps['activeTab']) => {
+    setActiveTab(id);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
-      <aside className="workspace-sidebar" aria-label="Application sidebar">
-        {/* Brand Lockup with Subdomain */}
-        <button
-          onClick={() => setActiveTab('home')}
-          className="brand-lockup cursor-pointer text-left w-full"
-          title="excel.dattasable.com — Home"
-        >
-          <ExcelLogo size={36} tagline="excel.dattasable.com" />
-        </button>
+      {/* Mobile Drawer Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-200"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Persistent Sidebar (Desktop) / Slide-Out Drawer (Mobile & Tablet) */}
+      <aside
+        className={`workspace-sidebar ${isMobileMenuOpen ? 'mobile-drawer-open' : ''}`}
+        aria-label="Application sidebar"
+      >
+        {/* Top Header inside Sidebar: Logo & Close Button on Mobile */}
+        <div className="flex items-center justify-between w-full mb-1">
+          <button
+            onClick={() => handleSelectView('home')}
+            className="brand-lockup cursor-pointer text-left flex-1"
+            title="excel.dattasable.com — Home"
+          >
+            <ExcelLogo size={30} tagline="excel.dattasable.com" />
+          </button>
+
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-[#203a33] transition-colors"
+            aria-label="Close sidebar menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
         {/* Workspace Identity Pill */}
         <div className="sidebar-workspace">
@@ -75,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <strong>excel.dattasable.com</strong>
             <small>Executive BI Workspace</small>
           </div>
-          <ChevronRight size={14} className="text-emerald-500/70" />
+          <ChevronRight size={13} className="text-emerald-500/70 shrink-0" />
         </div>
 
         {/* Navigation Section */}
@@ -86,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               key={id}
               aria-current={activeTab === id ? 'page' : undefined}
               className={activeTab === id ? 'nav-item active' : 'nav-item'}
-              onClick={() => setActiveTab(id)}
+              onClick={() => handleSelectView(id)}
               title={label}
             >
               <Icon size={15} />
@@ -98,12 +127,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Tools Section */}
         <div className="sidebar-label sidebar-tools-label">REPORT TOOLS</div>
-        <button className="nav-item" onClick={onOpenUploadModal} title="Import your CSV or Excel dataset">
+        <button
+          className="nav-item"
+          onClick={() => {
+            onOpenUploadModal();
+            setIsMobileMenuOpen(false);
+          }}
+          title="Import your CSV or Excel dataset"
+        >
           <Upload size={15} />
           <span>Import CSV / Excel</span>
           <ArrowUpRight size={12} className="ml-auto opacity-60" />
         </button>
-        <button className="nav-item" onClick={onOpenCustomizer} title="Customize company, report title and industry">
+        <button
+          className="nav-item"
+          onClick={() => {
+            onOpenCustomizer();
+            setIsMobileMenuOpen(false);
+          }}
+          title="Customize company, report title and industry"
+        >
           <Settings2 size={15} />
           <span>Report Configuration</span>
         </button>
@@ -130,19 +173,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Workspace Sticky Topbar Header */}
       <header className="workspace-topbar" role="banner">
-        <div className="breadcrumb">
-          <PanelLeft size={16} />
+        <div className="breadcrumb min-w-0 flex-1">
+          {/* Mobile Menu Toggle Button */}
           <button
-            onClick={() => setActiveTab('home')}
-            className="hover:text-emerald-700 transition-colors font-mono font-medium text-left"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0"
+            aria-label="Toggle navigation menu"
+            title="Open Menu"
+          >
+            <Menu size={18} />
+          </button>
+
+          <button
+            onClick={() => handleSelectView('home')}
+            className="hover:text-emerald-700 transition-colors font-mono font-medium text-left truncate max-w-[120px] sm:max-w-none"
           >
             excel.dattasable.com
           </button>
-          <ChevronRight size={13} />
-          <strong>{views.find((v) => v.id === activeTab)?.label}</strong>
+          <ChevronRight size={13} className="shrink-0 text-slate-400" />
+          <strong className="truncate">{views.find((v) => v.id === activeTab)?.label}</strong>
         </div>
 
-        <div className="topbar-actions">
+        <div className="topbar-actions shrink-0">
           {/* Main Portfolio Link */}
           <a
             href="https://dattasable.com/dashboards"
@@ -156,9 +208,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ArrowUpRight size={11} />
           </a>
 
-          <span className="local-status">
+          <span className="local-status hidden xs:flex">
             <i />
-            {isCustomDataActive ? 'Custom Data Loaded' : 'Live Sample Data'}
+            {isCustomDataActive ? 'Custom Data' : 'Sample Data'}
           </span>
 
           <button
@@ -172,65 +224,41 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
-      {/* Mobile Top Navigation */}
-      <nav className="mobile-navigation" aria-label="Mobile workspace navigation">
-        <div className="flex items-center justify-between w-full px-2 py-1 mb-1 border-b border-[#29423b]">
-          <button onClick={() => setActiveTab('home')} className="text-left">
-            <ExcelLogo size={28} tagline="excel.dattasable.com" />
-          </button>
-          <a
-            href="https://dattasable.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-emerald-300 flex items-center gap-1"
-          >
-            dattasable.com <ArrowUpRight size={10} />
-          </a>
-        </div>
-        <div className="flex overflow-x-auto gap-1.5 w-full pb-1">
-          {views.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => setActiveTab(v.id)}
-              aria-current={activeTab === v.id ? 'page' : undefined}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </nav>
-
       {/* Action Toolbar */}
       <div className="workspace-toolbar">
-        <div className="dataset-breadcrumb">
-          <FileSpreadsheet size={16} className="text-emerald-700" />
-          <span className="font-semibold text-slate-800">{config.companyName}</span>
-          <span className="dataset-mode">
+        <div className="dataset-breadcrumb min-w-0 flex-1">
+          <FileSpreadsheet size={16} className="text-emerald-700 shrink-0" />
+          <span className="font-semibold text-slate-800 truncate">{config.companyName}</span>
+          <span className="dataset-mode hidden sm:inline-block">
             {isCustomDataActive ? 'Imported Dataset' : 'Automated Model'}
           </span>
         </div>
 
-        <div className="toolbar-actions">
+        <div className="toolbar-actions flex-wrap">
           {activeTab !== 'home' && (
             <button
               className="text-button"
-              onClick={() => setActiveTab('home')}
+              onClick={() => handleSelectView('home')}
               title="Return to Landing Page"
             >
               <Home size={14} />
-              <span>Home Guide</span>
+              <span className="hidden xs:inline">Home Guide</span>
             </button>
           )}
 
           {!isCustomDataActive && (
-            <button className="text-button" onClick={onRegenerateData} title="Generate new seed random transactions">
+            <button
+              className="text-button hidden sm:inline-flex"
+              onClick={onRegenerateData}
+              title="Generate new seed random transactions"
+            >
               <RefreshCw size={14} />
-              <span>Refresh Sample</span>
+              <span>Refresh</span>
             </button>
           )}
           <button className="secondary-button" onClick={onOpenUploadModal} title="Import CSV or Excel files">
             <Upload size={14} />
-            <span>Import Data</span>
+            <span>Import</span>
           </button>
           <button
             className="primary-button"
@@ -239,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Compile & Download multi-sheet .xlsx workbook"
           >
             <Download size={14} />
-            <span>{isDownloading ? 'Compiling Workbook…' : 'Export .XLSX Workbook'}</span>
+            <span>{isDownloading ? 'Compiling…' : 'Export .XLSX'}</span>
           </button>
         </div>
       </div>

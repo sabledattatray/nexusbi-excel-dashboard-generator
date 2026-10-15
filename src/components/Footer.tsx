@@ -21,14 +21,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal }
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="workspace-footer-custom bg-[#172b2a] text-[#b6c7c2] border-t border-[#29423b] pt-12 pb-8 px-6 md:px-12 ml-0 lg:ml-[var(--sidebar)] transition-all">
+    <footer className="workspace-footer-custom bg-[#172b2a] text-[#b6c7c2] border-t border-[#29423b] pt-10 pb-8 px-4 sm:px-8 md:px-12 transition-all">
       <div className="max-w-7xl mx-auto">
         {/* Top Section with Brand & Principles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-[#29423b]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-[#29423b]">
           {/* Brand Column */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="sm:col-span-2 lg:col-span-2 space-y-4">
             <a href="/" className="inline-block" title="excel.dattasable.com">
-              <ExcelLogo size={36} tagline="excel.dattasable.com" />
+              <ExcelLogo size={30} tagline="excel.dattasable.com" />
             </a>
             <p className="text-xs text-[#8da69d] max-w-sm leading-relaxed">
               Automated Excel and Executive KPI Dashboard Generator. Transform raw CSV, XLSX files, or synthetic models into boardroom-ready spreadsheets with native live formulas and visual analytics.
