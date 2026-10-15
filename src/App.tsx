@@ -35,6 +35,8 @@ const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((
 const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
 const ProUnlockModal = lazy(() => import('./components/ProUnlockModal').then((m) => ({ default: m.ProUnlockModal })));
+const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
+import { LegalTab } from './components/LegalModal';
 
 const WorkspaceLoader = () => (
   <div className="flex flex-col items-center justify-center py-20 px-4 min-h-[340px] text-center" aria-live="polite">
@@ -70,9 +72,16 @@ export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [isLegalOpen, setIsLegalOpen] = useState(false);
+  const [legalTab, setLegalTab] = useState<LegalTab>('privacy');
   const [isProUser, setIsProUser] = useState<boolean>(false);
   const [lastDownloadedFilename, setLastDownloadedFilename] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleOpenLegal = useCallback((tab: LegalTab) => {
+    setLegalTab(tab);
+    setIsLegalOpen(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('reset=1')) {
@@ -85,10 +94,18 @@ export default function App() {
     window.addEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
     window.addEventListener('storage', syncLicenseStatus);
 
-    // Deep-link route detection for dedicated SEO landing paths
+    // Deep-link route detection for dedicated SEO & legal paths
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
-      if (path.includes('sales-dashboard')) {
+      if (path.includes('privacy')) {
+        handleOpenLegal('privacy');
+      } else if (path.includes('terms')) {
+        handleOpenLegal('terms');
+      } else if (path.includes('refund')) {
+        handleOpenLegal('refund');
+      } else if (path.includes('contact')) {
+        handleOpenLegal('contact');
+      } else if (path.includes('sales-dashboard')) {
         const preset = INDUSTRY_PRESETS['enterprise_tech'];
         setConfig((prev) => ({ ...prev, industry: 'enterprise_tech', companyName: preset?.companyDefault || prev.companyName }));
         setActiveTab('dashboard');
@@ -111,7 +128,7 @@ export default function App() {
       window.removeEventListener(PRO_LICENSE_EVENT, syncLicenseStatus);
       window.removeEventListener('storage', syncLicenseStatus);
     };
-  }, []);
+  }, [handleOpenLegal]);
 
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
@@ -362,7 +379,11 @@ export default function App() {
       </main>
 
       {/* Comprehensive Modern Footer */}
-      <Footer onSelectTab={setActiveTab} onOpenUploadModal={() => setIsUploadModalOpen(true)} />
+      <Footer
+        onSelectTab={setActiveTab}
+        onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenLegal={handleOpenLegal}
+      />
 
       {/* Lazy-Loaded Modals */}
       <Suspense fallback={null}>
@@ -413,6 +434,14 @@ export default function App() {
               setIsUnlockModalOpen(false);
               handleDownloadExcel(true);
             }}
+          />
+        )}
+
+        {isLegalOpen && (
+          <LegalModal
+            isOpen={isLegalOpen}
+            onClose={() => setIsLegalOpen(false)}
+            defaultTab={legalTab}
           />
         )}
       </Suspense>

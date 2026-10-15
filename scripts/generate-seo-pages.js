@@ -71,6 +71,38 @@ const pages = [
     h1: 'Excel Dashboard Examples – Free Pre-Built Industry Templates',
     metaHeading: 'Excel Dashboard Examples & Industry Models',
   },
+  {
+    slug: 'privacy',
+    title: 'Privacy Policy | excel.dattasable.com — 100% Client-Side Privacy',
+    description: 'Learn how excel.dattasable.com protects your business data with strict 100% in-browser client-side execution and zero cloud data storage.',
+    canonical: 'https://excel.dattasable.com/privacy',
+    h1: 'Privacy Policy – 100% Client-Side Data Privacy Guarantee',
+    metaHeading: 'Privacy Policy & Zero Cloud Storage',
+  },
+  {
+    slug: 'terms',
+    title: 'Terms of Service | excel.dattasable.com — Commercial & License Terms',
+    description: 'Read the official Terms of Service for excel.dattasable.com governing commercial workbook usage, single-file downloads, and Lifetime VIP access.',
+    canonical: 'https://excel.dattasable.com/terms',
+    h1: 'Terms of Service – Commercial Licensing & Usage Rights',
+    metaHeading: 'Terms of Service',
+  },
+  {
+    slug: 'refund-policy',
+    title: 'Refund & Cancellation Policy | excel.dattasable.com',
+    description: 'Official refund and cancellation policy for digital Excel downloads, duplicate payment resolution, and VIP license purchases at excel.dattasable.com.',
+    canonical: 'https://excel.dattasable.com/refund-policy',
+    h1: 'Refund & Cancellation Policy – Digital Products & UPI Payments',
+    metaHeading: 'Refund & Cancellation Policy',
+  },
+  {
+    slug: 'contact',
+    title: 'Contact Us & Grievance Redressal | excel.dattasable.com',
+    description: 'Contact Dattatray Gorakh Sable, developer of excel.dattasable.com. Official support channels, WhatsApp, email, and grievance officer details.',
+    canonical: 'https://excel.dattasable.com/contact',
+    h1: 'Contact Us & Grievance Redressal – Datta Sable Analytics',
+    metaHeading: 'Contact & Grievance Details',
+  },
 ];
 
 for (const page of pages) {
