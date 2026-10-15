@@ -68,16 +68,45 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onToggleSidebar]);
 
-  const views: { id: NavbarProps['activeTab']; label: string; icon: typeof LayoutDashboard }[] = [
-    { id: 'home', label: 'Home Page', icon: Home },
-    { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard },
-    { id: 'excel-preview', label: 'Live Excel Workbook', icon: FileSpreadsheet },
-    { id: 'pivot', label: 'Grouped Pivot Analysis', icon: Layers3 },
-    { id: 'transactions', label: 'Source Records', icon: Table2 },
-    { id: 'regions', label: 'Time & Regional Trends', icon: TrendingUp },
-    { id: 'products', label: 'Category Breakdowns', icon: BarChart3 },
-    { id: 'customers', label: 'Data Verification', icon: CircleCheck },
+  interface NavItemDef {
+    id: NavbarProps['activeTab'];
+    label: string;
+    icon: typeof LayoutDashboard;
+    badge?: string;
+  }
+
+  interface NavGroupDef {
+    title: string;
+    items: NavItemDef[];
+  }
+
+  const navGroups: NavGroupDef[] = [
+    {
+      title: 'Core Dashboards',
+      items: [
+        { id: 'home', label: 'Home Page', icon: Home },
+        { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard, badge: 'Live' },
+        { id: 'excel-preview', label: 'Live Excel Workbook', icon: FileSpreadsheet, badge: '.XLSX' },
+      ],
+    },
+    {
+      title: 'Analytics & Records',
+      items: [
+        { id: 'pivot', label: 'Grouped Pivot Analysis', icon: Layers3, badge: 'Pivot' },
+        {
+          id: 'transactions',
+          label: 'Source Records',
+          icon: Table2,
+          badge: config.rowCount ? (config.rowCount >= 1000 ? `${(config.rowCount / 1000).toFixed(0)}k` : `${config.rowCount}`) : '1k',
+        },
+        { id: 'regions', label: 'Time & Regional Trends', icon: TrendingUp },
+        { id: 'products', label: 'Category Breakdowns', icon: BarChart3 },
+        { id: 'customers', label: 'Data Verification', icon: CircleCheck, badge: 'Audit' },
+      ],
+    },
   ];
+
+  const views = navGroups.flatMap((group) => group.items);
 
   const handleSelectView = (id: NavbarProps['activeTab']) => {
     setActiveTab(id);
@@ -100,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         className={`workspace-sidebar ${isMobileMenuOpen ? 'mobile-drawer-open' : ''}`}
         aria-label="Application sidebar"
       >
-        {/* Top Header inside Sidebar: Logo & Hide/Close Sidebar Button */}
+        {/* Top Header inside Sidebar: Logo & Hide Button */}
         <div className="flex items-center justify-between w-full mb-3 pb-2 border-b border-[#243e37]">
           <button
             onClick={() => handleSelectView('home')}
@@ -110,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ExcelLogo size={28} tagline="excel.dattasable.com" />
           </button>
 
-          {/* Hide Sidebar Button (collapses sidebar on desktop / closes drawer on mobile) */}
+          {/* Hide Sidebar button inside sidebar */}
           <button
             onClick={() => {
               if (window.innerWidth <= 1024) {
@@ -127,49 +156,64 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Navigation Section */}
-        <div className="sidebar-label">WORKSPACE VIEWS</div>
+        {/* Navigation Sections */}
         <nav aria-label="Workspace views" className="sidebar-nav">
-          {views.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              aria-current={activeTab === id ? 'page' : undefined}
-              className={activeTab === id ? 'nav-item active' : 'nav-item'}
-              onClick={() => handleSelectView(id)}
-              title={label}
-            >
-              <Icon size={15} />
-              <span>{label}</span>
-              {activeTab === id && <span className="nav-active-dot" />}
-            </button>
+          {navGroups.map((group, groupIdx) => (
+            <React.Fragment key={group.title}>
+              {groupIdx > 0 && <div className="sidebar-divider" role="separator" />}
+              <div className="sidebar-label">
+                <span className="sidebar-label-dot" />
+                <span>{group.title}</span>
+              </div>
+              {group.items.map(({ id, label, icon: Icon, badge }) => (
+                <button
+                  key={id}
+                  aria-current={activeTab === id ? 'page' : undefined}
+                  className={activeTab === id ? 'nav-item active' : 'nav-item'}
+                  onClick={() => handleSelectView(id)}
+                  title={label}
+                >
+                  <Icon size={14.5} />
+                  <span className="truncate">{label}</span>
+                  {badge && <span className="nav-badge">{badge}</span>}
+                  {activeTab === id && <span className="nav-active-dot" />}
+                </button>
+              ))}
+            </React.Fragment>
           ))}
-        </nav>
 
-        {/* Tools Section */}
-        <div className="sidebar-label sidebar-tools-label">REPORT TOOLS</div>
-        <button
-          className="nav-item"
-          onClick={() => {
-            onOpenUploadModal();
-            setIsMobileMenuOpen(false);
-          }}
-          title="Import your CSV or Excel dataset"
-        >
-          <Upload size={15} />
-          <span>Import CSV / Excel</span>
-          <ArrowUpRight size={12} className="ml-auto opacity-60" />
-        </button>
-        <button
-          className="nav-item"
-          onClick={() => {
-            onOpenCustomizer();
-            setIsMobileMenuOpen(false);
-          }}
-          title="Customize company, report title and industry"
-        >
-          <Settings2 size={15} />
-          <span>Report Configuration</span>
-        </button>
+          {/* Tools Section */}
+          <div className="sidebar-divider" role="separator" />
+          <div className="sidebar-label sidebar-tools-label">
+            <span className="sidebar-label-dot" />
+            <span>Report Tools</span>
+          </div>
+          <button
+            className="nav-item group"
+            onClick={() => {
+              onOpenUploadModal();
+              setIsMobileMenuOpen(false);
+            }}
+            title="Import your CSV or Excel dataset"
+          >
+            <Upload size={14.5} />
+            <span className="truncate">Import CSV / Excel</span>
+            <span className="nav-badge">Upload</span>
+            <ArrowUpRight size={11} className="ml-1 opacity-60 group-hover:opacity-100 transition-opacity" />
+          </button>
+          <button
+            className="nav-item group"
+            onClick={() => {
+              onOpenCustomizer();
+              setIsMobileMenuOpen(false);
+            }}
+            title="Customize company, report title and industry"
+          >
+            <Settings2 size={14.5} />
+            <span className="truncate">Report Configuration</span>
+            <span className="nav-badge">Setup</span>
+          </button>
+        </nav>
 
         {/* Compact Bottom Author Lockup */}
         <div className="sidebar-bottom">
@@ -194,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Workspace Sticky Topbar Header */}
       <header className="workspace-topbar" role="banner">
         <div className="breadcrumb min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5">
-          {/* Universal Hide / Show Sidebar Toggle Button */}
+          {/* Show Sidebar Button (only visible when sidebar is collapsed on desktop, or on mobile) */}
           <button
             onClick={() => {
               if (window.innerWidth <= 1024) {
@@ -203,18 +247,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onToggleSidebar();
               }
             }}
-            className="p-1.5 -ml-1 rounded-lg text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 active:scale-95 transition-all flex items-center justify-center shrink-0 border border-slate-200/80 hover:border-emerald-300 shadow-xs"
-            aria-label={isSidebarVisible ? 'Hide sidebar' : 'Show sidebar'}
-            title={isSidebarVisible ? 'Hide sidebar (Ctrl+B)' : 'Show sidebar (Ctrl+B)'}
+            className={`p-1.5 -ml-1 rounded-lg text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 active:scale-95 transition-all items-center justify-center shrink-0 border border-slate-200/80 hover:border-emerald-300 shadow-xs ${
+              isSidebarVisible ? 'hidden max-lg:flex' : 'flex'
+            }`}
+            aria-label="Show sidebar"
+            title="Show sidebar (Ctrl+B)"
           >
-            {isSidebarVisible ? (
-              <PanelLeftClose size={17} className="text-slate-600 hover:text-emerald-800" />
-            ) : (
-              <div className="flex items-center gap-1.5 text-emerald-800 font-semibold text-xs px-1">
-                <PanelLeftOpen size={17} className="text-emerald-700" />
-                <span className="hidden sm:inline">Show Sidebar</span>
-              </div>
-            )}
+            <PanelLeftOpen size={17} className="text-emerald-700 font-semibold" />
           </button>
 
           <button
