@@ -26,6 +26,7 @@ export interface ColumnProfile {
   name: string;
   normalizedName: string;
   dataType: ColumnDataType;
+  percentageScale?: 'fraction' | 'whole';
   sampleValues: any[];
   nonNullCount: number;
   distinctCount: number;

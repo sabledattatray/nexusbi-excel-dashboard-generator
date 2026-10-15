@@ -113,18 +113,18 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
   });
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg space-y-4">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg space-y-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-700">
             <BarChart3 className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               P&L Commercial Waterfall Bridge (Bookings to Operating EBITDA)
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Interactive financial bridge connecting gross contracts, discounts, direct COGS, and retained EBITDA
             </p>
           </div>
@@ -133,32 +133,32 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded bg-sky-500" />
-            <span className="text-slate-400">Total / Subtotal</span>
+            <span className="text-slate-500">Total / Subtotal</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded bg-rose-500" />
-            <span className="text-slate-400">Deductions</span>
+            <span className="text-slate-500">Deductions</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded bg-emerald-400" />
-            <span className="text-slate-400">EBITDA</span>
+            <span className="text-slate-500">EBITDA</span>
           </div>
         </div>
       </div>
 
       {/* Floating Hover Details Box */}
       {hoveredIdx !== null && processedSteps[hoveredIdx] && (
-        <div className="p-3 rounded-lg bg-slate-950 border border-slate-700 text-xs flex items-center justify-between gap-4 animate-in fade-in">
+        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between gap-4 animate-in fade-in">
           <div>
-            <span className="font-bold text-white text-sm">
+            <span className="font-bold text-slate-900 text-sm">
               {processedSteps[hoveredIdx].label}:
             </span>
-            <span className="text-slate-400 ml-2">
+            <span className="text-slate-500 ml-2">
               {processedSteps[hoveredIdx].description}
             </span>
           </div>
           <div className="font-mono text-right shrink-0">
-            <span className="text-base font-extrabold text-white">
+            <span className="text-base font-extrabold text-slate-900">
               {processedSteps[hoveredIdx].value >= 0 ? '+' : ''}${(processedSteps[hoveredIdx].value / 1000).toFixed(0)}k
             </span>
             <span className="text-slate-500 text-[11px] block">
@@ -169,7 +169,7 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
       )}
 
       {/* Waterfall Visual Bars */}
-      <div className="h-64 flex items-end gap-2 sm:gap-4 px-2 pt-6 pb-2 border-b border-slate-800 relative select-none">
+      <div className="h-64 flex items-end gap-2 sm:gap-4 px-2 pt-6 pb-2 border-b border-slate-200 relative select-none">
         {/* Background Guidelines */}
         <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-15">
           <div className="border-b border-dashed border-slate-400 w-full" />
@@ -193,7 +193,7 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
               {/* Value Tag above bar */}
               <div
                 className={`text-[10px] sm:text-xs font-mono font-bold transition-all mb-1 ${
-                  s.type === 'subtraction' ? 'text-rose-400' : 'text-white'
+                  s.type === 'subtraction' ? 'text-rose-700' : 'text-white'
                 } ${isHovered ? 'scale-110' : ''}`}
                 style={{ bottom: `${barBottomPct + barHeightPct}%`, position: 'absolute' }}
               >
@@ -217,7 +217,7 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
       </div>
 
       {/* X-Axis Step Labels */}
-      <div className="flex items-start justify-between px-2 pt-2 text-[10px] sm:text-xs text-slate-400 font-sans">
+      <div className="flex items-start justify-between px-2 pt-2 text-[10px] sm:text-xs text-slate-500 font-sans">
         {processedSteps.map((s, idx) => (
           <div
             key={idx}
@@ -231,9 +231,9 @@ export const InteractiveWaterfallChart: React.FC<InteractiveWaterfallChartProps>
       </div>
 
       {/* Bottom Insights Note */}
-      <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+      <div className="pt-2 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
         <span>Operating EBITDA Margin: <strong>{((netEbitda / netRevenue) * 100).toFixed(1)}%</strong></span>
-        <span className="text-emerald-400 font-mono font-bold">+3.2 bps Operational Leverage</span>
+        <span className="text-emerald-700 font-mono font-bold">+3.2 bps Operational Leverage</span>
       </div>
     </div>
   );

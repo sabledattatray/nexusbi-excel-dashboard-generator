@@ -143,27 +143,27 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       {/* ========================================================= */}
       {/* INTERACTIVE GLOBAL SLICER & DRILL-DOWN CONTROL BAR        */}
       {/* ========================================================= */}
-      <div className="rounded-xl bg-slate-900 border border-slate-800 p-4 shadow-md flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-xl bg-white border border-slate-200 p-4 shadow-md flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-700">
             <Filter className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="text-xs sm:text-sm font-bold text-white">Interactive Slicer Panel</h4>
-            <p className="text-[11px] text-slate-400">Select dimensions to recalculate dashboard analytics dynamically</p>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900">Interactive Slicer Panel</h4>
+            <p className="text-[11px] text-slate-500">Select dimensions to recalculate dashboard analytics dynamically</p>
           </div>
         </div>
 
         {/* Filter Dropdowns */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Dimension / Region Slicer */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
-            <Globe2 className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-slate-400 text-[11px]">{labels.dimensionLabel}:</span>
+          <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <Globe2 className="w-3.5 h-3.5 text-sky-700" />
+            <span className="text-slate-500 text-[11px]">{labels.dimensionLabel}:</span>
             <select
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
+              className="bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
             >
               <option value="ALL">All {labels.dimensionLabel}s</option>
               {availableRegions.map((r) => (
@@ -173,13 +173,13 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           </div>
 
           {/* Quarter Slicer */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
-            <Calendar className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="text-slate-400 text-[11px]">Period:</span>
+          <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <Calendar className="w-3.5 h-3.5 text-indigo-700" />
+            <span className="text-slate-500 text-[11px]">Period:</span>
             <select
               value={selectedQuarter}
               onChange={(e) => setSelectedQuarter(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer"
             >
               <option value="ALL">All Periods</option>
               {availableQuarters.map((q) => (
@@ -189,13 +189,13 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           </div>
 
           {/* Channel Slicer */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-xs">
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-slate-400 text-[11px]">Channel:</span>
+          <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <Layers className="w-3.5 h-3.5 text-amber-700" />
+            <span className="text-slate-500 text-[11px]">Channel:</span>
             <select
               value={selectedChannel}
               onChange={(e) => setSelectedChannel(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
+              className="bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
             >
               <option value="ALL">All Channels</option>
               {availableChannels.map((c) => (
@@ -211,7 +211,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                 setSelectedQuarter('ALL');
                 setSelectedChannel('ALL');
               }}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors"
             >
               Reset Filters
             </button>
@@ -221,17 +221,17 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
 
       {/* Sliced Dynamic Status Pill */}
       {(selectedRegion !== 'ALL' || selectedQuarter !== 'ALL' || selectedChannel !== 'ALL') && (
-        <div className="p-3 rounded-xl bg-sky-950/40 border border-sky-500/30 flex items-center justify-between text-xs text-slate-300">
+        <div className="p-3 rounded-xl bg-sky-50 border border-sky-500/30 flex items-center justify-between text-xs text-slate-600">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-sky-400 animate-pulse" />
+            <Activity className="w-4 h-4 text-sky-700 animate-pulse" />
             <span>
               Active Filtered Subset: <strong>{filteredTxs.length.toLocaleString()}</strong> orders • Revenue:{' '}
-              <strong className="text-white">${filteredRev.toLocaleString()}</strong> • Gross Profit:{' '}
-              <strong className="text-emerald-400">${filteredProfit.toLocaleString()}</strong> • Margin:{' '}
-              <strong className="text-indigo-400">{filteredMargin.toFixed(1)}%</strong>
+              <strong className="text-slate-900">${filteredRev.toLocaleString()}</strong> • Gross Profit:{' '}
+              <strong className="text-emerald-700">${filteredProfit.toLocaleString()}</strong> • Margin:{' '}
+              <strong className="text-indigo-700">{filteredMargin.toFixed(1)}%</strong>
             </span>
           </div>
-          <span className="text-[11px] font-mono text-sky-400 bg-sky-900/50 px-2 py-0.5 rounded">
+          <span className="text-[11px] font-mono text-sky-700 bg-sky-50 px-2 py-0.5 rounded">
             Filtered Dynamic Slicer Active
           </span>
         </div>
@@ -242,28 +242,28 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       {/* ========================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Visual 1: Monthly Run-Rate Trajectory */}
-        <div className="lg:col-span-2 rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm space-y-4">
+        <div className="lg:col-span-2 rounded-xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-sky-400" />
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <TrendingUp className="w-4 h-4 text-sky-700" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">
                   Monthly {labels.metric1} &amp; {labels.metric2} Trajectory
                 </h3>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Interactive dual-series with volume indicators and run-rate overlay
               </p>
             </div>
 
             {/* View Mode Toggle: Standard vs Moving Average vs In-Cell Formula */}
-            <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+            <div className="flex items-center bg-slate-50 p-1 rounded-lg border border-slate-200 text-xs">
               <button
                 onClick={() => setChartViewMode('standard')}
                 className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                   chartViewMode === 'standard'
-                    ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-sky-500/20 text-sky-800 font-bold border border-sky-500/30'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Standard
@@ -272,8 +272,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                 onClick={() => setChartViewMode('movingAverage')}
                 className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                   chartViewMode === 'movingAverage'
-                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-emerald-500/20 text-emerald-800 font-bold border border-emerald-500/30'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 3-Mo Moving Avg
@@ -282,8 +282,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                 onClick={() => setChartViewMode('inCellFormula')}
                 className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 ${
                   chartViewMode === 'inCellFormula'
-                    ? 'bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-indigo-500/20 text-indigo-800 font-bold border border-indigo-500/30'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
                 title="View how Excel calculates in-cell visual bars using =REPT()"
               >
@@ -295,8 +295,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
 
           {/* If In-Cell Formula mode is selected, show authentic Excel formula visual grid */}
           {chartViewMode === 'inCellFormula' ? (
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-2">
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-800">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 pb-2 border-b border-slate-200">
                 <span>Month Period</span>
                 <span>Revenue ($)</span>
                 <span>Formula: `=REPT("█", ROUND(Rev/Max*20,0))`</span>
@@ -305,13 +305,13 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               {monthlyTrends.slice(0, 10).map((m, idx) => {
                 const barLength = Math.max(1, Math.round((m.revenue / maxMonthlyRev) * 18));
                 return (
-                  <div key={idx} className="flex items-center justify-between py-1 text-slate-300 hover:bg-slate-900/60 px-2 rounded">
-                    <span className="w-20 font-bold text-white">{m.monthLabel}</span>
-                    <span className="w-24 text-sky-400">${(m.revenue / 1000).toFixed(1)}k</span>
-                    <span className="flex-1 text-sky-400 font-bold tracking-tight">
+                  <div key={idx} className="flex items-center justify-between py-1 text-slate-600 hover:bg-white px-2 rounded">
+                    <span className="w-20 font-bold text-slate-900">{m.monthLabel}</span>
+                    <span className="w-24 text-sky-700">${(m.revenue / 1000).toFixed(1)}k</span>
+                    <span className="flex-1 text-sky-700 font-bold tracking-tight">
                       {'█'.repeat(barLength)}
                     </span>
-                    <span className="w-16 text-right text-emerald-400">{(m.marginPct * 100).toFixed(1)}%</span>
+                    <span className="w-16 text-right text-emerald-700">{(m.marginPct * 100).toFixed(1)}%</span>
                   </div>
                 );
               })}
@@ -324,33 +324,33 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             <div className="relative pt-6 pb-2">
               {/* Tooltip */}
               {hoveredMonth !== null && monthlyWithMA[hoveredMonth] && (
-                <div className="absolute top-0 right-4 bg-slate-800/95 border border-slate-700 rounded-lg p-2.5 text-xs shadow-2xl z-20 pointer-events-none flex items-center gap-4 animate-in fade-in">
+                <div className="absolute top-0 right-4 bg-slate-100/95 border border-slate-200 rounded-lg p-2.5 text-xs shadow-lg z-20 pointer-events-none flex items-center gap-4 animate-in fade-in">
                   <div>
-                    <span className="text-white font-bold">{monthlyWithMA[hoveredMonth].monthLabel}:</span>
+                    <span className="text-slate-900 font-bold">{monthlyWithMA[hoveredMonth].monthLabel}:</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Revenue: </span>
-                    <span className="text-white font-bold font-mono">
+                    <span className="text-slate-500">Revenue: </span>
+                    <span className="text-slate-900 font-bold font-mono">
                       ${(monthlyWithMA[hoveredMonth].revenue / 1000).toFixed(1)}k
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Profit: </span>
-                    <span className="text-emerald-400 font-bold font-mono">
+                    <span className="text-slate-500">Profit: </span>
+                    <span className="text-emerald-700 font-bold font-mono">
                       ${(monthlyWithMA[hoveredMonth].grossProfit / 1000).toFixed(1)}k
                     </span>
                   </div>
                   {chartViewMode === 'movingAverage' && (
                     <div>
-                      <span className="text-slate-400">3-Mo Avg: </span>
-                      <span className="text-indigo-400 font-bold font-mono">
+                      <span className="text-slate-500">3-Mo Avg: </span>
+                      <span className="text-indigo-700 font-bold font-mono">
                         ${(monthlyWithMA[hoveredMonth].movingAvg / 1000).toFixed(1)}k
                       </span>
                     </div>
                   )}
                   <div>
-                    <span className="text-slate-400">Margin: </span>
-                    <span className="text-indigo-300 font-bold font-mono">
+                    <span className="text-slate-500">Margin: </span>
+                    <span className="text-indigo-800 font-bold font-mono">
                       {(monthlyWithMA[hoveredMonth].marginPct * 100).toFixed(1)}%
                     </span>
                   </div>
@@ -358,7 +358,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               )}
 
               {/* Bars and Markers */}
-              <div className="h-64 flex items-end gap-1.5 sm:gap-3 px-2 border-b border-slate-800 relative">
+              <div className="h-64 flex items-end gap-1.5 sm:gap-3 px-2 border-b border-slate-200 relative">
                 {/* Horizontal reference guidelines */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
                   <div className="border-b border-dashed border-slate-400 w-full" />
@@ -411,7 +411,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               </div>
 
               {/* X-axis Month Labels */}
-              <div className="flex items-center justify-between px-2 pt-2 text-[10px] sm:text-xs text-slate-400 font-mono">
+              <div className="flex items-center justify-between px-2 pt-2 text-[10px] sm:text-xs text-slate-500 font-mono">
                 {monthlyWithMA.map((t, idx) => (
                   <div key={idx} className="flex-1 text-center truncate">
                     {t.monthLabel}
@@ -422,20 +422,20 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           )}
 
           {/* Footer Legend */}
-          <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-200">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded bg-sky-500"></span>
-                <span className="text-slate-300">Gross Revenue Bar</span>
+                <span className="text-slate-600">Gross Revenue Bar</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span className="text-slate-300">Gross Profit Marker</span>
+                <span className="text-slate-600">Gross Profit Marker</span>
               </div>
               {chartViewMode === 'movingAverage' && (
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-1 rounded bg-amber-400"></span>
-                  <span className="text-amber-300">3-Month Moving Average</span>
+                  <span className="text-amber-800">3-Month Moving Average</span>
                 </div>
               )}
             </div>
@@ -444,20 +444,20 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
         </div>
 
         {/* Visual 2: Regional Bullet & Variance Chart */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm flex flex-col justify-between space-y-4">
+        <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Globe2 className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <Globe2 className="w-4 h-4 text-emerald-700" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">
                   {labels.dimensionLabel} Attainment &amp; Variance
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-800/40 px-2 py-0.5 rounded">
                 Scorecard
               </span>
             </div>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs text-slate-500 mb-4">
               Actual booked {labels.metric1.toLowerCase()} compared against benchmark targets
             </p>
 
@@ -474,24 +474,24 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                     onClick={() => setSelectedRegion(selectedRegion === r.region ? 'ALL' : r.region)}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-emerald-950/40 border-emerald-500/80'
-                        : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                        ? 'bg-emerald-50 border-emerald-500/80'
+                        : 'bg-slate-50 border-slate-200 hover:border-slate-200'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs mb-1.5">
                       <div>
-                        <span className="font-bold text-white">{r.region}</span>
+                        <span className="font-bold text-slate-900">{r.region}</span>
                         <span className="text-slate-500 ml-1.5 text-[11px]">({r.regionalDirector})</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-white">
+                        <span className="font-mono font-bold text-slate-900">
                           ${(r.actualRevenue / 1000).toFixed(0)}k
                         </span>
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             isOver
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-700 border border-amber-500/20'
                           }`}
                         >
                           {attainmentPct}%
@@ -500,7 +500,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                     </div>
 
                     {/* Progress track */}
-                    <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden relative">
+                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -511,9 +511,9 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                     </div>
 
                     {/* Variance info */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 font-mono">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 font-mono">
                       <span>Target: ${(r.targetRevenue / 1000).toFixed(0)}k</span>
-                      <span className={variance >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                      <span className={variance >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
                         {variance >= 0 ? `+${(variance / 1000).toFixed(0)}k` : `${(variance / 1000).toFixed(0)}k`} Var
                       </span>
                     </div>
@@ -523,9 +523,9 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+          <div className="pt-3 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
             <span>Click any territory to filter</span>
-            <span className="text-emerald-400 font-mono font-bold">4 Theaters</span>
+            <span className="text-emerald-700 font-mono font-bold">4 Theaters</span>
           </div>
         </div>
       </div>
@@ -535,20 +535,20 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       {/* ========================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Visual 3: Product Category Margin & Revenue Matrix */}
-        <div className="lg:col-span-2 rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm space-y-4">
+        <div className="lg:col-span-2 rounded-xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <PieChart className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <PieChart className="w-4 h-4 text-indigo-700" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">
                   Product Category Margin & Volume Dispersion Matrix
                 </h3>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Breakdown of unit volume, gross revenue share, and product line margins
               </p>
             </div>
-            <span className="text-[11px] font-mono text-indigo-400 bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded">
+            <span className="text-[11px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-800/40 px-2 py-0.5 rounded">
               Dispersion
             </span>
           </div>
@@ -561,24 +561,24 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               return (
                 <div
                   key={i}
-                  className="p-3 rounded-lg bg-slate-950/50 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                  className="p-3 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-200 transition-colors"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                      <span className="font-bold text-white">{cat.category}</span>
+                      <span className="font-bold text-slate-900">{cat.category}</span>
                     </div>
                     <div className="flex items-center gap-3 font-mono text-xs">
-                      <span className="text-slate-400 text-[11px]">{cat.units.toLocaleString()} units</span>
-                      <span className="text-white font-bold">${(cat.revenue / 1000).toFixed(1)}k</span>
-                      <span className="text-slate-400 text-[11px]">({(cat.sharePct * 100).toFixed(1)}% Share)</span>
-                      <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-bold">
+                      <span className="text-slate-500 text-[11px]">{cat.units.toLocaleString()} units</span>
+                      <span className="text-slate-900 font-bold">${(cat.revenue / 1000).toFixed(1)}k</span>
+                      <span className="text-slate-500 text-[11px]">({(cat.sharePct * 100).toFixed(1)}% Share)</span>
+                      <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-800 border border-indigo-500/30 font-bold">
                         {(cat.marginPct * 100).toFixed(1)}% Mgn
                       </span>
                     </div>
                   </div>
 
-                  <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
+                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
                     <div
                       className="bg-gradient-to-r from-indigo-500 to-indigo-400 h-full rounded-full transition-all duration-500"
                       style={{ width: `${widthPct}%` }}
@@ -591,37 +591,37 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
         </div>
 
         {/* Visual 4: Customer Pareto Concentration (80/20 Curve) */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-pink-400" />
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <Users className="w-4 h-4 text-pink-700" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900">
                   Customer Pareto Concentration (80/20)
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-pink-400 bg-pink-950/60 border border-pink-800/40 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-mono text-pink-700 bg-pink-50 border border-pink-800/40 px-2 py-0.5 rounded">
                 Pareto
               </span>
             </div>
-            <p className="text-xs text-slate-400 mb-3">
+            <p className="text-xs text-slate-500 mb-3">
               Cumulative revenue share generated by top enterprise accounts
             </p>
 
             <div className="space-y-2.5">
               {paretoData.slice(0, 5).map((acc, i) => (
-                <div key={i} className="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800/80">
+                <div key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-semibold text-white truncate max-w-[170px]" title={acc.customerName}>
+                    <span className="font-semibold text-slate-900 truncate max-w-[170px]" title={acc.customerName}>
                       {i + 1}. {acc.customerName}
                     </span>
-                    <span className="font-mono text-emerald-400 font-bold">
+                    <span className="font-mono text-emerald-700 font-bold">
                       ${(acc.lifetimeRevenue / 1000).toFixed(0)}k
                     </span>
                   </div>
 
                   {/* Cumulative share bar */}
-                  <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-pink-500 to-purple-500 h-full rounded-full"
                       style={{ width: `${Math.min(100, acc.cumPct)}%` }}
@@ -636,9 +636,9 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+          <div className="pt-3 border-t border-slate-200 text-[11px] text-slate-500">
             <span>Top 5 accounts represent </span>
-            <strong className="text-white">
+            <strong className="text-slate-900">
               {paretoData[4]?.cumPct ? `${paretoData[4].cumPct.toFixed(1)}%` : '68%'}
             </strong>
             <span> of total revenue</span>
@@ -651,24 +651,24 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       {/* ========================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Channels Mix */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm space-y-4">
+        <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm sm:text-base font-bold text-white">Sales Channel Mix & Margin Efficiency</h3>
+            <Layers className="w-4 h-4 text-amber-700" />
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">Sales Channel Mix & Margin Efficiency</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {channelStats.map((ch, i) => (
-              <div key={i} className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex flex-col justify-between">
+              <div key={i} className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-white">{ch.name}</div>
-                  <div className="text-lg font-bold font-mono text-white mt-1">
+                  <div className="text-xs font-semibold text-slate-900">{ch.name}</div>
+                  <div className="text-lg font-bold font-mono text-slate-900 mt-1">
                     ${(ch.revenue / 1000).toFixed(0)}k
                   </div>
                 </div>
-                <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-slate-400">{ch.share.toFixed(1)}% Share</span>
-                  <span className="text-emerald-400 font-bold">{ch.margin.toFixed(1)}% Mgn</span>
+                <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-slate-500">{ch.share.toFixed(1)}% Share</span>
+                  <span className="text-emerald-700 font-bold">{ch.margin.toFixed(1)}% Mgn</span>
                 </div>
               </div>
             ))}
@@ -676,31 +676,31 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
         </div>
 
         {/* Executive Rep Leaderboard */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-sm space-y-4">
+        <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-teal-400" />
-            <h3 className="text-sm sm:text-base font-bold text-white">Sales Executive Quota Leaderboard</h3>
+            <Users className="w-4 h-4 text-teal-700" />
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">Sales Executive Quota Leaderboard</h3>
           </div>
 
           <div className="space-y-2">
             {repStats.map((r, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-950/50 border border-slate-800/80"
+                className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 border border-slate-200"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[11px] font-bold text-slate-300">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-600">
                     {i + 1}
                   </span>
                   <div>
-                    <span className="font-bold text-white">{r.name}</span>
+                    <span className="font-bold text-slate-900">{r.name}</span>
                     <span className="text-slate-500 text-[11px] ml-2 font-mono">({r.count} contracts)</span>
                   </div>
                 </div>
 
                 <div className="text-right font-mono">
-                  <div className="text-white font-bold">${(r.revenue / 1000).toFixed(0)}k</div>
-                  <div className="text-emerald-400 text-[10px]">
+                  <div className="text-slate-900 font-bold">${(r.revenue / 1000).toFixed(0)}k</div>
+                  <div className="text-emerald-700 text-[10px]">
                     Margin: {r.revenue > 0 ? ((r.profit / r.revenue) * 100).toFixed(1) : 0}%
                   </div>
                 </div>

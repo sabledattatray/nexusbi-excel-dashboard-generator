@@ -182,43 +182,43 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
     switch (type) {
       case 'currency':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-800 border border-emerald-500/20">
             <DollarSign className="w-3 h-3" /> Currency
           </span>
         );
       case 'numeric':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-sky-500/10 text-sky-800 border border-sky-500/20">
             <Hash className="w-3 h-3" /> Number
           </span>
         );
       case 'percentage':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-500/10 text-indigo-800 border border-indigo-500/20">
             % Rate
           </span>
         );
       case 'date':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-700 border border-blue-500/20">
             <Calendar className="w-3 h-3" /> Date
           </span>
         );
       case 'categorical':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-purple-500/10 text-violet-800 border border-purple-500/20">
             <Tag className="w-3 h-3" /> Category
           </span>
         );
       case 'identifier':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-500/10 text-slate-500 border border-slate-500/20">
             ID Code
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-700/40 text-slate-300 border border-slate-700">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-700/40 text-slate-600 border border-slate-200">
             Text
           </span>
         );
@@ -226,30 +226,31 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-lg overflow-hidden text-slate-800">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-700 border border-emerald-500/30">
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <span>Upload Data from Local Drive</span>
-                <span className="text-xs px-2 py-0.5 rounded font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span>Import your data</span>
+                <span className="text-xs px-2 py-0.5 rounded font-medium bg-emerald-500/10 text-emerald-800 border border-emerald-500/20">
                   CSV, Excel (.xlsx, .xls), TSV
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">
-                Automated Data Type Profiling, Schema Inspection &amp; Industry-Wise Color Grading
+              <p className="text-xs text-slate-500">
+                Choose your file, review its fields, and create your report.
               </p>
             </div>
           </div>
 
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            aria-label="Close import dialog"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -259,8 +260,8 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Error Banner */}
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <div className="font-bold">Import Error</div>
                 <div className="mt-0.5">{errorMsg}</div>
@@ -280,7 +281,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                 className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
                   dragActive
                     ? 'border-emerald-400 bg-emerald-500/10 ring-4 ring-emerald-500/20 scale-[0.99]'
-                    : 'border-slate-700 hover:border-slate-500 bg-slate-950/40 hover:bg-slate-800/40'
+                    : 'border-slate-200 hover:border-slate-500 bg-slate-50 hover:bg-slate-100'
                 }`}
               >
                 <input
@@ -291,7 +292,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                   className="hidden"
                 />
 
-                <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
+                <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700 shadow-inner">
                   {isProcessing ? (
                     <RefreshCw className="w-8 h-8 animate-spin" />
                   ) : (
@@ -300,10 +301,10 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                 </div>
 
                 <div className="space-y-1 max-w-md">
-                  <div className="text-sm sm:text-base font-bold text-white">
+                  <div className="text-sm sm:text-base font-bold text-slate-900">
                     {isProcessing ? 'Inspecting column types & profiling schema...' : 'Drop your CSV or Excel file here, or browse local drive'}
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Works with any dataset: Healthcare, Real Estate, Banking, SaaS, HR, Logistics, Education, Retail, or custom operations.
                   </p>
                 </div>
@@ -321,15 +322,15 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               </div>
 
               {/* Sample template assist bar */}
-              <div className="flex items-center justify-between text-xs text-slate-400 p-3 rounded-xl bg-slate-800/40 border border-slate-800">
+              <div className="flex items-center justify-between text-xs text-slate-500 p-3 rounded-xl bg-slate-100 border border-slate-200">
                 <div className="flex items-center gap-2">
-                  <Info className="w-4 h-4 text-sky-400" />
+                  <Info className="w-4 h-4 text-sky-700" />
                   <span>Don't have a dataset ready? You can test with a sample CSV template:</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleDownloadSample}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700 font-medium flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-sky-800 hover:text-slate-900 border border-slate-200 font-medium flex items-center gap-1.5 transition"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download Sample CSV</span>
@@ -342,19 +343,19 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
           {parsedTable && (
             <div className="space-y-6">
               {/* File Info Bar */}
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 flex flex-wrap items-center justify-between gap-3">
+              <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-700">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-white flex items-center gap-2">
+                    <div className="font-bold text-sm text-slate-900 flex items-center gap-2">
                       <span>{parsedTable.fileName}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono uppercase">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-800 font-mono uppercase">
                         {parsedTable.fileType}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-slate-500">
                       {parsedTable.totalRows.toLocaleString()} records • {parsedTable.headers.length} columns • {(parsedTable.fileSize / 1024).toFixed(1)} KB
                     </div>
                   </div>
@@ -367,7 +368,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                       setParsedTable(null);
                       setMapping({});
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white border border-slate-600 transition"
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs text-slate-600 hover:text-slate-900 border border-slate-600 transition"
                   >
                     Upload Different File
                   </button>
@@ -375,7 +376,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               </div>
 
               {/* Detected Industry & Grading Banner */}
-              <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div
@@ -383,13 +384,13 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                       style={{ backgroundColor: currentTheme.colors.primary }}
                     />
                     <div>
-                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Detected Industry Domain &amp; Color Grading
                       </div>
-                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                      <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <span>{currentTheme.name}</span>
                         {schema?.industryConfidence && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-800 border border-emerald-500/30">
                             {schema.industryConfidence}% Match
                           </span>
                         )}
@@ -399,11 +400,11 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
 
                   {/* Industry override selector */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Override Theme:</span>
+                    <span className="text-xs text-slate-500">Report domain:</span>
                     <select
                       value={selectedIndustry}
                       onChange={(e) => setSelectedIndustry(e.target.value as IndustryType)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
+                      className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-900 font-medium focus:ring-1 focus:ring-emerald-400 focus:outline-none"
                     >
                       {(Object.keys(INDUSTRY_THEMES) as IndustryType[]).map((ind) => (
                         <option key={ind} value={ind}>
@@ -414,22 +415,22 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400">
-                  {currentTheme.description} Dashboards, Excel tabs, OpenXML charts, and KPI formulas will automatically apply the{' '}
-                  <span className="font-semibold text-slate-200">{currentTheme.badge}</span> color grading.
+                <p className="text-xs text-slate-500">
+                  {currentTheme.description} Available charts and summaries depend on your source fields. The selected domain is{' '}
+                  <span className="font-semibold text-slate-700">{currentTheme.badge}</span> report context.
                 </p>
               </div>
 
               {/* Tab Selector: Schema Inspection vs Sample Preview */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setActiveView('schema')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                       activeView === 'schema'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-emerald-500/20 text-emerald-800 border border-emerald-500/30'
+                        : 'text-slate-500 hover:text-slate-900'
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" />
@@ -440,8 +441,8 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                     onClick={() => setActiveView('preview')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                       activeView === 'preview'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-emerald-500/20 text-emerald-800 border border-emerald-500/30'
+                        : 'text-slate-500 hover:text-slate-900'
                     }`}
                   >
                     <Table2 className="w-3.5 h-3.5" />
@@ -449,7 +450,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                   </button>
                 </div>
 
-                <div className="text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-500">
                   Real columns preserved • No artificial field forcing
                 </div>
               </div>
@@ -459,48 +460,48 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                 <div className="space-y-4">
                   {/* Summary Type Pills */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Rows</div>
-                      <div className="text-sm font-bold text-white font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">Total Rows</div>
+                      <div className="text-sm font-bold text-slate-900 font-mono mt-0.5">
                         {schema.totalRecords.toLocaleString()}
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-emerald-400 uppercase font-semibold">Currency / Value</div>
-                      <div className="text-sm font-bold text-emerald-300 font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-emerald-700 uppercase font-semibold">Currency / Value</div>
+                      <div className="text-sm font-bold text-emerald-800 font-mono mt-0.5">
                         {schema.columns.filter((c) => c.dataType === 'currency').length} cols
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-sky-400 uppercase font-semibold">Numeric / Count</div>
-                      <div className="text-sm font-bold text-sky-300 font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-sky-700 uppercase font-semibold">Numeric / Count</div>
+                      <div className="text-sm font-bold text-sky-800 font-mono mt-0.5">
                         {schema.columns.filter((c) => c.dataType === 'numeric').length} cols
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-purple-400 uppercase font-semibold">Categories</div>
-                      <div className="text-sm font-bold text-purple-300 font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-violet-700 uppercase font-semibold">Categories</div>
+                      <div className="text-sm font-bold text-violet-800 font-mono mt-0.5">
                         {schema.columns.filter((c) => c.dataType === 'categorical').length} cols
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-blue-400 uppercase font-semibold">Dates</div>
-                      <div className="text-sm font-bold text-blue-300 font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-blue-700 uppercase font-semibold">Dates</div>
+                      <div className="text-sm font-bold text-blue-700 font-mono mt-0.5">
                         {schema.columns.filter((c) => c.dataType === 'date').length} cols
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
-                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Identifiers</div>
-                      <div className="text-sm font-bold text-slate-300 font-mono mt-0.5">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">Identifiers</div>
+                      <div className="text-sm font-bold text-slate-600 font-mono mt-0.5">
                         {schema.columns.filter((c) => c.dataType === 'identifier').length} cols
                       </div>
                     </div>
                   </div>
 
                   {/* Schema Inspector Table */}
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-hidden">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-800/80 text-slate-300 border-b border-slate-700/80">
+                      <thead className="bg-slate-100 text-slate-600 border-b border-slate-200">
                         <tr>
                           <th className="py-2.5 px-3 font-semibold">Field Name</th>
                           <th className="py-2.5 px-3 font-semibold">Detected Data Type</th>
@@ -509,7 +510,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                           <th className="py-2.5 px-3 font-semibold">Assigned Dashboard Role</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800/60">
+                      <tbody className="divide-y divide-slate-200">
                         {schema.columns.map((col) => {
                           const isPrimaryMetric = mapping.primaryMetricCol === col.name;
                           const isSecondaryMetric = mapping.secondaryMetricCol === col.name;
@@ -519,20 +520,20 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                           const isEntity = mapping.entityCol === col.name;
 
                           return (
-                            <tr key={col.name} className="hover:bg-slate-800/20">
-                              <td className="py-2.5 px-3 font-bold text-white font-mono flex items-center gap-1.5">
+                            <tr key={col.name} className="hover:bg-slate-50">
+                              <td className="py-2.5 px-3 font-bold text-slate-900 font-mono flex items-center gap-1.5">
                                 <span>{col.name}</span>
                                 {isPrimaryMetric && (
-                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-sans">
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-800 font-sans">
                                     Primary Value
                                   </span>
                                 )}
                               </td>
                               <td className="py-2.5 px-3">{renderTypeBadge(col.dataType)}</td>
-                              <td className="py-2.5 px-3 text-slate-400 font-mono">
+                              <td className="py-2.5 px-3 text-slate-500 font-mono">
                                 {col.distinctCount.toLocaleString()}
                               </td>
-                              <td className="py-2.5 px-3 text-slate-300 font-mono truncate max-w-[180px]">
+                              <td className="py-2.5 px-3 text-slate-600 font-mono truncate max-w-[180px]">
                                 {col.sampleValues[0] !== undefined ? String(col.sampleValues[0]) : '—'}
                               </td>
                               <td className="py-2.5 px-3">
@@ -554,20 +555,21 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                                   }
                                   onChange={(e) => {
                                     const role = e.target.value;
-                                    if (role === 'primaryMetric') handleMappingChange('primaryMetricCol', col.name);
-                                    else if (role === 'secondaryMetric') handleMappingChange('secondaryMetricCol', col.name);
-                                    else if (role === 'primaryCategory') handleMappingChange('primaryCategoryCol', col.name);
-                                    else if (role === 'secondaryCategory') handleMappingChange('secondaryCategoryCol', col.name);
-                                    else if (role === 'date') handleMappingChange('dateCol', col.name);
-                                    else if (role === 'entity') handleMappingChange('entityCol', col.name);
+                                    const roles: Record<string, keyof ColumnMapping> = { primaryMetric: 'primaryMetricCol', secondaryMetric: 'secondaryMetricCol', primaryCategory: 'primaryCategoryCol', secondaryCategory: 'secondaryCategoryCol', date: 'dateCol', entity: 'entityCol' };
+                                    setMapping(prev => {
+                                      const next = { ...prev };
+                                      for (const key of Object.values(roles)) if (next[key] === col.name) next[key] = undefined;
+                                      if (roles[role]) next[roles[role]] = col.name;
+                                      return next;
+                                    });
                                   }}
-                                  className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-medium"
+                                  className="px-2 py-1 rounded bg-slate-100 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-400 font-medium"
                                 >
-                                  <option value="__DEFAULT__">Auto ({col.suggestedRole || 'Dimension'})</option>
+                                  <option value="__DEFAULT__">No assigned role</option>
                                   <option value="primaryMetric">Core Metric (Primary Value)</option>
-                                  <option value="secondaryMetric">Secondary Metric (Profit / Variance)</option>
-                                  <option value="primaryCategory">Primary Category (Pie / Breakdowns)</option>
-                                  <option value="secondaryCategory">Secondary Dimension (Bars / Division)</option>
+                                  <option value="secondaryMetric">Secondary Numeric Measure</option>
+                                  <option value="primaryCategory">Primary Category (Breakdowns)</option>
+                                  <option value="secondaryCategory">Secondary Category</option>
                                   <option value="date">Time / Date (Monthly Trend)</option>
                                   <option value="entity">Entity / Account Name</option>
                                 </select>
@@ -584,9 +586,9 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               {/* VIEW 2: RAW DATA SAMPLE PREVIEW */}
               {activeView === 'preview' && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-slate-300">
+                  <div className="flex items-center justify-between text-xs text-slate-600">
                     <span className="font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Table2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <Table2 className="w-3.5 h-3.5 text-emerald-700" />
                       <span>File Sample Preview (First 5 Rows)</span>
                     </span>
                     <span className="text-slate-500 font-mono">
@@ -594,9 +596,9 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-x-auto max-h-60">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-x-auto max-h-60">
                     <table className="w-full text-left text-xs font-mono">
-                      <thead className="bg-slate-800/80 text-slate-300 sticky top-0">
+                      <thead className="bg-slate-100 text-slate-600 sticky top-0">
                         <tr>
                           <th className="py-2 px-3">#</th>
                           {parsedTable.headers.map((h) => (
@@ -606,12 +608,12 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                      <tbody className="divide-y divide-slate-200 text-slate-600">
                         {parsedTable.rows.slice(0, 5).map((row, idx) => (
-                          <tr key={idx} className="hover:bg-slate-800/30">
+                          <tr key={idx} className="hover:bg-slate-50">
                             <td className="py-1.5 px-3 text-slate-500">{idx + 1}</td>
                             {parsedTable.headers.map((h) => (
-                              <td key={h} className="py-1.5 px-3 whitespace-nowrap text-slate-200">
+                              <td key={h} className="py-1.5 px-3 whitespace-nowrap text-slate-700">
                                 {row[h] !== undefined && row[h] !== null ? String(row[h]) : '—'}
                               </td>
                             ))}
@@ -627,11 +629,12 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/90 flex items-center justify-between gap-4">
+        <div className="px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
+            aria-label="Cancel import"
+            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold border border-slate-200 transition"
           >
             Cancel
           </button>
@@ -641,7 +644,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               type="button"
               onClick={handleGenerate}
               disabled={isProcessing}
-              className="px-5 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold shadow-lg border flex items-center gap-2 transition-all transform active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-slate-900 text-xs sm:text-sm font-bold shadow-lg border flex items-center gap-2 transition-all transform active:scale-95 disabled:opacity-50"
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
                 borderColor: currentTheme.colors.accent,
@@ -650,7 +653,7 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
               {isProcessing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Synthesizing Industry Model...</span>
+                  <span>Validating source fields...</span>
                 </>
               ) : (
                 <>

@@ -1897,6 +1897,12 @@ export async function exportToProfessionalExcel(
   });
 
   // Write Excel file buffer
+  workbook.eachSheet(sheet => {
+    sheet.views = sheet.views.length
+      ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+      : [{ showGridLines: false }];
+  });
+
   const buffer = await workbook.xlsx.writeBuffer();
   
   // Inject 100% REAL NATIVE OPENXML EXCEL CHARTS (Pie Chart, Horizontal Bar Chart, Column Run-rate Chart)

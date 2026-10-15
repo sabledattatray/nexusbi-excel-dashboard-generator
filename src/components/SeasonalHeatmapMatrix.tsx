@@ -48,28 +48,28 @@ export const SeasonalHeatmapMatrix: React.FC<SeasonalHeatmapMatrixProps> = ({
   }, [transactions, categories, quarters]);
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg space-y-4">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg space-y-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+          <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-700">
             <Flame className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               Quarterly Category Velocity Heatmap
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Seasonal performance matrix showing revenue concentration and acceleration across quarters
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400 text-[11px]">Intensity:</span>
+          <span className="text-slate-500 text-[11px]">Intensity:</span>
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-slate-800" title="Low" />
-            <span className="w-3 h-3 rounded bg-indigo-900/60" />
+            <span className="w-3 h-3 rounded bg-slate-100" title="Low" />
+            <span className="w-3 h-3 rounded bg-indigo-50" />
             <span className="w-3 h-3 rounded bg-indigo-700" />
             <span className="w-3 h-3 rounded bg-indigo-500" />
             <span className="w-3 h-3 rounded bg-emerald-500" title="Peak" />
@@ -79,19 +79,19 @@ export const SeasonalHeatmapMatrix: React.FC<SeasonalHeatmapMatrixProps> = ({
 
       {/* Hover Info Callout */}
       {hoveredCell && (
-        <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs flex items-center justify-between animate-in fade-in">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between animate-in fade-in">
           <div>
-            <span className="font-bold text-white">{hoveredCell.category}</span>
-            <span className="text-slate-400 ml-2">({hoveredCell.quarter}):</span>
+            <span className="font-bold text-slate-900">{hoveredCell.category}</span>
+            <span className="text-slate-500 ml-2">({hoveredCell.quarter}):</span>
           </div>
           <div className="font-mono text-right flex items-center gap-4">
-            <span className="text-white font-bold">
+            <span className="text-slate-900 font-bold">
               Rev: ${(hoveredCell.revenue / 1000).toFixed(1)}k
             </span>
-            <span className="text-emerald-400 font-bold">
+            <span className="text-emerald-700 font-bold">
               Profit: ${(hoveredCell.profit / 1000).toFixed(1)}k
             </span>
-            <span className="text-indigo-400 font-bold">
+            <span className="text-indigo-700 font-bold">
               Margin: {hoveredCell.revenue > 0 ? ((hoveredCell.profit / hoveredCell.revenue) * 100).toFixed(1) : 0}%
             </span>
           </div>
@@ -102,19 +102,19 @@ export const SeasonalHeatmapMatrix: React.FC<SeasonalHeatmapMatrixProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-xs text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-800">
-              <th className="py-2.5 px-3 font-semibold text-slate-400 w-44">Product Category</th>
+            <tr className="border-b border-slate-200">
+              <th className="py-2.5 px-3 font-semibold text-slate-500 w-44">Product Category</th>
               {quarters.map((q) => (
-                <th key={q} className="py-2.5 px-3 font-semibold text-center text-slate-300 font-mono">
+                <th key={q} className="py-2.5 px-3 font-semibold text-center text-slate-600 font-mono">
                   {q}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 font-mono">
+          <tbody className="divide-y divide-slate-200 font-mono">
             {categories.map((cat) => (
-              <tr key={cat.category} className="hover:bg-slate-800/30">
-                <td className="py-2.5 px-3 font-sans font-bold text-slate-200 truncate max-w-[170px]" title={cat.category}>
+              <tr key={cat.category} className="hover:bg-slate-50">
+                <td className="py-2.5 px-3 font-sans font-bold text-slate-700 truncate max-w-[170px]" title={cat.category}>
                   {cat.category}
                 </td>
                 {quarters.map((q) => {

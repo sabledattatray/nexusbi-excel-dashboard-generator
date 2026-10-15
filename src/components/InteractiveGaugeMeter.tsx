@@ -18,26 +18,26 @@ export const InteractiveGaugeMeter: React.FC<InteractiveGaugeMeterProps> = ({
   const isOver = attainmentPct >= 1;
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg flex flex-col justify-between space-y-3">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg flex flex-col justify-between space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-700">
             <Target className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               Global Quota Attainment Speedometer
             </h3>
-            <p className="text-xs text-slate-400">Actual bookings vs board target</p>
+            <p className="text-xs text-slate-500">Actual bookings vs board target</p>
           </div>
         </div>
 
         <span
           className={`px-2 py-0.5 rounded text-xs font-bold font-mono ${
             isOver
-              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-              : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+              ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+              : 'bg-amber-500/15 text-amber-700 border border-amber-500/30'
           }`}
         >
           {isOver ? 'TARGET SURPASSED' : 'PACING'}
@@ -94,24 +94,24 @@ export const InteractiveGaugeMeter: React.FC<InteractiveGaugeMeterProps> = ({
 
         {/* Needle Value Callout */}
         <div className="text-center mt-[-35px]">
-          <div className="text-3xl font-extrabold text-white font-mono tracking-tight">
+          <div className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
             {(attainmentPct * 100).toFixed(1)}%
           </div>
-          <div className="text-xs text-slate-400 font-medium">
+          <div className="text-xs text-slate-500 font-medium">
             Quota Attainment Rate
           </div>
         </div>
       </div>
 
       {/* Target Breakdown Stats */}
-      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-xs font-mono">
-        <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-xs font-mono">
+        <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-slate-500 text-[10px] block">Actual Revenue</span>
-          <span className="font-bold text-white">${(totalRevenue / 1000).toFixed(0)}k</span>
+          <span className="font-bold text-slate-900">${(totalRevenue / 1000).toFixed(0)}k</span>
         </div>
-        <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+        <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-slate-500 text-[10px] block">Target Quota</span>
-          <span className="font-bold text-slate-300">${(targetRevenue / 1000).toFixed(0)}k</span>
+          <span className="font-bold text-slate-600">${(targetRevenue / 1000).toFixed(0)}k</span>
         </div>
       </div>
     </div>

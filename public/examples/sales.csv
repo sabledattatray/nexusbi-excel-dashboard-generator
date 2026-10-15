@@ -1,0 +1,7 @@
+Order ID,Order Date,Product Category,Region,Revenue,Cost
+001,2025-01-01,Software,East,1000,400
+002,2025-02-01,Hardware,West,2000,1200
+003,2025-03-01,Software,West,1500,500
+004,2025-04-01,Services,East,800,300
+005,2025-05-01,Hardware,East,1700,900
+006,2025-06-01,Services,West,1200,400

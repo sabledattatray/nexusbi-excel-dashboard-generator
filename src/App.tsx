@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Download,
@@ -17,27 +17,19 @@ import {
   Upload,
   RotateCcw,
 } from 'lucide-react';
-import { DatasetConfig } from './types/dataset';
-import { generateRealisticDataset, INDUSTRY_PRESETS } from './utils/dataGenerator';
-import { exportToProfessionalExcel } from './utils/excelExporter';
-import { Navbar } from './components/Navbar';
-import { KpiMetrics } from './components/KpiMetrics';
-import { InteractivePieChart } from './components/InteractivePieChart';
-import { InteractiveHorizontalBarChart } from './components/InteractiveHorizontalBarChart';
-import { InteractiveDonutChart } from './components/InteractiveDonutChart';
-import { InteractiveWaterfallChart } from './components/InteractiveWaterfallChart';
-import { InteractiveGaugeMeter } from './components/InteractiveGaugeMeter';
-import { SeasonalHeatmapMatrix } from './components/SeasonalHeatmapMatrix';
-import { InteractiveCharts } from './components/InteractiveCharts';
-import { ExecutiveInsights } from './components/ExecutiveInsights';
 import { ExcelLiveViewer } from './components/ExcelLiveViewer';
-import { DataGrid } from './components/DataGrid';
-import { WorkbookTabsPreview } from './components/WorkbookTabsPreview';
+import { IndustryDashboard } from './components/IndustryDashboard';
+import { generateProfessionalDataset } from './utils/professionalPresentation';
+import { exportToProfessionalExcel } from './utils/excelExporter';
+import { AdaptiveDashboard } from './components/AdaptiveDashboard';
+import { AnalysisSelection, initialSelection } from './utils/adaptiveAnalysis';
+import { exportAdaptiveExcel } from './utils/adaptiveExcelExporter';
+import { DatasetConfig } from './types/dataset';
+import { Navbar } from './components/Navbar';
 import { CustomizerModal } from './components/CustomizerModal';
 import { DownloadSuccessModal } from './components/DownloadSuccessModal';
 import { DataUploadModal } from './components/DataUploadModal';
-import { ImportResult } from './utils/dataImporter';
-import { getIndustryTheme, getAdaptedKpiLabels } from './utils/industryTheme';
+import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
 
 export default function App() {
   // Dataset Configuration State
@@ -55,16 +47,12 @@ export default function App() {
   // Active Worksheet View Tab
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
-  >('excel-preview');
+  >('dashboard');
 
   // Randomization Seed offset to allow "Refresh Data"
   const [seedOffset, setSeedOffset] = useState<number>(0);
 
   // Slicer Filters
-  const [selectedRegion, setSelectedRegion] = useState<string>('ALL');
-  const [selectedQuarter, setSelectedQuarter] = useState<string>('ALL');
-  const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   // Modals state
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
@@ -76,12 +64,11 @@ export default function App() {
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
 
+  const [analysisSelection, setAnalysisSelection] = useState<AnalysisSelection>({ metric: '', dimension: '', aggregation: 'count' });
+
   // Synthetic Realistic Dataset (default)
   const syntheticDataset = useMemo(() => {
-    return generateRealisticDataset({
-      ...config,
-      recordCount: config.recordCount + seedOffset,
-    });
+    return generateProfessionalDataset(config, seedOffset);
   }, [config, seedOffset]);
 
   // Active Dataset (either custom uploaded data or synthetic model)
@@ -92,24 +79,13 @@ export default function App() {
     return syntheticDataset;
   }, [customImportResult, syntheticDataset]);
 
-  // Overall quota attainment rate
-  const industryTheme = useMemo(() => getIndustryTheme(config.industry), [config.industry]);
-  const adaptedLabels = useMemo(
-    () => getAdaptedKpiLabels(config.industry, dataset.schemaProfile),
-    [config.industry, dataset.schemaProfile]
-  );
-
-  const globalTargetRevenue = useMemo(() => {
-    return dataset.regionalPerformance.reduce((s, r) => s + r.targetRevenue, 0);
-  }, [dataset]);
-
-  const globalAttainmentPct = globalTargetRevenue > 0 ? dataset.kpi.totalRevenue / globalTargetRevenue : 1;
+  useEffect(() => { setAnalysisSelection(initialSelection(dataset)); }, [dataset]);
 
   // Handle Download Excel
   const handleDownloadExcel = useCallback(async () => {
     try {
       setIsDownloading(true);
-      const { blob, filename } = await exportToProfessionalExcel(dataset, config);
+      const { blob, filename } = await (customImportResult ? exportAdaptiveExcel(dataset, dataset.config, analysisSelection) : exportToProfessionalExcel(dataset, config));
 
       // Trigger browser download
       const url = URL.createObjectURL(blob);
@@ -137,7 +113,7 @@ export default function App() {
     } finally {
       setIsDownloading(false);
     }
-  }, [dataset, config]);
+  }, [dataset, config, customImportResult, analysisSelection]);
 
   const handleRegenerateData = () => {
     if (customImportResult) {
@@ -148,19 +124,31 @@ export default function App() {
   };
 
   const handleSaveConfig = (newConfig: DatasetConfig) => {
+    setCustomImportResult(null);
     setConfig(newConfig);
+    setActiveTab('dashboard');
   };
 
   const handleImportComplete = (result: ImportResult) => {
     setCustomImportResult(result);
+    setAnalysisSelection(initialSelection(result.dataset));
     setConfig(result.config);
-    setActiveTab('excel-preview');
+    setActiveTab('dashboard');
     confetti({
       particleCount: 90,
       spread: 75,
       origin: { y: 0.55 },
       colors: ['#6366F1', '#10B981', '#38BDF8', '#F59E0B'],
     });
+  };
+
+  const handleExample = async (name: 'workforce' | 'sales') => {
+    try {
+      const response = await fetch(`/examples/${name}.csv`);
+      if (!response.ok) throw new Error('Example file could not be loaded.');
+      const table = await parseUploadedFile(new File([await response.text()], `${name}.csv`, { type: 'text/csv' }));
+      handleImportComplete(buildDatasetFromUpload(table, inferColumnMapping(table), { ...config, industry: table.schema!.detectedIndustry }));
+    } catch (error) { alert(error instanceof Error ? error.message : 'Could not load example.'); }
   };
 
   const handleResetToSample = () => {
@@ -178,7 +166,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="premium-workspace min-h-screen flex flex-col font-sans">
       {/* Top Navigation */}
       <Navbar
         config={config}
@@ -193,321 +181,30 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Executive Announcement / Quick Download Hero Banner */}
-        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/70 border border-slate-800 p-5 sm:p-6 shadow-xl">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-            <div className="space-y-1.5 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  Native Excel Format (.xlsx) • Interactive Visual Charts
-                </span>
-                <span className="text-xs text-slate-400 font-mono">
-                  v2025.4 • Verified Data
-                </span>
-              </div>
-              <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight">
-                {config.reportTitle}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Realistic enterprise business dataset with {config.recordCount.toLocaleString()} transactions across 4 global regions. Download as an authentic multi-sheet <strong>.xlsx</strong> file featuring <strong>real native Excel charts (Pie, Horizontal Bar, Column)</strong>, automated KPI tiles, live formulas, and dropdown slicers!
-              </p>
-            </div>
+      <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
+        <details className="studio-intro"><summary><span><Layers size={15}/> Excel & CSV workspace guide</span><span>Examples & import tools +</span></summary><section className="workspace-hero">
+          <div className="hero-editorial"><div className="eyebrow"><span/> THE ANALYTICS STUDIO</div><h1>Your data.<br/><em>A clearer perspective.</em></h1><p>Turn the details in your spreadsheets into a story you can act on. Explore your numbers, understand the patterns, and build a report worth sharing.</p><div className="hero-actions"><button className="primary-button" onClick={() => setIsUploadModalOpen(true)}><Upload size={16}/>Bring your data</button><button className="text-button" onClick={() => setActiveTab('excel-preview')}>Explore the workbook <span>↗</span></button></div><div className="hero-formats"><FileSpreadsheet size={14}/><span>EXCEL & CSV</span><i/> <span>EDITABLE .XLSX EXPORT</span></div></div>
+          <div className="hero-art" aria-hidden="true"><div className="art-grid"/><span className="art-orbit orbit-one"/><span className="art-orbit orbit-two"/><div className="art-chart-card"><div className="art-card-top"><span className="art-card-icon"><BarChart3 size={17}/></span><span>Clarity in every column</span><span className="art-card-dot"/></div><div className="art-chart"><svg viewBox="0 0 320 110" fill="none"><path d="M0 90H320M0 55H320M0 20H320" stroke="#e5ece8" strokeDasharray="4 5"/><path d="M0 93L35 76L65 82L100 53L135 62L170 35L205 42L245 13L280 25L320 5V110H0Z" fill="url(#hero-area)"/><path d="M0 93L35 76L65 82L100 53L135 62L170 35L205 42L245 13L280 25L320 5" stroke="#218573" strokeWidth="2.5"/><defs><linearGradient id="hero-area" x1="160" y1="0" x2="160" y2="110" gradientUnits="userSpaceOnUse"><stop stopColor="#71b8a4" stopOpacity=".35"/><stop offset="1" stopColor="#71b8a4" stopOpacity="0"/></linearGradient></defs></svg></div><div className="art-card-bottom"><span>THE DETAILS</span><span>THE BIGGER PICTURE ↗</span></div></div><div className="art-mini-card"><span className="art-mini-icon"><Layers size={18}/></span><div><strong>Built around your data</strong><small>From raw rows to meaningful reports</small></div><CheckCircle2 size={17}/></div><span className="art-caption">A NEW POINT OF VIEW</span></div>
+        </section>
+        <div className="example-strip"><div><span className="example-icon"><Layers size={17}/></span><span><strong>A little inspiration to get started</strong><small>Explore two examples with different fields and perspectives.</small></span></div><div><button onClick={() => handleExample('workforce')}>Workforce analytics <span>↗</span></button><button onClick={() => handleExample('sales')}>Sales performance <span>↗</span></button></div></div>
+        </details>
+        <div className="section-heading"><div><div className="eyebrow">YOUR WORKSPACE</div><h2>{customImportResult ? 'The story in your data' : 'Industry intelligence'}</h2></div><div className="report-section-actions"><span className="quiet-badge"><span/>{customImportResult ? `${config.recordCount.toLocaleString()} source records` : 'Illustrative sample data'}</span>{!customImportResult && <button className="secondary-button" onClick={() => setIsCustomizerOpen(true)}><Sliders size={14}/>Choose industry</button>}</div></div>
 
-            {/* Quick Actions in Banner */}
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/30 border border-indigo-400/40 flex items-center gap-2 transition-all transform active:scale-95"
-              >
-                <Upload className="w-4 h-4 text-indigo-200" />
-                <span>Upload CSV / Excel</span>
-              </button>
+        {customImportResult && <div className="source-file-strip"><span className="source-file-icon"><FileSpreadsheet size={20}/></span><div><strong>{customImportResult.summary.fileName}</strong><small>{customImportResult.summary.rowCount.toLocaleString()} records · {customImportResult.schema.columns.length} original fields · {customImportResult.summary.dateSpan}</small></div><span className="source-file-label">SOURCE DATA</span><button className="text-button" onClick={() => setIsUploadModalOpen(true)}>Replace file <Upload size={13}/></button><button className="text-button" onClick={handleResetToSample}>Reset</button></div>}
 
-              <button
-                onClick={() => setActiveTab('excel-preview')}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border flex items-center gap-2 transition-all shadow-md ${
-                  activeTab === 'excel-preview'
-                    ? 'bg-emerald-500 text-white border-emerald-400 ring-2 ring-emerald-400/50'
-                    : 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border-emerald-500/40 hover:border-emerald-400'
-                }`}
-              >
-                <Sparkles className="w-4 h-4 text-emerald-300" />
-                <span>👀 See How Charts Look in Excel</span>
-              </button>
+        {customImportResult && <AdaptiveDashboard key={customImportResult.summary.fileName + customImportResult.summary.rowCount} data={dataset} selection={analysisSelection} onChange={setAnalysisSelection} view={activeTab} />}
 
-              <button
-                onClick={() => setIsCustomizerOpen(true)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700 flex items-center gap-2 transition-colors"
-              >
-                <Sliders className="w-4 h-4 text-sky-400" />
-                <span>Customize Model</span>
-              </button>
-
-              <button
-                onClick={handleDownloadExcel}
-                disabled={isDownloading}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-500/25 border border-emerald-400/30 flex items-center gap-2.5 transition-all transform active:scale-95 disabled:opacity-50"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Download Master Excel (.xlsx)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Features Row */}
-          <div className="mt-4 pt-4 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-400 font-mono">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Real Native Excel Charts</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Pie, Donut &amp; Horizontal Bar Charts</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Dropdown Excel Slicers (Data Validation)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Live Excel Mathematical Formulas</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Custom Uploaded Dataset Banner */}
-        {customImportResult && (
-          <div className="rounded-2xl p-4 bg-gradient-to-r from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner">
-                <FileSpreadsheet className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-black uppercase tracking-wider text-indigo-300">
-                    Active Custom Dataset
-                  </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
-                    ✓ {customImportResult.summary.rowCount.toLocaleString()} Rows Imported
-                  </span>
-                  <span
-                    className="text-[11px] px-2.5 py-0.5 rounded-full font-bold border flex items-center gap-1"
-                    style={{
-                      backgroundColor: `${industryTheme.colors.primary}20`,
-                      color: industryTheme.colors.primary,
-                      borderColor: `${industryTheme.colors.primary}40`,
-                    }}
-                  >
-                    <span>{industryTheme.badge}</span>
-                    <span>{customImportResult.summary.industryName || industryTheme.name}</span>
-                  </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">
-                    {customImportResult.summary.uniqueCategories} {adaptedLabels.categoryLabel} Categories
-                  </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium">
-                    {customImportResult.summary.uniqueDimensions} {adaptedLabels.dimensionLabel}s
-                  </span>
-                </div>
-                <div className="text-sm font-bold text-white mt-1 flex items-center gap-2">
-                  <span>{customImportResult.summary.fileName}</span>
-                  <span className="text-xs text-slate-400 font-normal">
-                    ({customImportResult.summary.dateSpan})
-                  </span>
-                </div>
-                <div className="text-xs text-slate-400 mt-0.5">
-                  Total Volume: ${(customImportResult.summary.totalPrimaryMetric).toLocaleString()} • All charts, pivot matrices, and live formulas adapted to your data!
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload Another File</span>
-              </button>
-              <button
-                onClick={handleResetToSample}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                <span>Reset to Sample Data</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Tab: See How Charts Look in Excel (.xlsx Live Simulator with Pivot Charts) */}
-        {(activeTab === 'excel-preview' || activeTab === 'pivot') && (
-          <ExcelLiveViewer
-            data={dataset}
-            config={config}
-            onDownloadExcel={handleDownloadExcel}
-            isDownloading={isDownloading}
-          />
-        )}
-
-        {/* Tab 1: Executive Dashboard (Full Visuals Suite) */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Top KPI Metric Tiles */}
-            <KpiMetrics data={dataset} useLiveFormulas={config.useLiveExcelFormulas} />
-
-            {/* Visuals Showcase Row 1: Pie Chart & Horizontal Bar Chart */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <InteractivePieChart
-                categories={dataset.categorySummaries}
-                onSelectCategory={(cat) => setSelectedCategory(selectedCategory === cat ? 'ALL' : cat)}
-                selectedCategory={selectedCategory}
-                palette={industryTheme.colors.chartPalette}
-                title={`${adaptedLabels.categoryLabel} Distribution & Share`}
-                subtitle={`Interactive breakdown by ${adaptedLabels.categoryLabel.toLowerCase()} with volume contribution`}
-              />
-
-              <InteractiveHorizontalBarChart
-                regionalPerformance={dataset.regionalPerformance}
-                onSelectRegion={(reg) => setSelectedRegion(selectedRegion === reg ? 'ALL' : reg)}
-                selectedRegion={selectedRegion}
-                title={`${adaptedLabels.dimensionLabel} Performance & Target Variance`}
-                subtitle={`Comparative horizontal analysis evaluating ${adaptedLabels.metric1.toLowerCase()} across ${adaptedLabels.dimensionLabel.toLowerCase()}s`}
-                metricLabel={adaptedLabels.metric1}
-                primaryColor={industryTheme.colors.primary}
-              />
-            </div>
-
-            {/* Visuals Showcase Row 2: Donut Chart & Speedometer Gauge */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <InteractiveDonutChart
-                  categories={dataset.categorySummaries}
-                  onSelectCategory={(cat) => setSelectedCategory(selectedCategory === cat ? 'ALL' : cat)}
-                  selectedCategory={selectedCategory}
-                  palette={industryTheme.colors.chartPalette}
-                  title={`${adaptedLabels.categoryLabel} Volume & Margin Donut`}
-                  subtitle={`Relative proportion and margin profile across key ${adaptedLabels.categoryLabel.toLowerCase()} categories`}
-                />
-              </div>
-
-              <div>
-                <InteractiveGaugeMeter
-                  attainmentPct={globalAttainmentPct}
-                  totalRevenue={dataset.kpi.totalRevenue}
-                  targetRevenue={globalTargetRevenue}
-                />
-              </div>
-            </div>
-
-            {/* Financial Waterfall P&L Bridge Chart */}
-            <InteractiveWaterfallChart kpi={dataset.kpi} />
-
-            {/* Proper & Informative Strategic Diagnostics Memo */}
-            <ExecutiveInsights data={dataset} selectedRegion={selectedRegion} />
-
-            {/* Monthly Trajectory, Regional Bullet Quotas & Sales Leaderboard */}
-            <InteractiveCharts
-              data={dataset}
-              selectedRegion={selectedRegion}
-              setSelectedRegion={setSelectedRegion}
-              selectedQuarter={selectedQuarter}
-              setSelectedQuarter={setSelectedQuarter}
-              selectedChannel={selectedChannel}
-              setSelectedChannel={setSelectedChannel}
-            />
-
-            {/* Seasonal Velocity Heatmap Matrix */}
-            <SeasonalHeatmapMatrix
-              transactions={dataset.transactions}
-              categories={dataset.categorySummaries}
-            />
-
-            {/* Quick Preview of the Sales Transactions Table inside Dashboard */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Table className="w-4 h-4 text-sky-400" />
-                    Sales Transactions Preview (Sheet #2)
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Live sample of the underlying {config.recordCount.toLocaleString()} transaction rows exported in the Excel file
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('transactions')}
-                  className="text-xs text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1 transition-colors"
-                >
-                  <span>Open Full Spreadsheet View</span>
-                  <span>→</span>
-                </button>
-              </div>
-
-              <DataGrid transactions={dataset.transactions} useLiveFormulas={config.useLiveExcelFormulas} />
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Full Sales Transactions Spreadsheet View */}
-        {activeTab === 'transactions' && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-sky-400" />
-                  Sheet #2: Certified Sales Transactions Ledger
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Complete dataset of {config.recordCount.toLocaleString()} transactions with automated calculations for Revenue, COGS, Profit, and Margins.
-                </p>
-              </div>
-
-              <button
-                onClick={handleDownloadExcel}
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export This Sheet in .xlsx</span>
-              </button>
-            </div>
-
-            <DataGrid transactions={dataset.transactions} useLiveFormulas={config.useLiveExcelFormulas} />
-          </div>
-        )}
-
-        {/* Tabs 3, 4, 5: Regional, Products, Customers */}
-        {(activeTab === 'regions' || activeTab === 'products' || activeTab === 'customers') && (
-          <WorkbookTabsPreview
-            data={dataset}
-            activeTab={activeTab}
-            useLiveFormulas={config.useLiveExcelFormulas}
-          />
-        )}
+        {!customImportResult && (activeTab === 'excel-preview'
+          ? <ExcelLiveViewer key={config.industry + seedOffset} data={dataset} config={config} onDownloadExcel={handleDownloadExcel} isDownloading={isDownloading} />
+          : activeTab === 'dashboard'
+          ? <IndustryDashboard key={config.industry + seedOffset} data={dataset} onRecords={() => setActiveTab('transactions')} />
+          : <AdaptiveDashboard key={config.industry + seedOffset} data={dataset} selection={analysisSelection} onChange={setAnalysisSelection} view={activeTab} />)}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-6 text-xs text-slate-500 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
-            <span className="font-semibold text-slate-400">NexusBI Excel Generator</span>
-            <span>• Enterprise Data & Spreadsheet Engine</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-[11px]">
-            <span>Format: Excel OpenXML (.xlsx)</span>
-            <span>•</span>
-            <span>Visuals: Native Pie, Horizontal Bar, Donut, Waterfall & Heatmap Charts</span>
-            <span>•</span>
-            <span>Formulas: Standard Live Excel Syntax</span>
-          </div>
-        </div>
-      </footer>
+      <footer className="workspace-footer"><div className="footer-top"><div><div className="footer-brand"><BarChart3 size={18}/>NexusBI</div><p>Make sense of your spreadsheets.</p></div><div className="footer-principles"><span><FileSpreadsheet size={15}/>Open Excel format</span><span><Layers size={15}/>Original data preserved</span><span><CheckCircle2 size={15}/>Transparent calculations</span></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} NexusBI · Crafted by Datta Sable</span><span>Thoughtful tools. Clearer decisions.</span></div></footer>
 
       {/* Modals */}
-      <CustomizerModal
+      <CustomizerModal key={config.industry + config.companyName + isCustomizerOpen}
         isOpen={isCustomizerOpen}
         onClose={() => setIsCustomizerOpen(false)}
         config={config}
@@ -527,6 +224,7 @@ export default function App() {
         filename={lastDownloadedFilename}
         rowCount={config.recordCount}
         onReDownload={handleDownloadExcel}
+        sourceBased={!!customImportResult}
       />
     </div>
   );

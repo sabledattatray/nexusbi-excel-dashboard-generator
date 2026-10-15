@@ -91,24 +91,24 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
   const active = hoveredIdx !== null ? categories[hoveredIdx] : categories[0];
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg flex flex-col justify-between space-y-4">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg flex flex-col justify-between space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-700">
             <PieIcon className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               {title}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               {subtitle}
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">
+        <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-800/40 px-2 py-0.5 rounded">
           Pie Chart
         </span>
       </div>
@@ -180,8 +180,8 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                 onClick={() => onSelectCategory && onSelectCategory(c.category)}
                 className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
                   isHovered || isSelected
-                    ? 'bg-slate-800/90 border-slate-600 shadow-md'
-                    : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700'
+                    ? 'bg-slate-100/90 border-slate-600 shadow-md'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-200'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -190,20 +190,20 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                     style={{ backgroundColor: color }}
                   />
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate max-w-[150px]">
+                    <div className="text-xs font-semibold text-slate-900 truncate max-w-[150px]">
                       {c.category}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-500 font-mono">
                       Margin: {(c.marginPct * 100).toFixed(1)}%
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2.5 font-mono text-right shrink-0">
-                  <span className="text-xs font-bold text-white">
+                  <span className="text-xs font-bold text-slate-900">
                     ${(c.revenue / 1000).toFixed(0)}k
                   </span>
-                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 min-w-[44px] text-center">
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-emerald-700 min-w-[44px] text-center">
                     {(c.sharePct * 100).toFixed(1)}%
                   </span>
                 </div>
@@ -214,9 +214,9 @@ export const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
         <span>Click slice to isolate category</span>
-        <span className="text-emerald-400 font-mono">
+        <span className="text-emerald-700 font-mono">
           Hover for slice explosion
         </span>
       </div>

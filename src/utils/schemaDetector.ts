@@ -178,13 +178,13 @@ function isDateValue(val: any): boolean {
  */
 export function parseCleanNumber(val: any): number | null {
   if (val === null || val === undefined || val === '') return null;
-  if (typeof val === 'number') return isNaN(val) ? null : val;
+  if (typeof val === 'number') return Number.isFinite(val) ? val : null;
   if (typeof val === 'string') {
     const s = val.trim();
     // Check if it's mostly a number with currency / commas / percentage
-    const cleaned = s.replace(/[$€£¥₹,%\s]/g, '');
+    const cleaned = s.replace(/[$€£¥₹,%\s]/g, '').replace(/^\((.*)\)$/, '-$1');
     if (cleaned === '' || isNaN(Number(cleaned))) return null;
-    return parseFloat(cleaned);
+    return Number.isFinite(Number(cleaned)) ? Number(cleaned) : null;
   }
   return null;
 }
@@ -217,9 +217,14 @@ export function profileColumn(
   const distinctCount = distinctValues.size;
   const distinctRatio = distinctCount / totalCount;
 
+  // IDs are dimensions, even when their values happen to be numeric or date serials.
+  if (/^(id|sku|uuid|code)$|(?:id|code|number)$/.test(cHeader)) {
+    return { name: header, normalizedName: cHeader, dataType: 'identifier', sampleValues, nonNullCount: totalCount, distinctCount, suggestedRole: 'identifier' };
+  }
   // 1. Date Detection
   const dateMatches = nonNullValues.filter((v) => isDateValue(v)).length;
-  const isDate = dateMatches / totalCount > 0.6 || cHeader.includes('date') || cHeader.includes('time') || cHeader.includes('period');
+  const dateHeader = /date|timestamp|period|checkin|checkout/.test(cHeader);
+  const isDate = dateMatches / totalCount > 0.6 && (dateHeader || nonNullValues.some(v => v instanceof Date || (typeof v === 'string' && /[-/]|[a-z]{3}/i.test(v))));
   if (isDate) {
     return {
       name: header,
@@ -240,8 +245,8 @@ export function profileColumn(
   const isNumeric = numericValues.length / totalCount > 0.65;
 
   if (isNumeric) {
-    const min = Math.min(...numericValues);
-    const max = Math.max(...numericValues);
+    const min = numericValues.reduce((a, b) => Math.min(a, b), Infinity);
+    const max = numericValues.reduce((a, b) => Math.max(a, b), -Infinity);
     const sum = numericValues.reduce((a, b) => a + b, 0);
     const avg = sum / numericValues.length;
 
@@ -255,7 +260,7 @@ export function profileColumn(
     const hasCurrencySymbol = nonNullValues.some((v) => typeof v === 'string' && /[$€£¥₹]/.test(v));
     const hasCurrencyKeyword = currencyKeywords.some((kw) => cHeader.includes(kw));
 
-    if (hasCurrencySymbol || hasCurrencyKeyword) {
+    if ((hasCurrencySymbol || hasCurrencyKeyword) && !nonNullValues.some(v => typeof v === 'string' && v.includes('%')) && !/margin|pct|percent|ratio|conversionrate|clickthroughrate|ctr|churn|occupancy|yield|interestrate/.test(cHeader)) {
       return {
         name: header,
         normalizedName: cHeader,
@@ -274,7 +279,7 @@ export function profileColumn(
     const isSmallDecimal = min >= 0 && max <= 1.05 && avg < 0.9;
     const hasPercentKeyword = percentKeywords.some((kw) => cHeader.includes(kw));
 
-    if (hasPercentSymbol || (hasPercentKeyword && isSmallDecimal)) {
+    if (hasPercentSymbol || hasPercentKeyword && (isSmallDecimal || /pct|percent|margin|ratio|ctr|churn|occupancy|yield|conversionrate|interestrate/.test(cHeader))) {
       return {
         name: header,
         normalizedName: cHeader,
@@ -305,7 +310,7 @@ export function profileColumn(
   // 3. Identifier Detection (ID, Code, SKU, UUID, Key, Number)
   const idKeywords = ['id', 'sku', 'code', 'key', 'uuid', 'ssn', 'hash', 'number', 'no', 'ref'];
   const hasIdKeyword = idKeywords.some((kw) => cHeader === kw || cHeader.endsWith(kw) || cHeader.startsWith(kw));
-  if ((hasIdKeyword || distinctRatio > 0.85) && distinctCount > 5) {
+  if (hasIdKeyword && !/name|customer|patient|employee|student|vendor|supplier|tenant/.test(cHeader) && distinctCount > 5) {
     return {
       name: header,
       normalizedName: cHeader,
@@ -466,7 +471,7 @@ export function inspectDatasetSchema(
   // 3. Resolve Primary Metric
   // Prefer Currency > Numeric with high sum > largest range
   const currencyCols = columns.filter((c) => c.dataType === 'currency' && c.stats);
-  const numericCols = columns.filter((c) => (c.dataType === 'numeric' || c.dataType === 'currency') && c.stats);
+  const numericCols = columns.filter((c) => ['numeric', 'currency', 'percentage'].includes(c.dataType) && c.stats);
 
   let primaryMetricCol = currencyCols.find((c) => {
     const n = c.normalizedName;
@@ -524,14 +529,14 @@ export function inspectDatasetSchema(
 
   return {
     columns,
-    primaryMetric: primaryMetricCol ? primaryMetricCol.name : (headers[0] || 'Metric'),
-    primaryMetricLabel: primaryMetricCol ? primaryMetricCol.name : 'Primary Value',
+    primaryMetric: primaryMetricCol ? primaryMetricCol.name : '',
+    primaryMetricLabel: primaryMetricCol ? primaryMetricCol.name : 'Record count',
     secondaryMetric: secondaryMetricCol?.name,
     secondaryMetricLabel: secondaryMetricCol?.name,
     volumeMetric: volumeMetricCol?.name,
     volumeMetricLabel: volumeMetricCol?.name,
-    primaryCategory: primaryCategoryCol ? primaryCategoryCol.name : (categoricalCols[0]?.name || headers[1] || 'Category'),
-    primaryCategoryLabel: primaryCategoryCol ? primaryCategoryCol.name : 'Category',
+    primaryCategory: primaryCategoryCol ? primaryCategoryCol.name : '',
+    primaryCategoryLabel: primaryCategoryCol ? primaryCategoryCol.name : 'No category',
     secondaryCategory: secondaryCategoryCol?.name,
     secondaryCategoryLabel: secondaryCategoryCol?.name,
     dateColumn: dateCol?.name,

@@ -33,29 +33,29 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
   const maxVal = Math.max(...regionalPerformance.map((r) => Math.max(r.actualRevenue, r.targetRevenue))) * 1.12;
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg flex flex-col justify-between space-y-4">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg flex flex-col justify-between space-y-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+          <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-700">
             <AlignLeft className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               {title}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               {subtitle}
             </p>
           </div>
         </div>
 
         {/* Sort Controls */}
-        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+        <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border border-slate-200 text-xs">
           <button
             onClick={() => setSortBy('revenue')}
             className={`px-2 py-1 rounded transition-colors ${
-              sortBy === 'revenue' ? 'bg-sky-500/20 text-sky-300 font-bold' : 'text-slate-400 hover:text-white'
+              sortBy === 'revenue' ? 'bg-sky-500/20 text-sky-800 font-bold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             By Revenue
@@ -63,7 +63,7 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
           <button
             onClick={() => setSortBy('attainment')}
             className={`px-2 py-1 rounded transition-colors ${
-              sortBy === 'attainment' ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-slate-400 hover:text-white'
+              sortBy === 'attainment' ? 'bg-emerald-500/20 text-emerald-800 font-bold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             By Attainment %
@@ -71,7 +71,7 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
           <button
             onClick={() => setSortBy('profit')}
             className={`px-2 py-1 rounded transition-colors ${
-              sortBy === 'profit' ? 'bg-indigo-500/20 text-indigo-300 font-bold' : 'text-slate-400 hover:text-white'
+              sortBy === 'profit' ? 'bg-indigo-500/20 text-indigo-800 font-bold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             By Profit
@@ -98,18 +98,18 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
               onClick={() => onSelectRegion && onSelectRegion(r.region)}
               className={`p-3 rounded-xl border cursor-pointer transition-all ${
                 isSelected || isHovered
-                  ? 'bg-slate-800/80 border-sky-500/60 shadow-md'
-                  : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700'
+                  ? 'bg-slate-100 border-sky-500/60 shadow-md'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-200'
               }`}
             >
               {/* Row Title */}
               <div className="flex items-center justify-between text-xs mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-white text-sm">{r.region}</span>
+                  <span className="font-bold text-slate-900 text-sm">{r.region}</span>
                   <span className="text-slate-500 text-[11px]">Dir: {r.regionalDirector}</span>
                 </div>
                 <div className="flex items-center gap-3 font-mono">
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-slate-900 font-bold text-sm">
                     ${(r.actualRevenue / 1000).toFixed(0)}k
                   </span>
                   <span className="text-slate-500 text-[11px]">
@@ -118,8 +118,8 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
                   <span
                     className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                       isOver
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                        ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+                        : 'bg-amber-500/15 text-amber-700 border border-amber-500/30'
                     }`}
                   >
                     {attainment}% Quota
@@ -128,7 +128,7 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
               </div>
 
               {/* Horizontal Bar Graphic Track */}
-              <div className="relative w-full bg-slate-800 h-6 rounded-lg overflow-hidden flex items-center">
+              <div className="relative w-full bg-slate-100 h-6 rounded-lg overflow-hidden flex items-center">
                 {/* Target Marker Background Track */}
                 <div
                   className="absolute top-0 bottom-0 bg-slate-700/40 rounded-lg"
@@ -156,13 +156,13 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
               </div>
 
               {/* Detail Metrics below bar */}
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-mono">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2 font-mono">
                 <span className="flex items-center gap-1">
                   <span>Gross Profit:</span>
-                  <strong className="text-emerald-400">${(r.actualProfit / 1000).toFixed(0)}k</strong>
+                  <strong className="text-emerald-700">${(r.actualProfit / 1000).toFixed(0)}k</strong>
                   <span>({((r.actualProfit / r.actualRevenue) * 100).toFixed(1)}% Mgn)</span>
                 </span>
-                <span className={variance >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                <span className={variance >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}>
                   Variance: {variance >= 0 ? '+' : ''}${(variance / 1000).toFixed(0)}k
                 </span>
               </div>
@@ -172,7 +172,7 @@ export const InteractiveHorizontalBarChart: React.FC<InteractiveHorizontalBarCha
       </div>
 
       {/* Footer Legend */}
-      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-2 rounded bg-emerald-500" />

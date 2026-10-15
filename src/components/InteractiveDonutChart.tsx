@@ -88,24 +88,24 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
   const activeCategory = hoveredIdx !== null ? categories[hoveredIdx] : categories[0];
 
   return (
-    <div className="rounded-xl bg-slate-900 border border-slate-800 p-5 shadow-lg flex flex-col justify-between space-y-4">
+    <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-lg flex flex-col justify-between space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+          <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-700">
             <PieChart className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">
               {title}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               {subtitle}
             </p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono text-sky-400 bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 rounded">
+        <span className="text-[11px] font-mono text-sky-700 bg-sky-50 border border-sky-800/40 px-2 py-0.5 rounded">
           Interactive Donut
         </span>
       </div>
@@ -147,13 +147,13 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
 
           {/* Center Callout inside Donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate max-w-[120px]">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate max-w-[120px]">
               {activeCategory ? activeCategory.category : 'Total'}
             </span>
-            <span className="text-lg font-extrabold text-white font-mono mt-0.5">
+            <span className="text-lg font-extrabold text-slate-900 font-mono mt-0.5">
               ${activeCategory ? (activeCategory.revenue / 1000).toFixed(0) : 0}k
             </span>
-            <span className="text-[11px] font-bold text-emerald-400 mt-0.5">
+            <span className="text-[11px] font-bold text-emerald-700 mt-0.5">
               {activeCategory ? `${(activeCategory.marginPct * 100).toFixed(1)}% Mgn` : ''}
             </span>
           </div>
@@ -174,8 +174,8 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
                 onClick={() => onSelectCategory && onSelectCategory(c.category)}
                 className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
                   isHovered || isSelected
-                    ? 'bg-slate-800/90 border-slate-600 shadow-md'
-                    : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700'
+                    ? 'bg-slate-100/90 border-slate-600 shadow-md'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-200'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -184,7 +184,7 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
                     style={{ backgroundColor: color }}
                   />
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white truncate max-w-[160px]">
+                    <div className="text-xs font-semibold text-slate-900 truncate max-w-[160px]">
                       {c.category}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
@@ -194,10 +194,10 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3 font-mono text-right shrink-0">
-                  <div className="text-xs font-bold text-white">
+                  <div className="text-xs font-bold text-slate-900">
                     ${(c.revenue / 1000).toFixed(1)}k
                   </div>
-                  <div className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 min-w-[45px] text-center">
+                  <div className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-sky-700 min-w-[45px] text-center">
                     {(c.sharePct * 100).toFixed(1)}%
                   </div>
                 </div>
@@ -208,9 +208,9 @@ export const InteractiveDonutChart: React.FC<InteractiveDonutChartProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
         <span>Click any category to filter</span>
-        <span className="text-sky-400 font-mono">
+        <span className="text-sky-700 font-mono">
           Top Category: {categories[0]?.category} ({((categories[0]?.sharePct || 0) * 100).toFixed(1)}%)
         </span>
       </div>

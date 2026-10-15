@@ -54,32 +54,32 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl shadow-lg overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Customize Dataset & Excel Output</h2>
-              <p className="text-xs text-slate-400">Configure industry model, scale, and visual parameters</p>
+              <h2 className="text-base font-bold text-slate-900">Choose an industry dashboard</h2>
+              <p className="text-xs text-slate-500">Each industry includes its own source fields, KPIs, and visual design.</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-300">
+        <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-600">
           {/* Industry Preset */}
           <div>
-            <label className="block text-xs font-semibold text-slate-200 uppercase tracking-wide mb-2">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
               Industry Vertical & Business Domain
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -87,26 +87,28 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 const item = INDUSTRY_PRESETS[indKey];
                 const isSelected = industry === indKey;
                 return (
-                  <div
+                  <button
+                    type="button"
+                    aria-pressed={isSelected}
                     key={indKey}
                     onClick={() => handleIndustryChange(indKey)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start justify-between text-left ${
                       isSelected
-                        ? 'bg-emerald-950/30 border-emerald-500/80 text-white shadow-sm'
-                        : 'bg-slate-950/40 border-slate-800 hover:border-slate-700 text-slate-300'
+                        ? 'bg-emerald-50 border-emerald-500/80 text-emerald-900 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 hover:border-slate-200 text-slate-600'
                     }`}
                   >
                     <div>
                       <div className="font-semibold text-sm flex items-center gap-2">
                         <span>{item.name}</span>
-                        {isSelected && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>}
+                        {isSelected && <span className="text-[10px] bg-emerald-500/20 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>}
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                         {item.description}
                       </p>
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 ml-2" />}
-                  </div>
+                    {isSelected && <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5 ml-2" />}
+                  </button>
                 );
               })}
             </div>
@@ -114,7 +116,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
 
           {/* Company Name */}
           <div>
-            <label className="block text-xs font-semibold text-slate-200 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
               Organization / Company Name
             </label>
             <div className="relative">
@@ -124,7 +126,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g. Apex Global Systems Corp."
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
             <span className="text-[11px] text-slate-500 mt-1 block">
@@ -134,8 +136,8 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
 
           {/* Record Volume */}
           <div>
-            <label className="block text-xs font-semibold text-slate-200 uppercase tracking-wide mb-1.5">
-              Dataset Volume (Transaction Rows)
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+              Dataset volume (source records)
             </label>
             <div className="grid grid-cols-4 gap-2">
               {[250, 500, 1000, 2500].map((count) => {
@@ -147,8 +149,8 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                     onClick={() => setRecordCount(count)}
                     className={`py-2 px-3 rounded-lg border text-xs font-semibold font-mono transition-all ${
                       isSel
-                        ? 'bg-sky-500/15 border-sky-500 text-sky-300 shadow-sm'
-                        : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400'
+                        ? 'bg-sky-500/15 border-sky-500 text-sky-800 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 hover:border-slate-200 text-slate-500'
                     }`}
                   >
                     {count.toLocaleString()} rows
@@ -159,21 +161,21 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           </div>
 
           {/* Excel Specific Options */}
-          <div className="pt-2 border-t border-slate-800 space-y-3">
-            <label className="block text-xs font-semibold text-slate-200 uppercase tracking-wide">
+          <div className="pt-2 border-t border-slate-200 space-y-3">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
               Excel Workbook Engine Configuration
             </label>
 
             <div
               onClick={() => setIncludeCharts(!includeCharts)}
-              className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between cursor-pointer hover:border-slate-700 transition-colors"
+              className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <BarChart3 className="w-5 h-5 text-emerald-400" />
+                <BarChart3 className="w-5 h-5 text-emerald-700" />
                 <div>
-                  <div className="font-semibold text-white">Embed Visual Charts in Excel Sheet</div>
-                  <div className="text-[11px] text-slate-400">
-                    Inserts rendered high-DPI Trend, Regional Quota & Category visual graphics onto Sheet 1
+                  <div className="font-semibold text-slate-900">Embed Visual Charts in Excel Sheet</div>
+                  <div className="text-[11px] text-slate-500">
+                    Includes editable charts of industry-specific grouped summaries. Full source rows are preserved.
                   </div>
                 </div>
               </div>
@@ -181,20 +183,20 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 type="checkbox"
                 checked={includeCharts}
                 onChange={() => {}}
-                className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700 cursor-pointer"
+                className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-white border-slate-200 cursor-pointer"
               />
             </div>
 
             <div
               onClick={() => setUseFormulas(!useFormulas)}
-              className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between cursor-pointer hover:border-slate-700 transition-colors"
+              className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <FileSpreadsheet className="w-5 h-5 text-sky-400" />
+                <FileSpreadsheet className="w-5 h-5 text-sky-700" />
                 <div>
-                  <div className="font-semibold text-white">Use Live Excel Mathematical Formulas</div>
-                  <div className="text-[11px] text-slate-400">
-                    Generates native `=SUM()`, `=AVERAGE()`, `=COGS`, `=MARGIN%` formulas instead of static numbers
+                  <div className="font-semibold text-slate-900">Use Live Excel Mathematical Formulas</div>
+                  <div className="text-[11px] text-slate-500">
+                    Business KPIs recalculate from source rows. Chart summaries are export-time snapshots.
                   </div>
                 </div>
               </div>
@@ -202,17 +204,17 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 type="checkbox"
                 checked={useFormulas}
                 onChange={() => {}}
-                className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700 cursor-pointer"
+                className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-white border-slate-200 cursor-pointer"
               />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-950/90 border-t border-slate-800 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+            className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors"
           >
             Cancel
           </button>

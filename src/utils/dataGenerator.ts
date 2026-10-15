@@ -341,8 +341,8 @@ function createRng(seed = 123456789) {
   };
 }
 
-export function generateRealisticDataset(config: DatasetConfig): AppDataset {
-  const rng = createRng(42 + config.recordCount);
+export function generateRealisticDataset(config: DatasetConfig, seedOffset = 0): AppDataset {
+  const rng = createRng(42 + config.recordCount + seedOffset * 7919);
   const preset = INDUSTRY_PRESETS[config.industry] || INDUSTRY_PRESETS.enterprise_tech;
 
   const transactions: Transaction[] = [];
