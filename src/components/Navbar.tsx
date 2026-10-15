@@ -17,8 +17,8 @@ interface NavbarProps {
   onDownloadExcel: () => void;
   isDownloading: boolean;
   onRegenerateData: () => void;
-  activeTab: 'dashboard' | 'excel-preview' | 'transactions' | 'regions' | 'products' | 'customers';
-  setActiveTab: (tab: 'dashboard' | 'excel-preview' | 'transactions' | 'regions' | 'products' | 'customers') => void;
+  activeTab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers';
+  setActiveTab: (tab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -167,6 +167,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('pivot')}
+            className={`px-3 py-1.5 rounded-t text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+              activeTab === 'pivot'
+                ? 'bg-indigo-500/20 text-indigo-300 border-b-2 border-indigo-400 font-bold'
+                : 'text-indigo-400 hover:text-indigo-300 hover:bg-indigo-950/40'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+            2. Pivot Table Analysis (Interactive Pivot Matrices)
+          </button>
+
+          <button
             onClick={() => setActiveTab('transactions')}
             className={`px-3 py-1.5 rounded-t text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 ${
               activeTab === 'transactions'
@@ -175,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-sky-500"></span>
-            2. Sales Transactions ({config.recordCount} rows)
+            3. Sales Transactions ({config.recordCount} rows)
           </button>
 
           <button

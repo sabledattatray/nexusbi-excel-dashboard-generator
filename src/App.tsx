@@ -49,8 +49,8 @@ export default function App() {
 
   // Active Worksheet View Tab
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'excel-preview' | 'transactions' | 'regions' | 'products' | 'customers'
-  >('dashboard');
+    'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
+  >('excel-preview');
 
   // Randomization Seed offset to allow "Refresh Data"
   const [seedOffset, setSeedOffset] = useState<number>(0);
@@ -214,8 +214,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Tab 0: See How Charts Look in Excel (.xlsx Live Simulator) */}
-        {activeTab === 'excel-preview' && (
+        {/* Tab: See How Charts Look in Excel (.xlsx Live Simulator with Pivot Charts) */}
+        {(activeTab === 'excel-preview' || activeTab === 'pivot') && (
           <ExcelLiveViewer
             data={dataset}
             config={config}
