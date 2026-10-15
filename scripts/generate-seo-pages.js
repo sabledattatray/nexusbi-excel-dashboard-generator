@@ -106,7 +106,7 @@ const pages = [
   {
     slug: 'contact',
     title: 'Contact Us & Grievance Redressal | excel.dattasable.com',
-    description: 'Contact Dattatray Gorakh Sable, developer of excel.dattasable.com. Official support channels, WhatsApp, email (support@dattasable.com), and grievance officer details.',
+    description: 'Contact Datta Sable, developer of excel.dattasable.com. Official support channels, WhatsApp, email (support@dattasable.com), and grievance officer details.',
     canonical: 'https://excel.dattasable.com/contact',
     h1: 'Contact Us & Grievance Redressal – Datta Sable Analytics',
     metaHeading: 'Contact & Grievance Details',

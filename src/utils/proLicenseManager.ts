@@ -73,7 +73,7 @@ export function dispatchLicenseChangedEvent(): void {
 
 export const UPI_PAYMENT_CONFIG = {
   vpa: '8010803756@upi',
-  name: 'DATTATRAY GORAKH SABLE',
+  name: 'Datta Sable',
   currency: 'INR',
   singleAmount: 9,
   lifetimeAmount: 49,
@@ -82,9 +82,10 @@ export const UPI_PAYMENT_CONFIG = {
 
 // Known VIP passcodes and keywords (all grant PERMANENT UNLIMITED LIFETIME PRO)
 export const KNOWN_VIP_PASSCODES = [
+  'DATTA@1511',
   'DATTATRAY@1511',
-  'DATTATRAY1511',
   'DATTA1511',
+  'DATTATRAY1511',
   '1511',
   'DATTA',
   'DATTA49',

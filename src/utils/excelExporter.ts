@@ -5,7 +5,7 @@ import { injectNativeExcelCharts } from './nativeExcelChartInjector';
 import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
 
 // Standard Master Password to Lock & Protect Excel Workbooks & Worksheets
-export const WORKBOOK_PROTECTION_PASSWORD = 'Dattatray@1511';
+export const WORKBOOK_PROTECTION_PASSWORD = 'Datta@1511';
 
 // Executive Palette for Professional Excel Workbooks
 const COLORS = {

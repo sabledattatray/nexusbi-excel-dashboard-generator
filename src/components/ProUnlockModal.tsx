@@ -413,7 +413,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                         handleVerify();
                       }
                     }}
-                    placeholder="e.g. 12-digit UTR or VIP Code (e.g. Dattatray@1511)"
+                    placeholder="e.g. 12-digit UTR or VIP Code (e.g. Datta@1511)"
                     className="flex-1 px-3 py-2 rounded-xl bg-[#051713] border border-emerald-500/40 text-white placeholder-emerald-700 font-mono text-xs focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
                   />
                   <button
@@ -441,13 +441,13 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        setUtrInput('Dattatray@1511');
+                        setUtrInput('Datta@1511');
                         setTimeout(handleVerify, 50);
                       }}
                       className="px-1.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 font-mono text-[9.5px] border border-emerald-500/30 transition-colors"
-                      title="Quick Unlock with Dattatray@1511"
+                      title="Quick Unlock with Datta@1511"
                     >
-                      Dattatray@1511
+                      Datta@1511
                     </button>
                     <button
                       type="button"

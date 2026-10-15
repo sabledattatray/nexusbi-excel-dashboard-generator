@@ -168,7 +168,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                       <span>FOUNDER &amp; LEAD DEVELOPER</span>
                     </div>
                     <h3 className="text-xl font-bold text-white font-heading">
-                      Dattatray Gorakh Sable
+                      Datta Sable
                     </h3>
                     <p className="text-xs text-[#a9c4b9]">
                       Business Intelligence Architect, Data Engineer &amp; Analytics Consultant
@@ -459,14 +459,14 @@ export const LegalModal: React.FC<LegalModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-1.5">
                   <span className="text-[10px] font-mono uppercase text-emerald-800 font-semibold">Operator / Developer</span>
-                  <h4 className="text-sm font-bold text-slate-900">Dattatray Gorakh Sable</h4>
+                  <h4 className="text-sm font-bold text-slate-900">Datta Sable</h4>
                   <p className="text-xs text-slate-600">Business Intelligence Expert &amp; Analytics Engineer</p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-1.5">
                   <span className="text-[10px] font-mono uppercase text-emerald-800 font-semibold">Official UPI VPA</span>
                   <h4 className="text-sm font-bold text-slate-900 font-mono">8010803756@upi</h4>
-                  <p className="text-xs text-slate-600">Verified Payee: DATTATRAY GORAKH SABLE</p>
+                  <p className="text-xs text-slate-600">Verified Payee: Datta Sable</p>
                 </div>
               </div>
 
