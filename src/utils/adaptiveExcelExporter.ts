@@ -113,6 +113,20 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
   }
 
   const zip = await JSZip.loadAsync(await workbook.xlsx.writeBuffer());
+  for (let sIdx = 1; sIdx <= 10; sIdx++) {
+    const sPath = `xl/worksheets/sheet${sIdx}.xml`;
+    let sContent = await zip.file(sPath)?.async('string');
+    if (sContent && sContent.includes('<sheetProtection')) {
+      sContent = sContent.replace(/<sheetProtection\b([^>]*)\/>/, (_match, attrs) => {
+        const algo = attrs.match(/algorithmName="([^"]+)"/)?.[1] || 'SHA-512';
+        const hash = attrs.match(/hashValue="([^"]+)"/)?.[1] || '';
+        const salt = attrs.match(/saltValue="([^"]+)"/)?.[1] || '';
+        const spin = attrs.match(/spinCount="([^"]+)"/)?.[1] || '100000';
+        return `<sheetProtection sheet="1" objects="1" scenarios="1" formatCells="1" formatColumns="1" formatRows="1" insertColumns="1" insertRows="1" insertHyperlinks="1" deleteColumns="1" deleteRows="1" selectLockedCells="1" selectUnlockedCells="0" sort="0" autoFilter="0" pivotTables="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+      });
+      zip.file(sPath, sContent);
+    }
+  }
   let wbXml = await zip.file('xl/workbook.xml')?.async('string');
   const sheet1ForProt = await zip.file('xl/worksheets/sheet1.xml')?.async('string');
   if (wbXml && sheet1ForProt && !wbXml.includes('<workbookProtection')) {

@@ -129,6 +129,9 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   const sheet1Xml = await zip.file('xl/worksheets/sheet1.xml')!.async('string');
   assert.ok(sheet1Xml.includes('<sheetProtection'));
   assert.ok(sheet1Xml.includes('algorithmName="SHA-512"'));
+  assert.ok(sheet1Xml.includes('objects="1"'));
+  assert.ok(sheet1Xml.includes('selectLockedCells="1"'));
+  assert.ok(sheet1Xml.includes('deleteRows="1"'));
   assert.ok(sheet1Xml.includes('autoFilter="0"'));
 
   const wbXml = await zip.file('xl/workbook.xml')!.async('string');

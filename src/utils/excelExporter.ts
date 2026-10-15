@@ -1925,7 +1925,7 @@ export async function exportToProfessionalExcel(
       : [{ showGridLines: false }];
 
     await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
-      selectLockedCells: true,
+      selectLockedCells: false, // Locked cells cannot be selected or copied; only unlocked filter cells can be selected
       selectUnlockedCells: true,
       formatCells: false,
       formatColumns: false,
