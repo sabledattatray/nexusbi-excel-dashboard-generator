@@ -1,0 +1,652 @@
+import React, { useState } from 'react';
+import {
+  FileSpreadsheet,
+  Layers,
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Zap,
+  BarChart3,
+  ArrowRight,
+  Upload,
+  Download,
+  LayoutDashboard,
+  Building2,
+  HeartPulse,
+  ShoppingBag,
+  Landmark,
+  Factory,
+  Table,
+  Check,
+} from 'lucide-react';
+import { ExcelLogo } from './ExcelLogo';
+import { IndustryType } from '../types/dataset';
+
+interface HomePageProps {
+  onOpenDashboard: () => void;
+  onOpenExcelView: () => void;
+  onOpenUploadModal: () => void;
+  onDownloadExcel: () => void;
+  isDownloading: boolean;
+  onSelectIndustry: (industry: IndustryType) => void;
+  currentIndustry?: IndustryType;
+}
+
+export const HomePage: React.FC<HomePageProps> = ({
+  onOpenDashboard,
+  onOpenExcelView,
+  onOpenUploadModal,
+  onDownloadExcel,
+  isDownloading,
+  onSelectIndustry,
+  currentIndustry = 'enterprise_tech',
+}) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const industries: {
+    id: IndustryType;
+    name: string;
+    icon: typeof Building2;
+    tagline: string;
+    metric: string;
+  }[] = [
+    {
+      id: 'enterprise_tech',
+      name: 'SaaS & Enterprise Cloud',
+      icon: Building2,
+      tagline: 'ARR, Net Revenue Retention, Subscription Cohorts, ACV',
+      metric: '$9.84M ARR · 114% NRR',
+    },
+    {
+      id: 'healthcare_pharma',
+      name: 'Healthcare & Life Sciences',
+      icon: HeartPulse,
+      tagline: 'Patient Encounters, Treatment Value, Clinic Capacity, Bed Days',
+      metric: '18,420 Patients · 94.2% Capacity',
+    },
+    {
+      id: 'ecommerce_retail',
+      name: 'Retail & E-Commerce',
+      icon: ShoppingBag,
+      tagline: 'GMV, Average Order Value, Return Rate, Repeat Customers',
+      metric: '$6.72M GMV · $142 AOV',
+    },
+    {
+      id: 'finance_wealth',
+      name: 'Banking & Financial Services',
+      icon: Landmark,
+      tagline: 'Loan Originations, Net Interest Margin, Default Rates, AUM',
+      metric: '$42.5M Originations · 3.8% NIM',
+    },
+    {
+      id: 'industrial_manufacturing',
+      name: 'Manufacturing & Operations',
+      icon: Factory,
+      tagline: 'Units Produced, OEE Efficiency, Scrap Rate, Lead Time',
+      metric: '124K Units · 88.6% OEE',
+    },
+  ];
+
+  const features = [
+    {
+      icon: Zap,
+      title: 'Live Native Excel Formulas',
+      desc: 'Formulas like SUMIFS and AVERAGEIFS remain completely active in Excel, enabling dynamic recalculations when source data is edited.',
+      tag: 'Native Excel Engine',
+    },
+    {
+      icon: FileSpreadsheet,
+      title: 'Multi-Sheet Architecture',
+      desc: 'Exports multi-tab workbooks organized into Executive Dashboard, Pivot Summaries, Source Records, and Verification tabs.',
+      tag: 'Boardroom-Ready',
+    },
+    {
+      icon: BarChart3,
+      title: 'Boardroom-Ready Visuals',
+      desc: 'Includes high-contrast KPI metric cards, performance gauges, waterfall variance charts, and regional breakdowns.',
+      tag: 'Executive Charts',
+    },
+    {
+      icon: ShieldCheck,
+      title: '100% Client-Side Privacy',
+      desc: 'Zero server uploads. Your confidential sales, payroll, or business spreadsheets never leave your local browser sandbox.',
+      tag: 'Zero Cloud Storage',
+    },
+    {
+      icon: Layers,
+      title: 'Smart CSV & XLSX Parser',
+      desc: 'Intelligent schema engine that infers dates, measures, and dimensions automatically without complex manual configuration.',
+      tag: 'Auto-Inference',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Cross-Platform Compatibility',
+      desc: 'Generated .xlsx files open flawlessly across Microsoft Office 365, Excel Desktop, Google Sheets, Apple Numbers, and LibreOffice.',
+      tag: 'Universal .XLSX',
+    },
+  ];
+
+  const faqs = [
+    {
+      q: 'What is excel.dattasable.com and how does it generate dashboards?',
+      a: 'excel.dattasable.com is a free online Excel and KPI Dashboard Generator developed by Datta Sable. It converts raw CSV files or enterprise data models into structured, multi-sheet Microsoft Excel (.xlsx) workbooks complete with executive KPI scorecards, visual charts, and dynamic spreadsheet formulas.',
+    },
+    {
+      q: 'Can I upload my own CSV or Excel datasets?',
+      a: 'Yes. Click the "Import CSV / Excel" button to drag and drop your own dataset. The intelligent client-side schema detector analyzes numerical metrics, categorical dimensions, and dates to automatically build grouped pivot summaries and executive KPI dashboards tailored to your dataset.',
+    },
+    {
+      q: 'Are the formulas in the exported .xlsx file real and editable?',
+      a: 'Yes! Unlike simple CSV exports or flat image snapshots, all workbooks generated by excel.dattasable.com contain authentic, native Excel formulas (such as SUMIFS, AVERAGEIFS, ROUND, and division ratios). When you open the file in Microsoft Excel, Google Sheets, or Apple Numbers, every calculation updates dynamically as you modify cells.',
+    },
+    {
+      q: 'Is my data secure and private?',
+      a: 'Absolutely. All data processing, chart generation, and Excel file synthesis occur 100% client-side in your web browser. None of your records, transactions, or uploaded files are ever sent to an external server or cloud database.',
+    },
+    {
+      q: 'Which industries and business metrics are supported?',
+      a: 'The platform includes enterprise benchmark models for Enterprise SaaS & Tech, Healthcare & Life Sciences, Retail & E-Commerce, Finance & Commercial Banking, and Manufacturing. For uploaded files, it dynamically supports custom metrics such as revenue, margins, headcount, unit costs, conversion rates, and volume.',
+    },
+    {
+      q: 'Who created excel.dattasable.com?',
+      a: 'This application was created by Datta Sable, a Business Intelligence Expert, Data Engineer, and analytics content creator. Explore more BI templates, portfolio projects, and tutorials at dattasable.com.',
+    },
+  ];
+
+  return (
+    <div className="landing-page-wrapper space-y-12 pb-10">
+      {/* ========================================================================= */}
+      {/* HERO SECTION                                                             */}
+      {/* ========================================================================= */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#122421] via-[#1a332d] to-[#0e201b] border border-[#2b4c42] p-8 sm:p-12 lg:p-16 text-white shadow-xl">
+        {/* Subtle Background Glow & Grid */}
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(#86efac 1px, transparent 1px), linear-gradient(90deg, #86efac 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-[#34d399]/10 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-4xl">
+          {/* Eyebrow Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1e4238] border border-[#376b5b] text-[#86efac] text-xs font-mono font-medium mb-6 shadow-sm">
+            <Sparkles size={14} className="text-[#86efac] animate-pulse" />
+            <span>EXCEL.DATTASABLE.COM</span>
+            <span className="text-[#a7f3d0]/60">· Free Online Analytics Tool</span>
+          </div>
+
+          {/* Main H1 Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12] mb-6 font-heading">
+            Automated Excel &amp; <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#6ee7b7] to-[#34d399]">
+              KPI Dashboard Generator
+            </span>
+          </h1>
+
+          {/* Value Proposition Description */}
+          <p className="text-base sm:text-lg text-[#c5ded5] leading-relaxed max-w-2xl mb-8 font-normal">
+            Welcome to <strong className="text-white font-semibold">excel.dattasable.com</strong>, the free web-based workspace designed by{' '}
+            <a
+              href="https://dattasable.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#86efac] underline underline-offset-4 hover:text-white font-medium transition-colors"
+            >
+              Datta Sable
+            </a>{' '}
+            to turn raw spreadsheet records into executive-grade Microsoft Excel (.xlsx) workbooks with live native formulas,
+            interactive KPI metrics, and boardroom presentation layouts.
+          </p>
+
+          {/* Primary Action Buttons */}
+          <div className="flex flex-wrap items-center gap-3.5 mb-8">
+            <button
+              onClick={onOpenDashboard}
+              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-sm font-bold shadow-lg shadow-emerald-950/40 hover:-translate-y-0.5 transition-all"
+            >
+              <LayoutDashboard size={17} />
+              <span>Launch Live Dashboard</span>
+              <ArrowRight size={15} />
+            </button>
+
+            <button
+              onClick={onOpenUploadModal}
+              className="inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-[#244b3f] hover:bg-[#2e5e4f] text-white text-sm font-semibold border border-[#3b7563] shadow-md transition-all"
+            >
+              <Upload size={17} />
+              <span>Import CSV / Excel</span>
+            </button>
+
+            <button
+              onClick={onDownloadExcel}
+              disabled={isDownloading}
+              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-transparent hover:bg-white/10 text-emerald-200 hover:text-white text-sm font-medium border border-emerald-400/30 transition-colors"
+            >
+              <Download size={16} />
+              <span>{isDownloading ? 'Compiling…' : 'Export Sample .XLSX'}</span>
+            </button>
+          </div>
+
+          {/* Quick Trust Checks */}
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-[#9bb3a8]">
+            <span className="flex items-center gap-1.5">
+              <Check size={14} className="text-[#86efac]" />
+              No signup required
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check size={14} className="text-[#86efac]" />
+              100% Client-side privacy
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check size={14} className="text-[#86efac]" />
+              Live editable SUMIFS formulas
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check size={14} className="text-[#86efac]" />
+              Multi-sheet Excel (.xlsx) output
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* WORKBOOK ARCHITECTURE PREVIEW CARD (Visual representation of what you get) */}
+      {/* ========================================================================= */}
+      <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-8 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 mb-6">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800">
+              <FileSpreadsheet size={15} />
+              <span>Generated Workbook Architecture</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mt-1 font-heading">
+              What Inside Your Downloaded .XLSX Spreadsheet
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenExcelView}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
+            >
+              <Table size={14} />
+              <span>Open Spreadsheet View</span>
+            </button>
+            <button
+              onClick={onOpenDashboard}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#172b2a] hover:bg-[#203a35] text-white text-xs font-semibold transition-colors"
+            >
+              <span>Explore Dashboard</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mock Excel Sheet Container */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shadow-inner">
+          {/* Simulated Workbook Tabs Bar */}
+          <div className="flex items-center gap-1 px-4 py-2.5 bg-slate-200/80 border-b border-slate-300 overflow-x-auto text-xs font-medium">
+            <span className="px-3 py-1 rounded bg-white text-slate-900 border border-slate-300 font-semibold shadow-xs flex items-center gap-1.5 shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-600" />
+              1. Executive Dashboard
+            </span>
+            <span className="px-3 py-1 rounded text-slate-600 hover:bg-slate-100/70 shrink-0">
+              2. Pivot Analysis
+            </span>
+            <span className="px-3 py-1 rounded text-slate-600 hover:bg-slate-100/70 shrink-0">
+              3. Source Records
+            </span>
+            <span className="px-3 py-1 rounded text-slate-600 hover:bg-slate-100/70 shrink-0">
+              4. Regional Trends
+            </span>
+            <span className="px-3 py-1 rounded text-slate-600 hover:bg-slate-100/70 shrink-0">
+              5. Category Breakdown
+            </span>
+            <span className="px-3 py-1 rounded text-slate-600 hover:bg-slate-100/70 shrink-0">
+              6. Audit &amp; Verification
+            </span>
+          </div>
+
+          {/* Simulated Excel Grid & KPI Cards */}
+          <div className="p-6 bg-[#fbfdfa] space-y-6">
+            {/* Live Formula Bar Preview */}
+            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-200 font-mono text-xs text-slate-600">
+              <span className="font-bold text-slate-400 select-none">fx</span>
+              <span className="text-slate-400 select-none">|</span>
+              <span className="text-emerald-700 font-medium">
+                =SUMIFS(Transactions!$G:$G, Transactions!$C:$C, $B$4, Transactions!$E:$E, C$2)
+              </span>
+            </div>
+
+            {/* Simulated 4 High-Impact KPI Scorecards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                  Gross Revenue
+                </span>
+                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                  $9,842,500
+                </span>
+                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                  ▲ +14.2% YoY Target
+                </span>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                  Gross Margin %
+                </span>
+                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                  76.4%
+                </span>
+                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                  ▲ +2.8 pts Variance
+                </span>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                  Active Accounts
+                </span>
+                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                  1,420
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium block mt-1">
+                  Enterprise Client Base
+                </span>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                  Avg Order Value
+                </span>
+                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 block mt-1">
+                  $6,930
+                </span>
+                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-0.5 mt-1">
+                  ▲ +8.4% MoM
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* KEY CAPABILITIES - 6 DISTINCT VALUE PILLARS (Clean Cards)                 */}
+      {/* ========================================================================= */}
+      <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
+        <div className="max-w-2xl mb-8">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+            Key Capabilities
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
+            Why Professionals Choose excel.dattasable.com
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+            Engineered for financial analysts, business intelligence developers, managers, and data engineers who need automated, reliable Excel reporting.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, idx) => {
+            const Icon = feature.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-[#fafbf9] border border-[#e1e7de] rounded-xl p-6 hover:border-emerald-600/60 hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-100/70 border border-emerald-300/60 flex items-center justify-center text-emerald-800 shadow-xs">
+                      <Icon size={22} />
+                    </div>
+                    <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-700 border border-slate-300/60">
+                      {feature.tag}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2 font-heading">
+                    {feature.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* INDUSTRY BENCHMARKS PRESETS                                               */}
+      {/* ========================================================================= */}
+      <section className="bg-gradient-to-b from-[#f7f9f6] to-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+              Enterprise Starters
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
+              Pre-Configured Industry Models
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              Test realistic transaction ledgers, KPI ratios, and charts tailored to your sector.
+            </p>
+          </div>
+
+          <button
+            onClick={onOpenUploadModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors shadow-xs"
+          >
+            <Upload size={14} />
+            <span>Or Bring Your Own CSV</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {industries.map((ind) => {
+            const Icon = ind.icon;
+            const isSelected = currentIndustry === ind.id;
+            return (
+              <div
+                key={ind.id}
+                className={`p-5 rounded-xl border transition-all ${
+                  isSelected
+                    ? 'bg-emerald-50/60 border-emerald-500 shadow-sm ring-1 ring-emerald-500/30'
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    <Icon size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 font-heading">{ind.name}</h4>
+                    <span className="text-[10px] font-mono text-emerald-700 font-medium">
+                      {ind.metric}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600 mb-4 line-clamp-2 leading-relaxed">
+                  {ind.tagline}
+                </p>
+
+                <button
+                  onClick={() => {
+                    onSelectIndustry(ind.id);
+                    onOpenDashboard();
+                  }}
+                  className={`w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                    isSelected
+                      ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                  }`}
+                >
+                  <span>Launch {ind.name.split(' ')[0]} Model</span>
+                  <ArrowRight size={12} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3-STEP WORKFLOW GUIDE                                                     */}
+      {/* ========================================================================= */}
+      <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
+        <div className="max-w-2xl mb-8">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+            Workflow Guide
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
+            How to Convert Your Data into an Excel Dashboard
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-xl bg-slate-50 border border-slate-200/90 relative">
+            <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center mb-4 shadow-sm">
+              1
+            </span>
+            <h3 className="text-base font-bold text-slate-900 mb-2 font-heading">
+              Upload or Choose Benchmark
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Drag-and-drop your custom CSV/Excel dataset, or select from pre-tuned industry models (SaaS, Healthcare, Retail, Finance, Operations).
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-slate-50 border border-slate-200/90 relative">
+            <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center mb-4 shadow-sm">
+              2
+            </span>
+            <h3 className="text-base font-bold text-slate-900 mb-2 font-heading">
+              Explore Live Analytics
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Review KPI scorecards, interactive charts, and grouped pivot breakdowns directly inside your browser without running Excel yet.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-slate-50 border border-slate-200/90 relative">
+            <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center mb-4 shadow-sm">
+              3
+            </span>
+            <h3 className="text-base font-bold text-slate-900 mb-2 font-heading">
+              Export .XLSX Workbook
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Click "Export Workbook" to receive a multi-sheet spreadsheet loaded with live Excel formulas, visual charts, and clean formatting.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* FAQ SECTION (SCHEMA-ALIGNED)                                              */}
+      {/* ========================================================================= */}
+      <section className="bg-white border border-[#dfe5da] rounded-2xl p-6 sm:p-10 shadow-xs">
+        <div className="max-w-2xl mb-8">
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+            Common Inquiries
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1 font-heading">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Everything you need to know about excel.dattasable.com features, data security, and formatting.
+          </p>
+        </div>
+
+        <div className="space-y-3 max-w-4xl">
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div
+                key={idx}
+                className="border border-[#e2e8df] rounded-xl bg-white overflow-hidden transition-colors"
+              >
+                <button
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 font-medium text-slate-800 text-sm hover:bg-slate-50/80 transition-colors"
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-semibold text-slate-900">{faq.q}</span>
+                  {isOpen ? (
+                    <ChevronUp size={18} className="text-emerald-700 shrink-0" />
+                  ) : (
+                    <ChevronDown size={18} className="text-slate-400 shrink-0" />
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-[#fbfdfa]">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* AUTHOR / DEVELOPER CARD (DATTA SABLE)                                     */}
+      {/* ========================================================================= */}
+      <section className="bg-gradient-to-r from-[#172b2a] via-[#1b342e] to-[#142823] text-white rounded-2xl p-6 sm:p-10 border border-[#2e5044] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-2xl shrink-0 shadow-sm">
+            DS
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white font-heading">
+              Created by Datta Sable
+            </h3>
+            <p className="text-xs text-[#a9c4b9] mt-1 max-w-xl leading-relaxed">
+              Business Intelligence Expert, Data Engineer, and analytics consultant. Building modern, high-impact data visualization tools and automated business intelligence systems.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+          <a
+            href="https://dattasable.com/dashboards"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-md"
+          >
+            <span>Explore BI Portfolio</span>
+            <ExternalLink size={13} />
+          </a>
+          <a
+            href="https://dattasable.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 text-emerald-200 text-xs font-semibold transition-colors"
+          >
+            <span>dattasable.com</span>
+            <ArrowRight size={13} />
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+};

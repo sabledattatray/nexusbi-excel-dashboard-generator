@@ -1,6 +1,9 @@
 {
-  "name": "NexusBI - Professional Excel & Executive Dashboard Generator",
-  "description": "Generate realistic enterprise-grade datasets and download multi-sheet Excel (.xlsx) workbooks complete with executive dashboards, KPI cards, dynamic formulas, and embedded visual charts.",
+  "name": "Excel to Dashboards — Datta Sable (excel.dattasable.com)",
+  "description": "Generate realistic enterprise-grade datasets and download multi-sheet Excel (.xlsx) workbooks complete with executive dashboards, KPI cards, dynamic formulas, and embedded visual charts. Hosted at excel.dattasable.com.",
+  "domain": "excel.dattasable.com",
+  "author": "Datta Sable",
+  "authorUrl": "https://dattasable.com",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

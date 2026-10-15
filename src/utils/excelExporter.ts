@@ -43,7 +43,7 @@ export async function exportToProfessionalExcel(
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = `${config.companyName} Executive BI Engine`;
-  workbook.lastModifiedBy = 'NexusBI Enterprise Suite';
+  workbook.lastModifiedBy = 'Excel to Dashboards by Datta Sable (excel.dattasable.com)';
   workbook.created = new Date();
   workbook.modified = new Date();
   workbook.properties.date1904 = false;

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://excel.dattasable.com/</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://excel.dattasable.com/og-main.png</image:loc>
+      <image:title>Excel to Dashboards — Automated Excel and KPI Dashboard Generator by Datta Sable</image:title>
+      <image:caption>Interactive executive KPI dashboard and multi-sheet Excel generator hosted at excel.dattasable.com</image:caption>
+    </image:image>
+  </url>
+</urlset>

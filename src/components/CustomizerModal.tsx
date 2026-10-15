@@ -45,7 +45,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
     onSaveConfig({
       ...config,
       industry,
-      companyName: companyName.trim() || 'Nexus Global Enterprises Inc.',
+      companyName: companyName.trim() || 'Enterprise Analytics Global Inc.',
       recordCount,
       includeChartsInExcel: includeCharts,
       useLiveExcelFormulas: useFormulas,

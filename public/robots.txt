@@ -1,0 +1,7 @@
+# robots.txt for excel.dattasable.com
+User-agent: *
+Allow: /
+
+# Host & Sitemap
+Host: https://excel.dattasable.com
+Sitemap: https://excel.dattasable.com/sitemap.xml

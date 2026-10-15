@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="excel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#107C41"/>
+      <stop offset="50%" stop-color="#0E6437"/>
+      <stop offset="100%" stop-color="#074B26"/>
+    </linearGradient>
+    <linearGradient id="sheet-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8F5E9"/>
+    </linearGradient>
+    <linearGradient id="chart-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#074B26" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Base App Icon Tile -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#excel-grad)" filter="url(#shadow)"/>
+  
+  <!-- Subtle Grid Pattern in Background -->
+  <path d="M12 24H52M12 36H52M12 48H52M24 16V52M38 16V52" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Excel "X" Folded Emblem -->
+  <rect x="10" y="16" width="22" height="26" rx="5" fill="#185C37" stroke="#2EB86F" stroke-width="1.5"/>
+  <path d="M16 23L26 35M26 23L16 35" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Rising Dashboard Analytics Sparkline & Bars -->
+  <rect x="36" y="32" width="4" height="14" rx="2" fill="#86EFAC"/>
+  <rect x="43" y="25" width="4" height="21" rx="2" fill="#34D399"/>
+  <rect x="50" y="19" width="4" height="27" rx="2" fill="#FFFFFF"/>
+
+  <!-- Trend Pulse Line -->
+  <path d="M28 29L38 23L45 28L54 15" stroke="#A7F3D0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="54" cy="15" r="2.5" fill="#FFFFFF"/>
+</svg>

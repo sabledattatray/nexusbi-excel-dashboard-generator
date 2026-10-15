@@ -1,0 +1,24 @@
+{
+  "short_name": "Excel Dashboards",
+  "name": "Excel to Dashboards — Datta Sable",
+  "description": "Transform data into multi-sheet Excel (.xlsx) workbooks with executive KPI dashboards and live formulas at excel.dattasable.com.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/biexpert-og.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#172b2a",
+  "theme_color": "#172b2a",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/"
+}

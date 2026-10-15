@@ -29,6 +29,9 @@ import { Navbar } from './components/Navbar';
 import { CustomizerModal } from './components/CustomizerModal';
 import { DownloadSuccessModal } from './components/DownloadSuccessModal';
 import { DataUploadModal } from './components/DataUploadModal';
+import { HomePage } from './components/HomePage';
+import { Footer } from './components/Footer';
+import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
 
 export default function App() {
@@ -44,10 +47,10 @@ export default function App() {
     useLiveExcelFormulas: true,
   });
 
-  // Active Worksheet View Tab
+  // Active Worksheet View Tab - Default to 'home' landing page
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
-  >('dashboard');
+    'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
+  >('home');
 
   // Randomization Seed offset to allow "Refresh Data"
   const [seedOffset, setSeedOffset] = useState<number>(0);
@@ -182,26 +185,107 @@ export default function App() {
 
       {/* Main Content Area */}
       <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
-        <details className="studio-intro"><summary><span><Layers size={15}/> Excel & CSV workspace guide</span><span>Examples & import tools +</span></summary><section className="workspace-hero">
-          <div className="hero-editorial"><div className="eyebrow"><span/> THE ANALYTICS STUDIO</div><h1>Your data.<br/><em>A clearer perspective.</em></h1><p>Turn the details in your spreadsheets into a story you can act on. Explore your numbers, understand the patterns, and build a report worth sharing.</p><div className="hero-actions"><button className="primary-button" onClick={() => setIsUploadModalOpen(true)}><Upload size={16}/>Bring your data</button><button className="text-button" onClick={() => setActiveTab('excel-preview')}>Explore the workbook <span>↗</span></button></div><div className="hero-formats"><FileSpreadsheet size={14}/><span>EXCEL & CSV</span><i/> <span>EDITABLE .XLSX EXPORT</span></div></div>
-          <div className="hero-art" aria-hidden="true"><div className="art-grid"/><span className="art-orbit orbit-one"/><span className="art-orbit orbit-two"/><div className="art-chart-card"><div className="art-card-top"><span className="art-card-icon"><BarChart3 size={17}/></span><span>Clarity in every column</span><span className="art-card-dot"/></div><div className="art-chart"><svg viewBox="0 0 320 110" fill="none"><path d="M0 90H320M0 55H320M0 20H320" stroke="#e5ece8" strokeDasharray="4 5"/><path d="M0 93L35 76L65 82L100 53L135 62L170 35L205 42L245 13L280 25L320 5V110H0Z" fill="url(#hero-area)"/><path d="M0 93L35 76L65 82L100 53L135 62L170 35L205 42L245 13L280 25L320 5" stroke="#218573" strokeWidth="2.5"/><defs><linearGradient id="hero-area" x1="160" y1="0" x2="160" y2="110" gradientUnits="userSpaceOnUse"><stop stopColor="#71b8a4" stopOpacity=".35"/><stop offset="1" stopColor="#71b8a4" stopOpacity="0"/></linearGradient></defs></svg></div><div className="art-card-bottom"><span>THE DETAILS</span><span>THE BIGGER PICTURE ↗</span></div></div><div className="art-mini-card"><span className="art-mini-icon"><Layers size={18}/></span><div><strong>Built around your data</strong><small>From raw rows to meaningful reports</small></div><CheckCircle2 size={17}/></div><span className="art-caption">A NEW POINT OF VIEW</span></div>
-        </section>
-        <div className="example-strip"><div><span className="example-icon"><Layers size={17}/></span><span><strong>A little inspiration to get started</strong><small>Explore two examples with different fields and perspectives.</small></span></div><div><button onClick={() => handleExample('workforce')}>Workforce analytics <span>↗</span></button><button onClick={() => handleExample('sales')}>Sales performance <span>↗</span></button></div></div>
-        </details>
-        <div className="section-heading"><div><div className="eyebrow">YOUR WORKSPACE</div><h2>{customImportResult ? 'The story in your data' : 'Industry intelligence'}</h2></div><div className="report-section-actions"><span className="quiet-badge"><span/>{customImportResult ? `${config.recordCount.toLocaleString()} source records` : 'Illustrative sample data'}</span>{!customImportResult && <button className="secondary-button" onClick={() => setIsCustomizerOpen(true)}><Sliders size={14}/>Choose industry</button>}</div></div>
+        {activeTab === 'home' ? (
+          <HomePage
+            onOpenDashboard={() => setActiveTab('dashboard')}
+            onOpenExcelView={() => setActiveTab('excel-preview')}
+            onOpenUploadModal={() => setIsUploadModalOpen(true)}
+            onDownloadExcel={handleDownloadExcel}
+            isDownloading={isDownloading}
+            onSelectIndustry={(ind) => {
+              const preset = INDUSTRY_PRESETS[ind];
+              setConfig((prev) => ({
+                ...prev,
+                industry: ind,
+                companyName: preset ? preset.companyDefault : prev.companyName,
+              }));
+              setActiveTab('dashboard');
+            }}
+            currentIndustry={config.industry}
+          />
+        ) : (
+          <>
+            <div className="section-heading">
+              <div>
+                <div className="eyebrow">YOUR WORKSPACE</div>
+                <h2>{customImportResult ? 'The story in your data' : 'Executive Analytics Workspace'}</h2>
+              </div>
+              <div className="report-section-actions">
+                <span className="quiet-badge">
+                  <span />
+                  {customImportResult ? `${config.recordCount.toLocaleString()} source records` : 'Live Sample Data'}
+                </span>
+                {!customImportResult && (
+                  <button className="secondary-button" onClick={() => setIsCustomizerOpen(true)}>
+                    <Sliders size={14} />
+                    Choose industry
+                  </button>
+                )}
+              </div>
+            </div>
 
-        {customImportResult && <div className="source-file-strip"><span className="source-file-icon"><FileSpreadsheet size={20}/></span><div><strong>{customImportResult.summary.fileName}</strong><small>{customImportResult.summary.rowCount.toLocaleString()} records · {customImportResult.schema.columns.length} original fields · {customImportResult.summary.dateSpan}</small></div><span className="source-file-label">SOURCE DATA</span><button className="text-button" onClick={() => setIsUploadModalOpen(true)}>Replace file <Upload size={13}/></button><button className="text-button" onClick={handleResetToSample}>Reset</button></div>}
+            {customImportResult && (
+              <div className="source-file-strip">
+                <span className="source-file-icon">
+                  <FileSpreadsheet size={20} />
+                </span>
+                <div>
+                  <strong>{customImportResult.summary.fileName}</strong>
+                  <small>
+                    {customImportResult.summary.rowCount.toLocaleString()} records ·{' '}
+                    {customImportResult.schema.columns.length} original fields · {customImportResult.summary.dateSpan}
+                  </small>
+                </div>
+                <span className="source-file-label">SOURCE DATA</span>
+                <button className="text-button" onClick={() => setIsUploadModalOpen(true)}>
+                  Replace file <Upload size={13} />
+                </button>
+                <button className="text-button" onClick={handleResetToSample}>
+                  Reset
+                </button>
+              </div>
+            )}
 
-        {customImportResult && <AdaptiveDashboard key={customImportResult.summary.fileName + customImportResult.summary.rowCount} data={dataset} selection={analysisSelection} onChange={setAnalysisSelection} view={activeTab} />}
+            {customImportResult && (
+              <AdaptiveDashboard
+                key={customImportResult.summary.fileName + customImportResult.summary.rowCount}
+                data={dataset}
+                selection={analysisSelection}
+                onChange={setAnalysisSelection}
+                view={activeTab}
+              />
+            )}
 
-        {!customImportResult && (activeTab === 'excel-preview'
-          ? <ExcelLiveViewer key={config.industry + seedOffset} data={dataset} config={config} onDownloadExcel={handleDownloadExcel} isDownloading={isDownloading} />
-          : activeTab === 'dashboard'
-          ? <IndustryDashboard key={config.industry + seedOffset} data={dataset} onRecords={() => setActiveTab('transactions')} />
-          : <AdaptiveDashboard key={config.industry + seedOffset} data={dataset} selection={analysisSelection} onChange={setAnalysisSelection} view={activeTab} />)}
+            {!customImportResult &&
+              (activeTab === 'excel-preview' ? (
+                <ExcelLiveViewer
+                  key={config.industry + seedOffset}
+                  data={dataset}
+                  config={config}
+                  onDownloadExcel={handleDownloadExcel}
+                  isDownloading={isDownloading}
+                />
+              ) : activeTab === 'dashboard' ? (
+                <IndustryDashboard
+                  key={config.industry + seedOffset}
+                  data={dataset}
+                  onRecords={() => setActiveTab('transactions')}
+                />
+              ) : (
+                <AdaptiveDashboard
+                  key={config.industry + seedOffset}
+                  data={dataset}
+                  selection={analysisSelection}
+                  onChange={setAnalysisSelection}
+                  view={activeTab}
+                />
+              ))}
+          </>
+        )}
       </main>
 
-      <footer className="workspace-footer"><div className="footer-top"><div><div className="footer-brand"><BarChart3 size={18}/>NexusBI</div><p>Make sense of your spreadsheets.</p></div><div className="footer-principles"><span><FileSpreadsheet size={15}/>Open Excel format</span><span><Layers size={15}/>Original data preserved</span><span><CheckCircle2 size={15}/>Transparent calculations</span></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} NexusBI · Crafted by <a href="https://dattasable.com/" target="_blank" rel="noopener noreferrer">Datta Sable</a></span><span>Thoughtful tools. Clearer decisions.</span></div></footer>
+      {/* Comprehensive Modern Footer */}
+      <Footer onSelectTab={setActiveTab} onOpenUploadModal={() => setIsUploadModalOpen(true)} />
 
       {/* Modals */}
       <CustomizerModal key={config.industry + config.companyName + isCustomizerOpen}

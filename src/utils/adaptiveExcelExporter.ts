@@ -13,7 +13,7 @@ export async function exportAdaptiveExcel(data: AppDataset, config: DatasetConfi
     analysis.charts = spec.charts.map(chart => ({ title: chart.title, kind: chart.dimension === spec.date ? 'line' : chart.kind === 'donut' ? 'composition' : 'bar', points: groupRows(data.rawRows as Row[], chart.dimension, chart.metric, chart.dimension === spec.date), note: `${chart.metric.label}: ${chart.metric.operation === 'ratio' ? `SUM(${chart.metric.field}) / SUM(${chart.metric.denominator})` : `${chart.metric.operation}(${chart.metric.field || 'records'})`}. Excel chart shows the grouped summary by ${chart.dimension}. ${spec.grain}. Illustrative sample data.` } as AnalysisChart));
   }
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'NexusBI';
+  workbook.creator = 'Excel to Dashboards by Datta Sable (excel.dattasable.com)';
   const dashboard = workbook.addWorksheet('Dashboard', { views: [{ showGridLines: false }] });
   dashboard.columns = Array.from({ length: 16 }, () => ({ width: 13 }));
   dashboard.mergeCells('B2:O3'); dashboard.getCell('B2').value = config.reportTitle;
