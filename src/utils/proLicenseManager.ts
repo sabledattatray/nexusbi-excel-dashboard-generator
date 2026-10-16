@@ -77,7 +77,7 @@ export const UPI_PAYMENT_CONFIG = {
   currency: 'INR',
   singleAmount: 9,
   lifetimeAmount: 49,
-  qrImagePath: '/payment-qr.jpg',
+  qrImagePath: '/payment-qr.webp',
 };
 
 // Known VIP passcodes and keywords (all grant PERMANENT UNLIMITED LIFETIME PRO)

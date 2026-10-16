@@ -71,7 +71,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
       }
       setStatusMessage(null);
 
-      // Generate fallback QR in case /payment-qr.jpg is not reached
+      // Generate fallback QR in case /payment-qr.webp is not reached
       QRCode.toDataURL(upiUrl, {
         width: 260,
         margin: 2,
@@ -347,6 +347,9 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                       <img
                         src={UPI_PAYMENT_CONFIG.qrImagePath}
                         alt="Official UPI Payment QR Code"
+                        width={208}
+                        height={208}
+                        loading="lazy"
                         className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg"
                         onError={(e) => {
                           if (qrFallbackUrl) {

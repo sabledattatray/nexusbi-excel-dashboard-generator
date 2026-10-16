@@ -174,4 +174,4 @@ for (const page of pages) {
   console.log(`✓ Generated static SEO page: dist/${page.slug}/index.html`);
 }
 
-console.log('Successfully generated all 7 static SEO landing pages!');
+console.log(`Successfully generated all ${pages.length} static SEO landing pages!`);

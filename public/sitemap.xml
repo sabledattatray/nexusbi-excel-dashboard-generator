@@ -4,11 +4,11 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://excel.dattasable.com/</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://excel.dattasable.com/og-main.png</image:loc>
+      <image:loc>https://excel.dattasable.com/og-main.webp</image:loc>
       <image:title>Free Excel Dashboard Generator | Automated KPI Reports — excel.dattasable.com</image:title>
       <image:caption>Create professional Excel dashboards with automated KPI reports, interactive charts and business analytics at excel.dattasable.com</image:caption>
     </image:image>

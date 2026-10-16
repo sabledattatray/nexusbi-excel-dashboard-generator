@@ -75,7 +75,7 @@ export const ExcelLiveViewer:React.FC<Props>=({data,config,onDownloadExcel,isDow
       </article>)}
      </div>
      {!all&&<details className="excel-source-details"><summary>Worksheet data and calculation cells</summary><WorkbookTable sheet={active!} page={page} setPage={setPage} data={data}/></details>}
-     {!all&&<details className="excel-portfolio"><summary>Portfolio image included in the workbook</summary><a href="https://dattasable.com/dashboards" target="_blank" rel="noreferrer"><img src="/dattasable.com.png" alt="Datta Sable business intelligence and analytics portfolio"/></a></details>}
+     {!all&&<details className="excel-portfolio"><summary>Portfolio image included in the workbook</summary><a href="https://dattasable.com/dashboards" target="_blank" rel="noopener noreferrer"><img src="/dattasable.com.webp" alt="Datta Sable business intelligence and analytics portfolio" loading="lazy" width="1600" height="900"/></a></details>}
     </>}
     {!['Executive Dashboard','Pivot Table Analysis','All visuals'].includes(sheet)&&<><div className="excel-table-heading"><h3>{sheet}</h3><span>{sheet==='Sales Transactions'?data.transactions.length.toLocaleString()+' source records':totalPreviewRows+' worksheet rows'}</span></div><WorkbookTable sheet={active!} page={page} setPage={setPage} data={data}/></>}
    </div>

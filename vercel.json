@@ -16,9 +16,9 @@
       ]
     },
     {
-      "source": "/(favicon.svg|biexpert-og.png|og-main.png|manifest.json|robots.txt|sitemap.xml)",
+      "source": "/(favicon.svg|biexpert-og.png|biexpert-og.webp|og-main.png|og-main.webp|payment-qr.webp|dattasable.com.webp|datta.webp|manifest.json|robots.txt|sitemap.xml)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }
       ]
     }
   ]
