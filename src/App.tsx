@@ -37,6 +37,7 @@ const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((
 const ProUnlockModal = lazy(() => import('./components/ProUnlockModal').then((m) => ({ default: m.ProUnlockModal })));
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
 import { LegalTab } from './components/LegalModal';
+import { trackEvent, trackPageView } from './utils/analytics';
 
 const WorkspaceLoader = () => (
   <div className="flex flex-col items-center justify-center py-20 px-4 min-h-[340px] text-center" aria-live="polite">
@@ -145,6 +146,10 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    trackPageView('/' + activeTab, 'Tab: ' + activeTab);
+  }, [activeTab]);
+
   // Custom Uploaded Dataset state
   const [customImportResult, setCustomImportResult] = useState<ImportResult | null>(null);
 
@@ -173,6 +178,7 @@ export default function App() {
     // Paywall all downloads: if user is not unlocked, open payment QR modal immediately!
     const unlocked = isProUnlocked();
     if (!unlocked && !unprotectedOverride) {
+      trackEvent('download_blocked_paywall', { industry: config.industry, company: config.companyName });
       setIsUnlockModalOpen(true);
       return;
     }
@@ -217,6 +223,13 @@ export default function App() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      trackEvent('download_excel_success', {
+        filename,
+        industry: config.industry,
+        recordCount: config.recordCount,
+        isCustom: !!customImportResult,
+      });
+
       // Confetti celebration
       confetti({
         particleCount: shouldBeUnprotected ? 130 : 90,
@@ -246,16 +259,22 @@ export default function App() {
     if (customImportResult) {
       return;
     }
+    trackEvent('regenerate_sample_data', { industry: config.industry });
     setSeedOffset((prev) => (prev + 1) % 100);
   };
 
   const handleSaveConfig = (newConfig: DatasetConfig) => {
+    trackEvent('customize_dashboard_config', { industry: newConfig.industry, records: newConfig.recordCount });
     setCustomImportResult(null);
     setConfig(newConfig);
     setActiveTab('dashboard');
   };
 
   const handleImportComplete = (result: ImportResult) => {
+    trackEvent('upload_dataset_success', {
+      fileName: result.fileName,
+      recordCount: result.dataset.transactions.length,
+    });
     setCustomImportResult(result);
     setAnalysisSelection(initialSelection(result.dataset));
     setConfig(result.config);
