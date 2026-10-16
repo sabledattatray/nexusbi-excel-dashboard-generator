@@ -272,8 +272,8 @@ export default function App() {
 
   const handleImportComplete = (result: ImportResult) => {
     trackEvent('upload_dataset_success', {
-      fileName: result.fileName,
-      recordCount: result.dataset.transactions.length,
+      fileName: result.summary.fileName,
+      recordCount: result.summary.rowCount || result.dataset.transactions.length,
     });
     setCustomImportResult(result);
     setAnalysisSelection(initialSelection(result.dataset));
