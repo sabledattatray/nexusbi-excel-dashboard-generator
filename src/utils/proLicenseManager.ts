@@ -2,7 +2,7 @@
  * Pro License & UPI QR Monetization Manager
  * Supports:
  * 1. Single Download Pass (₹9) - 1 unprotected Excel download
- * 2. Unlimited Lifetime Access (₹49) - All 12 templates + all custom uploads forever
+ * 2. Unlimited Lifetime Access (₹49) - All 32 templates + all custom uploads forever
  */
 
 export type PricingPlanId = 'single' | 'lifetime';
@@ -39,10 +39,10 @@ export const PRICING_PLANS: Record<PricingPlanId, PricingPlan> = {
     formattedAmount: '₹49',
     badge: 'Best Value • Most Popular',
     isPopular: true,
-    description: 'Download all 12 templates & custom uploads forever',
+    description: 'Download all 32 templates & custom uploads forever',
     features: [
       'Unlimited unprotected exports',
-      'All 12 ready industry templates',
+      'All 32 ready industry templates',
       'All custom CSV/Excel uploads',
       'White-label & rebrand forever',
       'Never scan or pay again',

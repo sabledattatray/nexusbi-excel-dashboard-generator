@@ -139,6 +139,86 @@ const INDUSTRY_KEYWORDS: Record<IndustryType, { headers: string[]; values: strin
     headers: ['amount', 'total', 'quantity', 'category', 'status', 'date', 'name', 'code'],
     values: ['active', 'completed', 'pending', 'cancelled'],
   },
+  logistics_supply_chain: {
+    headers: ['shipment', 'freight', 'carrier', 'consignment', 'tonmile', 'haulage', 'warehouse', 'transit', 'logistics', 'delivery', 'cargo', 'otif', 'intermodal', 'fleet', 'truckload'],
+    values: ['air freight', 'ocean cargo', 'full truckload', 'intermodal rail', 'express courier', 'in transit', 'delivered', 'dock', 'manifest'],
+  },
+  automotive_ev: {
+    headers: ['vin', 'powertrain', 'battery', 'charging', 'ev', 'vehicle', 'automotive', 'chassis', 'kwh', 'gigafactory', 'mileage', 'warranty', 'telematics', 'assembly'],
+    values: ['bev', 'phev', 'electric vehicle', 'dual motor', 'long range', 'fast charging', 'supercharger', 'chassis', 'powertrain'],
+  },
+  pharmaceutical_biotech: {
+    headers: ['assay', 'compound', 'molecule', 'biotech', 'target', 'screening', 'affinity', 'pharma', 'discovery', 'candidate', 'invitro', 'invivo', 'efficacy', 'pipeline', 'biopharma'],
+    values: ['oncology', 'immunology', 'neurology', 'nanomolar', 'hit', 'lead', 'preclinical', 'recombinant', 'ind filing'],
+  },
+  construction_engineering: {
+    headers: ['jobsite', 'subcontractor', 'epc', 'discipline', 'concrete', 'steel', 'equipment', 'backlog', 'contract', 'infrastructure', 'civil', 'safety', 'workpackage'],
+    values: ['civil earthworks', 'structural steel', 'mep', 'jobsite', 'subcontractor', 'scaffolding', 'excavator', 'turnkey'],
+  },
+  telecom_networks: {
+    headers: ['subscriber', 'arpu', 'tower', '5g', 'cell', 'broadband', 'bandwidth', 'latency', 'gigabit', 'telco', 'sim', 'roaming', 'uptime', 'telecom'],
+    values: ['5g unlimited', 'gigabit fiber', 'iot', 'cell tower', 'packet', 'lte', 'spectrum', 'broadband'],
+  },
+  legal_compliance: {
+    headers: ['litigation', 'counsel', 'attorney', 'matter', 'court', 'jurisdiction', 'billable', 'retainer', 'compliance', 'gdpr', 'sox', 'arbitration', 'paralegal', 'statute'],
+    values: ['m&a', 'intellectual property', 'antitrust', 'defense counsel', 'retained', 'delaware chancery', 'chambers', 'brief'],
+  },
+  insurance_underwriting: {
+    headers: ['policy', 'premium', 'underwriting', 'actuarial', 'claim', 'lossratio', 'deductible', 'reinsurance', 'coverage', 'gwp', 'catastrophe', 'indemnity', 'insured'],
+    values: ['commercial property', 'general liability', 'd&o', 'cyber risk', 'casualty', 'underwritten', 'settled', 'surplus lines'],
+  },
+  agriculture_agritech: {
+    headers: ['crop', 'harvest', 'hectare', 'acreage', 'bushel', 'agritech', 'soil', 'irrigation', 'yield', 'farm', 'grain', 'moisture', 'fertilizer', 'cultivated'],
+    values: ['wheat', 'soybeans', 'corn', 'barley', 'orchard', 'farm cooperative', 'irrigation', 'bushels per acre', 'organic'],
+  },
+  food_beverage: {
+    headers: ['menu', 'restaurant', 'dining', 'table', 'cogs', 'kitchen', 'food', 'beverage', 'ticket', 'covers', 'chef', 'franchise', 'bar', 'entree', 'waste'],
+    values: ['entrees', 'appetizers', 'cocktails', 'desserts', 'catering', 'dine-in', 'takeout', 'table turns', 'fast casual'],
+  },
+  aerospace_defense: {
+    headers: ['avionics', 'airframe', 'defense', 'procurement', 'flight', 'flighttest', 'subsystem', 'aerospace', 'payload', 'missile', 'radar', 'turbine', 'backlog'],
+    values: ['radar', 'avionics', 'propulsion', 'satellite', 'airframe', 'military', 'flight hours', 'pentagon', 'contractor'],
+  },
+  cybersecurity_secops: {
+    headers: ['incident', 'threat', 'vulnerability', 'mttr', 'cve', 'malware', 'ransomware', 'firewall', 'soc', 'siem', 'secops', 'endpoint', 'phishing', 'breach'],
+    values: ['ransomware', 'ddos', 'zero-day', 'credential stuffing', 'soc analyst', 'quarantine', 'mitigated', 'pcap'],
+  },
+  media_entertainment: {
+    headers: ['stream', 'viewer', 'streaming', 'ott', 'watchtime', 'content', 'license', 'cpm', 'subscriber', 'genre', 'boxoffice', 'adspend', 'episode', 'series'],
+    values: ['sci-fi', 'docuseries', 'sports live', 'anime', 'comedy', 'hd stream', 'viewers', 'video-on-demand', 'svod'],
+  },
+  nonprofit_charity: {
+    headers: ['donation', 'donor', 'charity', 'ngo', 'grant', 'philanthropy', 'fundraising', 'beneficiary', 'humanitarian', 'outreach', 'pledge', 'cause', 'endowment'],
+    values: ['clean water', 'disaster relief', 'endowment', 'donor', 'philanthropic', 'outreach', 'lives saved', 'volunteer'],
+  },
+  fitness_wellness: {
+    headers: ['gym', 'fitness', 'workout', 'wellness', 'trainer', 'studio', 'attendance', 'membership', 'hiit', 'pilates', 'yoga', 'spin', 'coaching', 'retention'],
+    values: ['hiit', 'yoga', 'crossfit', 'pilates', 'cycling', 'personal trainer', 'gym pass', 'studio session', 'reps'],
+  },
+  professional_services: {
+    headers: ['consulting', 'advisory', 'engagement', 'billable', 'utilization', 'realization', 'partner', 'practice', 'retainer', 'deliverable', 'scoping', 'proposal'],
+    values: ['strategy', 'digital transformation', 'advisory', 'management consulting', 'billable hours', 'm&a advisory'],
+  },
+  oil_gas_mining: {
+    headers: ['barrel', 'boe', 'upstream', 'drilling', 'rig', 'crude', 'gas', 'mining', 'ore', 'well', 'refinery', 'hydrocarbon', 'lifting', 'flaring', 'concession'],
+    values: ['light sweet crude', 'lng', 'natural gas', 'shale', 'offshore rig', 'bbl', 'mcf', 'open pit'],
+  },
+  fashion_luxury: {
+    headers: ['luxury', 'boutique', 'couture', 'atelier', 'designer', 'apparel', 'runway', 'garment', 'sellthrough', 'collection', 'handcrafted', 'leather', 'vic'],
+    values: ['haute couture', 'leather goods', 'fine jewelry', 'ready-to-wear', 'flagship boutique', 'vic client', 'artisan'],
+  },
+  biomedical_genomics: {
+    headers: ['genome', 'sequencing', 'ngs', 'flowcell', 'reads', 'gigabases', 'depth', 'q30', 'dna', 'rna', 'variant', 'assay', 'bioinformatics', 'sample'],
+    values: ['whole genome', 'rna-seq', 'flowcell', 'gigabases', 'q30', 'coverage depth', 'fastq', 'bio-library'],
+  },
+  saas_product_ops: {
+    headers: ['mrr', 'arr', 'nrr', 'churn', 'seat', 'tenant', 'saas', 'cloud', 'devops', 'compute', 'cluster', 'api', 'invocation', 'provisioning', 'dau'],
+    values: ['enterprise dedicated', 'net retention', 'cloud compute', 'aws', 'gcp', 'azure', 'recurring revenue', 'tenant'],
+  },
+  customer_support_ops: {
+    headers: ['ticket', 'support', 'csat', 'fcr', 'helpdesk', 'agent', 'handletime', 'escalation', 'backlog', 'queue', 'call', 'inquiry', 'resolution', 'omnichannel'],
+    values: ['live chat', 'helpdesk', 'voice call', 'first contact resolution', 'customer support', 'csat', 'escalated', 'tier 1'],
+  },
 };
 
 /**
@@ -161,14 +241,25 @@ function isDateValue(val: any): boolean {
   if (typeof val === 'string') {
     const s = val.trim();
     if (s.length < 4 || s.length > 35) return false;
-    // Check common date patterns (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, Mon DD, etc.)
+    // A date string must contain at least one digit
+    if (!/\d/.test(s)) return false;
+    // Check common date patterns (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, etc.)
     const dateRegex = /^(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4})/;
     if (dateRegex.test(s)) {
       const parsed = Date.parse(s);
       return !isNaN(parsed);
     }
-    const d = new Date(s);
-    return !isNaN(d.getTime()) && s.length >= 6;
+    // Formats like "Jan 15, 2024", "15-Jan-2024"
+    const monthRegex = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
+    if (monthRegex.test(s) && /\d{1,4}/.test(s)) {
+      const d = new Date(s);
+      return !isNaN(d.getTime());
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      const d = new Date(s);
+      return !isNaN(d.getTime());
+    }
+    return false;
   }
   return false;
 }
@@ -323,7 +414,7 @@ export function profileColumn(
   }
 
   // 4. Categorical vs Entity vs Text
-  const isStatus = ['status', 'state', 'condition', 'stage', 'flag'].some((kw) => cHeader.includes(kw));
+  const isStatus = ['status', 'condition', 'stage', 'flag', 'phase'].some((kw) => cHeader.includes(kw));
   if (isStatus) {
     return {
       name: header,
@@ -380,20 +471,10 @@ export function detectIndustry(
   headers: string[],
   rows: Record<string, any>[]
 ): { industry: IndustryType; confidence: number; matches: Record<string, number> } {
-  const scores: Record<IndustryType, number> = {
-    healthcare_pharma: 0,
-    finance_wealth: 0,
-    ecommerce_retail: 0,
-    enterprise_tech: 0,
-    industrial_manufacturing: 0,
-    real_estate: 0,
-    human_resources: 0,
-    hospitality_travel: 0,
-    energy_utilities: 0,
-    education_academic: 0,
-    marketing_media: 0,
-    general_business: 0,
-  };
+  const scores = (Object.keys(INDUSTRY_KEYWORDS) as IndustryType[]).reduce((acc, ind) => {
+    acc[ind] = 0;
+    return acc;
+  }, {} as Record<IndustryType, number>);
 
   const cleanHeaders = headers.map(clean);
   const sampleRows = rows.slice(0, 50);
@@ -501,7 +582,7 @@ export function inspectDatasetSchema(
     return n.includes('qty') || n.includes('quantity') || n.includes('units') || n.includes('volume') || n.includes('count') || n.includes('headcount');
   });
 
-  // 6. Resolve Primary Category (categorical with 3-30 distinct values)
+  // 6. Resolve Primary Category (categorical with 2-50 distinct values)
   const categoricalCols = columns.filter((c) => c.dataType === 'categorical' && c.distinctCount >= 2);
   let primaryCategoryCol = categoricalCols.find((c) => {
     const n = c.normalizedName;
@@ -512,12 +593,49 @@ export function inspectDatasetSchema(
     primaryCategoryCol = categoricalCols[0];
   }
 
-  // 7. Resolve Secondary Category (Region, Channel, Branch, Location, Status, Doctor, Manager)
+  // 7. Resolve Secondary Category / Filter 1 Dimension (State, Region, Zone, Facility, Location, Hub, Branch)
   const secondaryCategoryCol = categoricalCols.find((c) => {
     if (c.name === primaryCategoryCol?.name) return false;
     const n = c.normalizedName;
-    return n.includes('region') || n.includes('channel') || n.includes('branch') || n.includes('location') || n.includes('state') || n.includes('division') || n.includes('ward') || n.includes('role');
-  });
+    return (
+      n.includes('state') ||
+      n.includes('region') ||
+      n.includes('zone') ||
+      n.includes('territory') ||
+      n.includes('location') ||
+      n.includes('branch') ||
+      n.includes('facility') ||
+      n.includes('division') ||
+      n.includes('hub') ||
+      n.includes('site') ||
+      n.includes('plant') ||
+      n.includes('country') ||
+      n.includes('market') ||
+      n.includes('ward') ||
+      n.includes('city')
+    );
+  }) || categoricalCols.find((c) => c.name !== primaryCategoryCol?.name);
+
+  // 7b. Resolve Channel / Filter 2 Dimension (Channel, City, Zone, Store, Tier, Department, Segment, Mode)
+  const channelCol = categoricalCols.find((c) => {
+    if (c.name === primaryCategoryCol?.name || c.name === secondaryCategoryCol?.name) return false;
+    const n = c.normalizedName;
+    return (
+      n.includes('channel') ||
+      n.includes('city') ||
+      n.includes('zone') ||
+      n.includes('store') ||
+      n.includes('tier') ||
+      n.includes('segment') ||
+      n.includes('department') ||
+      n.includes('mode') ||
+      n.includes('route') ||
+      n.includes('source') ||
+      n.includes('status') ||
+      n.includes('group') ||
+      n.includes('type')
+    );
+  }) || categoricalCols.find((c) => c.name !== primaryCategoryCol?.name && c.name !== secondaryCategoryCol?.name);
 
   // 8. Resolve Date Column
   const dateCol = columns.find((c) => c.dataType === 'date');
@@ -539,6 +657,8 @@ export function inspectDatasetSchema(
     primaryCategoryLabel: primaryCategoryCol ? primaryCategoryCol.name : 'No category',
     secondaryCategory: secondaryCategoryCol?.name,
     secondaryCategoryLabel: secondaryCategoryCol?.name,
+    channelColumn: channelCol?.name,
+    channelColumnLabel: channelCol?.name,
     dateColumn: dateCol?.name,
     dateColumnLabel: dateCol?.name,
     identifierColumn: idCol?.name,

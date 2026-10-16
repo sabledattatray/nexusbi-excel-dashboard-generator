@@ -10,7 +10,27 @@ export type IndustryType =
   | 'energy_utilities'
   | 'education_academic'
   | 'marketing_media'
-  | 'general_business';
+  | 'general_business'
+  | 'logistics_supply_chain'
+  | 'automotive_ev'
+  | 'pharmaceutical_biotech'
+  | 'construction_engineering'
+  | 'telecom_networks'
+  | 'legal_compliance'
+  | 'insurance_underwriting'
+  | 'agriculture_agritech'
+  | 'food_beverage'
+  | 'aerospace_defense'
+  | 'cybersecurity_secops'
+  | 'media_entertainment'
+  | 'nonprofit_charity'
+  | 'fitness_wellness'
+  | 'professional_services'
+  | 'oil_gas_mining'
+  | 'fashion_luxury'
+  | 'biomedical_genomics'
+  | 'saas_product_ops'
+  | 'customer_support_ops';
 
 export type ColumnDataType = 
   | 'currency' 
@@ -60,6 +80,8 @@ export interface DatasetSchemaProfile {
   primaryCategoryLabel: string;
   secondaryCategory?: string;
   secondaryCategoryLabel?: string;
+  channelColumn?: string;
+  channelColumnLabel?: string;
   dateColumn?: string;
   dateColumnLabel?: string;
   identifierColumn?: string;
@@ -68,6 +90,7 @@ export interface DatasetSchemaProfile {
   detectedIndustry: IndustryType;
   industryConfidence: number;
   totalRecords: number;
+  isCustomUpload?: boolean;
 }
 
 export interface Transaction {

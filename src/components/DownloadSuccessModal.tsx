@@ -84,19 +84,19 @@ export const DownloadSuccessModal: React.FC<DownloadSuccessModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <BarChart className="w-4 h-4 text-sky-700 shrink-0" />
-                <span>Real Native Excel Charts</span>
+                <span>7 Real Native Excel Charts</span>
               </div>
               <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>{sourceBased ? 'Source-matched KPI visuals' : 'Pie & Horizontal Bar Charts'}</span>
+                <span>Executive Dashboard &amp; KPIs</span>
               </div>
               <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <Table className="w-4 h-4 text-indigo-700 shrink-0" />
-                <span>{sourceBased ? 'Original records verification' : 'Frozen Panes & Dropdown Slicers'}</span>
+                <span>Frozen Panes &amp; Dropdown Slicers</span>
               </div>
               <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                 <Layers className="w-4 h-4 text-amber-700 shrink-0" />
-                <span>{sourceBased ? 'Live grouped summaries' : 'Live Excel Formulas (=SUM, =AVERAGE)'}</span>
+                <span>Live Formulas (=SUM, =SUMIFS)</span>
               </div>
             </div>
           </div>

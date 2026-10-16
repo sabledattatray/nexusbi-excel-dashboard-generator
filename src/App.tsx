@@ -175,33 +175,23 @@ export default function App() {
   const handleDownloadExcel = useCallback(async () => {
     try {
       setIsDownloading(true);
+      // Yield to browser event loop to flush DOM repaint and immediately display spinner
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
       let blob: Blob;
       let filename: string;
 
       // Completely lock and password-protect the downloaded workbook
       const shouldBeUnprotected = false;
 
-      if (customImportResult) {
-        const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');
-        const res = await exportAdaptiveExcel(
-          dataset,
-          dataset.config || config,
-          analysisSelection,
-          false,
-          { unprotected: shouldBeUnprotected }
-        );
-        blob = res.blob;
-        filename = res.filename;
-      } else {
-        const { exportToProfessionalExcel } = await import('./utils/excelExporter');
-        const res = await exportToProfessionalExcel(
-          dataset,
-          dataset.config || config,
-          { unprotected: shouldBeUnprotected }
-        );
-        blob = res.blob;
-        filename = res.filename;
-      }
+      const { exportToProfessionalExcel } = await import('./utils/excelExporter');
+      const res = await exportToProfessionalExcel(
+        dataset,
+        dataset.config || config,
+        { unprotected: shouldBeUnprotected }
+      );
+      blob = res.blob;
+      filename = res.filename;
 
       // Trigger browser download
       const url = URL.createObjectURL(blob);

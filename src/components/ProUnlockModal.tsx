@@ -181,7 +181,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
               </h4>
               <p className="text-xs text-emerald-200/90 max-w-sm mx-auto">
                 {licenseInfo?.isLifetime
-                  ? 'All 12 templates and custom uploads are completely unlocked with zero passwords forever.'
+                  ? 'All 32 templates and custom uploads are completely unlocked with zero passwords forever.'
                   : 'Your single file download is authorized. Click below to download your 100% unprotected Excel workbook.'}
               </p>
               {licenseInfo?.refId && (
@@ -287,7 +287,7 @@ export const ProUnlockModal: React.FC<ProUnlockModalProps> = ({
                         <span className="text-[10px] font-normal text-amber-300">One-Time Forever</span>
                       </div>
                       <p className="text-[10.5px] text-amber-100/80 mt-1 leading-snug">
-                        All 12 templates + all custom CSV uploads. Never scan or pay again!
+                        All 32 templates + all custom CSV uploads. Never scan or pay again!
                       </p>
                     </div>
 

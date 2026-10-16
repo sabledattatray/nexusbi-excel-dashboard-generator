@@ -71,7 +71,7 @@ export interface ImportResult {
 
 export const MAX_UPLOAD_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 export const MAX_UPLOAD_FILE_SIZE_MB = 25;
-export const MAX_PROCESSABLE_ROWS = 50000;
+export const MAX_PROCESSABLE_ROWS = 20000;
 
 /**
  * Parses an uploaded File (CSV, TSV, XLSX, XLS) into a normalized RawParsedTable
@@ -81,7 +81,7 @@ export async function parseUploadedFile(file: File): Promise<RawParsedTable> {
   if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
     const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
     throw new Error(
-      `File size (${sizeMb} MB) exceeds the ${MAX_UPLOAD_FILE_SIZE_MB} MB limit for in-browser processing. Please upload a dataset under ${MAX_UPLOAD_FILE_SIZE_MB} MB (up to ~50,000 records) to ensure smooth performance and Excel formula recalculation.`
+      `File size (${sizeMb} MB) exceeds the ${MAX_UPLOAD_FILE_SIZE_MB} MB limit for in-browser processing. Please upload a dataset under ${MAX_UPLOAD_FILE_SIZE_MB} MB (up to ~20,000 records) to ensure smooth performance and Excel formula recalculation.`
     );
   }
 
@@ -95,7 +95,7 @@ export async function parseUploadedFile(file: File): Promise<RawParsedTable> {
   }
 
   if (table.rows.length > MAX_PROCESSABLE_ROWS) {
-    // Keep first 50,000 rows to prevent browser memory exhaustion during live Excel compilation
+    // Keep first 20,000 rows to ensure instant browser responsiveness and smooth Excel compilation
     table.rows = table.rows.slice(0, MAX_PROCESSABLE_ROWS);
     table.totalRows = MAX_PROCESSABLE_ROWS;
   }
@@ -242,6 +242,7 @@ export function inferColumnMapping(table: RawParsedTable): ColumnMapping {
     quantityCol: schema.volumeMetric,
     categoryCol: schema.primaryCategory,
     regionCol: schema.secondaryCategory,
+    channelCol: schema.channelColumn,
     customerCol: schema.entityColumn,
     salesRepCol: schema.secondaryCategory,
   };
@@ -280,10 +281,12 @@ export function buildDatasetFromUpload(
     volumeMetric: selected('volumeMetricCol', detected.volumeMetric),
     primaryCategory: selected('primaryCategoryCol', detected.primaryCategory) || '',
     secondaryCategory: selected('secondaryCategoryCol', detected.secondaryCategory),
+    channelColumn: selected('channelCol', detected.channelColumn),
     dateColumn: selected('dateCol', detected.dateColumn),
     entityColumn: selected('entityCol', detected.entityColumn),
     statusColumn: selected('statusCol', detected.statusColumn),
     identifierColumn: selected('idCol', detected.identifierColumn),
+    isCustomUpload: true,
   };
 
   for (const [role, field] of Object.entries({
@@ -315,6 +318,7 @@ export function buildDatasetFromUpload(
   schema.volumeMetricLabel = schema.volumeMetric;
   schema.primaryCategoryLabel = schema.primaryCategory || 'No category';
   schema.secondaryCategoryLabel = schema.secondaryCategory;
+  schema.channelColumnLabel = schema.channelColumn;
   schema.dateColumnLabel = schema.dateColumn;
 
   const industryDef = getIndustryTheme(schema.detectedIndustry);
@@ -327,7 +331,7 @@ export function buildDatasetFromUpload(
     recordCount: rows.length,
   };
 
-  // 1. Identify or synthesize the 4 executive regions
+  // 1. Identify or synthesize executive regions for fallbacks
   const standardRegions = ['North America', 'EMEA', 'APAC', 'LATAM'];
   const uploadedRegions: string[] = [];
   if (schema.secondaryCategory) {
@@ -338,16 +342,14 @@ export function buildDatasetFromUpload(
           .filter((v) => v.length > 0)
       ),
     ];
-    uploadedRegions.push(...rawUniqueRegs.slice(0, 4));
+    uploadedRegions.push(...rawUniqueRegs);
   }
-  for (const sr of standardRegions) {
-    if (uploadedRegions.length < 4 && !uploadedRegions.includes(sr)) {
-      uploadedRegions.push(sr);
-    }
+  if (uploadedRegions.length === 0) {
+    uploadedRegions.push(...standardRegions);
   }
-  const regionsList = uploadedRegions.slice(0, 4);
+  const regionsList = uploadedRegions;
 
-  // 2. Identify or synthesize at least 5 executive categories
+  // 2. Identify or synthesize executive categories for fallbacks
   const uploadedCats: string[] = [];
   if (schema.primaryCategory) {
     const rawUniqueCats = [
@@ -357,7 +359,7 @@ export function buildDatasetFromUpload(
           .filter((v) => v.length > 0)
       ),
     ];
-    uploadedCats.push(...rawUniqueCats.slice(0, 8));
+    uploadedCats.push(...rawUniqueCats);
   }
   const fallbackCatFillers = [
     'Enterprise Cloud Platform',
@@ -366,23 +368,38 @@ export function buildDatasetFromUpload(
     'Managed Operations Hub',
     'Advanced Analytics & AI',
   ];
-  for (const fc of fallbackCatFillers) {
-    if (uploadedCats.length < 5 && !uploadedCats.includes(fc)) {
-      uploadedCats.push(fc);
-    }
+  if (uploadedCats.length === 0) {
+    uploadedCats.push(...fallbackCatFillers);
   }
   const catsList = uploadedCats;
 
-  const standardChannels: ('Direct Enterprise' | 'Partner Ecosystem' | 'Inside Sales' | 'Online Enterprise')[] = [
+  const standardChannels = [
     'Direct Enterprise',
     'Partner Ecosystem',
     'Inside Sales',
     'Online Enterprise',
   ];
+  const uploadedChannels: string[] = [];
+  if (schema.channelColumn) {
+    const rawUniqueChannels = [
+      ...new Set(
+        rows
+          .map((r) => String(r[schema.channelColumn!] || '').trim())
+          .filter((v) => v.length > 0)
+      ),
+    ];
+    uploadedChannels.push(...rawUniqueChannels);
+  }
+  if (uploadedChannels.length === 0) {
+    uploadedChannels.push(...standardChannels);
+  }
+  const channelsList = uploadedChannels;
 
   const primaryCol = schema.columns.find((c) => c.name === schema.primaryMetric);
   const secondaryCol = schema.columns.find((c) => c.name === schema.secondaryMetric);
   const volumeCol = schema.columns.find((c) => c.name === schema.volumeMetric);
+  const cityCol = headers.find((h) => /^(city|town|municipality)$/i.test(h.trim()));
+  const countryCol = headers.find((h) => /^(country|nation|state_country)$/i.test(h.trim()));
 
   // 3. Build Transaction ledger
   const transactions: Transaction[] = rows.map((r, idx) => {
@@ -414,19 +431,22 @@ export function buildDatasetFromUpload(
     const customerTier = (['Enterprise Strategic', 'Mid-Market', 'Corporate', 'SMB'] as const)[idx % 4];
 
     // Category
-    let productCategory = schema.primaryCategory ? String(r[schema.primaryCategory] || '').trim() : '';
-    if (!productCategory || !catsList.includes(productCategory)) {
-      productCategory = catsList[idx % catsList.length];
+    let productCategory = schema.primaryCategory && r[schema.primaryCategory] !== undefined ? String(r[schema.primaryCategory] || '').trim() : '';
+    if (!productCategory) {
+      productCategory = catsList[idx % catsList.length] || 'Core Operations';
     }
 
-    // Region
-    let region = schema.secondaryCategory ? String(r[schema.secondaryCategory] || '').trim() : '';
-    if (!region || !regionsList.includes(region)) {
-      region = regionsList[idx % regionsList.length];
+    // Region / Primary Dimension (e.g. State, Zone, Region, Plant, Facility)
+    let region = schema.secondaryCategory && r[schema.secondaryCategory] !== undefined ? String(r[schema.secondaryCategory] || '').trim() : '';
+    if (!region) {
+      region = regionsList[idx % regionsList.length] || 'General Region';
     }
 
-    // Channel
-    const salesChannel = standardChannels[idx % standardChannels.length];
+    // Channel / Secondary Dimension (e.g. City, Zone, Channel, Store, Tier, Department)
+    let salesChannel = schema.channelColumn && r[schema.channelColumn] !== undefined ? String(r[schema.channelColumn] || '').trim() : '';
+    if (!salesChannel) {
+      salesChannel = channelsList[idx % channelsList.length] || 'General Channel';
+    }
 
     // Metrics
     const rawP = primaryCol ? numericValue(r[schema.primaryMetric], primaryCol) : null;
@@ -465,8 +485,8 @@ export function buildDatasetFromUpload(
       'APAC': 'Singapore',
       'LATAM': 'São Paulo',
     };
-    const country = countryMap[region] || 'United States';
-    const city = cityMap[region] || 'Corporate Center';
+    const country = countryCol && r[countryCol] ? String(r[countryCol]).trim() : countryMap[region] || 'United States';
+    const city = cityCol && r[cityCol] ? String(r[cityCol]).trim() : (schema.channelColumn && /city/i.test(schema.channelColumn) ? salesChannel : cityMap[region] || 'Corporate Center');
     const salesRep = ['Marcus Vance', 'Sarah Jenkins', 'Elena Rostova', 'David Chen', 'Carlos Mendes'][idx % 5];
     const sku = `SKU-${1000 + (Math.abs(hashString(productCategory)) % 8000) + (idx % 12)}`;
     const productName = `${productCategory} — Spec ${(idx % 8) + 1}`;
@@ -528,11 +548,8 @@ export function buildDatasetFromUpload(
     };
   });
 
-  // 5. Category Summaries (ensure at least 5 categories)
+  // 5. Category Summaries (ensure top 5 categories by actual revenue)
   const catMap = new Map<string, { units: number; revenue: number; grossProfit: number }>();
-  for (const c of catsList) {
-    catMap.set(c, { units: 0, revenue: 0, grossProfit: 0 });
-  }
   for (const t of transactions) {
     const cur = catMap.get(t.productCategory) || { units: 0, revenue: 0, grossProfit: 0 };
     cur.units += t.quantity;
@@ -540,30 +557,53 @@ export function buildDatasetFromUpload(
     cur.grossProfit += t.grossProfit;
     catMap.set(t.productCategory, cur);
   }
-  const categorySummaries: CategorySummary[] = Array.from(catMap.entries())
-    .map(([category, val]) => {
-      const rev = Math.round(val.revenue * 100) / 100;
-      const gp = Math.round(val.grossProfit * 100) / 100;
-      return {
-        category,
-        units: val.units,
-        revenue: rev,
-        grossProfit: gp,
-        marginPct: rev > 0 ? Math.round((gp / rev) * 1000) / 1000 : 0.46,
-        sharePct: totalRev > 0 ? Math.round((rev / totalRev) * 1000) / 1000 : 0.2,
-      };
-    })
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5);
+  const sortedCats = Array.from(catMap.entries()).sort((a, b) => b[1].revenue - a[1].revenue);
+  const top5Cats = sortedCats.slice(0, 5);
+  if (top5Cats.length === 0) {
+    for (const fc of fallbackCatFillers) {
+      if (top5Cats.length < 5 && !top5Cats.some(([cat]) => cat === fc)) {
+        top5Cats.push([fc, { units: 0, revenue: 0, grossProfit: 0 }]);
+      }
+    }
+  }
 
-  // 6. Regional Performance (exact 4 regions for scorecard symmetry)
+  const categorySummaries: CategorySummary[] = top5Cats.map(([category, val]) => {
+    const rev = Math.round(val.revenue * 100) / 100;
+    const gp = Math.round(val.grossProfit * 100) / 100;
+    return {
+      category,
+      units: val.units,
+      revenue: rev,
+      grossProfit: gp,
+      marginPct: rev > 0 ? Math.round((gp / rev) * 1000) / 1000 : 0.46,
+      sharePct: totalRev > 0 ? Math.round((rev / totalRev) * 1000) / 1000 : 0.2,
+    };
+  });
+
+  // 6. Regional Performance (top 4 regions for scorecard symmetry)
   const regDirectors = [
     'Marcus Vance (VP Americas)',
     'Sarah Jenkins (EVP EMEA)',
     'Elena Rostova (MD APAC)',
     'David Chen (SVP LATAM)',
   ];
-  const regionalPerformance: RegionalPerformance[] = regionsList.map((region, rIdx) => {
+
+  const uniqueTxRegions = Array.from(new Set(transactions.map((t) => t.region))).filter((v) => Boolean(v && v.trim()));
+  const regionRevMap = new Map<string, number>();
+  for (const t of transactions) {
+    regionRevMap.set(t.region, (regionRevMap.get(t.region) || 0) + t.revenue);
+  }
+  const sortedTxRegions = uniqueTxRegions.sort((a, b) => (regionRevMap.get(b) || 0) - (regionRevMap.get(a) || 0));
+  const top4Regions = sortedTxRegions.slice(0, 4);
+  if (top4Regions.length === 0) {
+    for (const sr of standardRegions) {
+      if (top4Regions.length < 4 && !top4Regions.includes(sr)) {
+        top4Regions.push(sr);
+      }
+    }
+  }
+
+  const regionalPerformance: RegionalPerformance[] = top4Regions.map((region, rIdx) => {
     const rTx = transactions.filter((t) => t.region === region);
     const actRev = Math.round(rTx.reduce((s, t) => s + t.revenue, 0) * 100) / 100;
     const actProf = Math.round(rTx.reduce((s, t) => s + t.grossProfit, 0) * 100) / 100;

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 import { ArrowUpRight, Filter, Database, Info } from 'lucide-react';
 
@@ -6,24 +6,87 @@ import { AppDataset } from '../types/dataset';
 
 import { getProfessionalSpec } from '../utils/professionalPresentation';
 import { DomainChart, DomainSpec, Row, groupRows, metricValue, formatMetric } from '../utils/domainDatasets';
+import { getDimensionAllLabel } from '../utils/excelExporter';
 
 export function IndustryDashboard({data,onRecords}:{data:AppDataset;onRecords:()=>void}) {
 
  const spec=getProfessionalSpec(data);
 
- const [filter,setFilter]=useState('');
+ const filter1Label = data.schemaProfile?.secondaryCategoryLabel || spec.filter || 'Global Region';
+ const filter1All = getDimensionAllLabel(filter1Label);
+ const filter2Label = data.schemaProfile?.channelColumnLabel || 'Sales Channel';
+ const filter2All = getDimensionAllLabel(filter2Label);
 
- const rows=useMemo(()=>(data.rawRows as Row[]||[]).filter(r=>!filter||r[spec.filter]===filter),[data,filter,spec]);
+ const [filter1, setFilter1] = useState('');
+ const [filter2, setFilter2] = useState('');
 
- const choices=[...new Set((data.rawRows||[]).map(r=>String(r[spec.filter])))].sort();
+ useEffect(() => {
+  setFilter1('');
+  setFilter2('');
+ }, [data]);
+
+ const getCleanChoices = (primaryKey: string, fallbackKey?: string) => {
+  const set = new Set<string>();
+  for (const r of data.rawRows || []) {
+   const val = r[primaryKey] ?? (fallbackKey ? r[fallbackKey] : undefined);
+   if (val !== null && val !== undefined) {
+    const str = String(val).trim();
+    if (str && str !== 'undefined' && str !== 'null') {
+     set.add(str);
+    }
+   }
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+ };
+
+ const choices1 = useMemo(() => getCleanChoices(filter1Label, 'Global Region'), [data, filter1Label]);
+ const choices2 = useMemo(() => getCleanChoices(filter2Label, 'Sales Channel'), [data, filter2Label]);
+
+ const rows = useMemo(() => {
+  return (data.rawRows as Row[] || []).filter((r) => {
+   if (filter1) {
+    const v1 = String(r[filter1Label] ?? r['Global Region'] ?? r[spec.filter] ?? '').trim();
+    if (v1 !== filter1) return false;
+   }
+   if (filter2) {
+    const v2 = String(r[filter2Label] ?? r['Sales Channel'] ?? '').trim();
+    if (v2 !== filter2) return false;
+   }
+   return true;
+  });
+ }, [data, filter1, filter2, filter1Label, filter2Label, spec.filter]);
 
  const fmt=(value:number,metric=spec.metrics[0],compact=false)=>formatMetric(value,metric,data.config.currency,compact);
 
  return <section className={`industry-dashboard domain-${spec.layout}`} style={{'--domain-color':spec.color,'--domain-tint':spec.tint} as React.CSSProperties} aria-label={`${spec.title} dashboard`}>
 
-  <header className="domain-header"><div><div className="domain-eyebrow">{data.config.industry.replaceAll('_',' ')} / SAMPLE REPORT</div><h2>{spec.title}</h2><p>{spec.subtitle}</p></div><label className="domain-filter"><span><Filter size={13}/> {spec.filter}</span><select aria-label={`Filter ${spec.filter}`} value={filter} onChange={e=>setFilter(e.target.value)}><option value="">All {spec.filter.toLowerCase()}s</option>{choices.map(c=><option key={c}>{c}</option>)}</select></label></header>
+  <header className="domain-header">
+   <div>
+    <div className="domain-eyebrow">{data.config.industry.replaceAll('_',' ')} / {data.schemaProfile?.isCustomUpload ? 'VERIFIED DATASET' : 'SAMPLE REPORT'}</div>
+    <h2>{spec.title}</h2>
+    <p>{spec.subtitle}</p>
+   </div>
+   <div className="domain-filter-group" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+    <label className="domain-filter">
+     <span><Filter size={13}/> {filter1Label}</span>
+     <select aria-label={`Filter ${filter1Label}`} value={filter1} onChange={e => setFilter1(e.target.value)}>
+      <option value="">{filter1All}</option>
+      {choices1.map(c => <option key={c} value={c}>{c}</option>)}
+     </select>
+    </label>
+    {choices2.length >= 2 && (
+     <label className="domain-filter">
+      <span><Filter size={13}/> {filter2Label}</span>
+      <select aria-label={`Filter ${filter2Label}`} value={filter2} onChange={e => setFilter2(e.target.value)}>
+       <option value="">{filter2All}</option>
+       {choices2.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+     </label>
+    )}
+   </div>
+  </header>
 
-  <div className="domain-meta"><span><Database size={13}/>{rows.length.toLocaleString()} of {data.rawRows?.length.toLocaleString()} records</span><span>{spec.grain}</span><span>Illustrative data · all figures calculated from records</span></div>
+  <div className="domain-meta"><span><Database size={13}/>{rows.length.toLocaleString()} of {data.rawRows?.length.toLocaleString()} records</span><span>{spec.grain}</span><span>{data.schemaProfile?.isCustomUpload ? 'Verified source data · all figures calculated from records' : 'Illustrative data · all figures calculated from records'}</span></div>
 
   <div className="domain-kpis">{spec.metrics.map((m,i)=><article className="domain-kpi" key={m.label}><span className="domain-kpi-index">0{i+1}</span><p>{m.label}</p><strong title={fmt(metricValue(rows,m),m)}>{fmt(metricValue(rows,m),m,true)}</strong><small>{m.operation==='ratio'?`${m.field} ÷ ${m.denominator}`:m.operation==='count'?'Count of records':`${m.operation==='average'?'Average':'Sum'} of ${m.field}`}</small></article>)}</div>
 

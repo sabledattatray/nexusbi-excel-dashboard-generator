@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { AppDataset } from '../types/dataset';
 import { AnalysisChart, AnalysisSelection, analyzeDataset, defaultAggregation, initialSelection } from '../utils/adaptiveAnalysis';
 
@@ -6,11 +6,27 @@ export function AdaptiveDashboard({ data, selection, onChange, view }: { data: A
   const [filterField, setFilterField] = useState('');
   const [filterValue, setFilterValue] = useState('');
   const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    setFilterField('');
+    setFilterValue('');
+    setPage(0);
+  }, [data]);
+
   const analysis = useMemo(() => analyzeDataset(data, selection, { field: filterField, value: filterValue }), [data, selection, filterField, filterValue]);
   const { metric, metricLabel, charts, quality } = analysis;
   const format = (value: number | null, count = false) => value === null ? 'No valid values' : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, ...(metric?.dataType === 'percentage' && !count ? { style: 'percent' } : {}) }).format(value);
   const control = 'bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm w-full text-slate-800';
-  const filterValues = useMemo(() => [...new Set((data.rawRows || []).map(r => String(r[filterField] ?? '(Missing)')))].sort(), [data, filterField]);
+  const filterValues = useMemo(() => {
+    if (!filterField) return [];
+    const set = new Set<string>();
+    for (const r of data.rawRows || []) {
+      const val = r[filterField];
+      const str = (val === null || val === undefined || String(val).trim() === '') ? '(Missing)' : String(val).trim();
+      set.add(str);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  }, [data, filterField]);
   const sourceView = view === 'transactions';
   const qualityView = view === 'customers';
   const matrixView = view === 'pivot';

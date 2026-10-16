@@ -41,6 +41,22 @@ export const DataGrid: React.FC<DataGridProps> = ({ transactions, useLiveFormula
   });
   const [copied, setCopied] = useState(false);
 
+  const availableRegions = useMemo(() => {
+    const set = new Set<string>();
+    transactions.forEach((tx) => {
+      if (tx.region) set.add(tx.region);
+    });
+    return Array.from(set).sort();
+  }, [transactions]);
+
+  const availableChannels = useMemo(() => {
+    const set = new Set<string>();
+    transactions.forEach((tx) => {
+      if (tx.salesChannel) set.add(tx.salesChannel);
+    });
+    return Array.from(set).sort();
+  }, [transactions]);
+
   // Filtered & Sorted Transactions
   const filteredData = useMemo(() => {
     return transactions.filter((tx) => {
@@ -194,13 +210,12 @@ export const DataGrid: React.FC<DataGridProps> = ({ transactions, useLiveFormula
               setSelectedRegion(e.target.value);
               setCurrentPage(1);
             }}
-            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
+            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none focus:border-emerald-500 max-w-[170px] truncate"
           >
-            <option value="ALL">All Regions</option>
-            <option value="North America">North America</option>
-            <option value="EMEA">EMEA</option>
-            <option value="APAC">APAC</option>
-            <option value="LATAM">LATAM</option>
+            <option value="ALL">All Regions / Locations</option>
+            {availableRegions.map((reg) => (
+              <option key={reg} value={reg}>{reg}</option>
+            ))}
           </select>
 
           <select
@@ -209,13 +224,12 @@ export const DataGrid: React.FC<DataGridProps> = ({ transactions, useLiveFormula
               setSelectedChannel(e.target.value);
               setCurrentPage(1);
             }}
-            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
+            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none focus:border-emerald-500 max-w-[170px] truncate"
           >
-            <option value="ALL">All Channels</option>
-            <option value="Direct Enterprise">Direct Enterprise</option>
-            <option value="Partner Ecosystem">Partner Ecosystem</option>
-            <option value="Inside Sales">Inside Sales</option>
-            <option value="Online Enterprise">Online Enterprise</option>
+            <option value="ALL">All Channels / Segments</option>
+            {availableChannels.map((chan) => (
+              <option key={chan} value={chan}>{chan}</option>
+            ))}
           </select>
 
           <button
@@ -398,17 +412,7 @@ export const DataGrid: React.FC<DataGridProps> = ({ transactions, useLiveFormula
                     {tx.customerTier.replace('Enterprise Strategic', 'Strategic')}
                   </td>
                   <td className="py-2 px-3 font-sans text-slate-600">
-                    <span
-                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                        tx.region === 'North America'
-                          ? 'bg-blue-500/10 text-blue-700'
-                          : tx.region === 'EMEA'
-                          ? 'bg-purple-500/10 text-violet-700'
-                          : tx.region === 'APAC'
-                          ? 'bg-emerald-500/10 text-emerald-700'
-                          : 'bg-amber-500/10 text-amber-700'
-                      }`}
-                    >
+                    <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-50 text-sky-800 border border-sky-200/60">
                       {tx.region}
                     </span>
                   </td>

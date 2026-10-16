@@ -139,9 +139,13 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   assert.ok(wbXml.includes('lockStructure="1"'));
   assert.ok(wbXml.includes('algorithmName="SHA-512"'));
 
-  // Verify filter dropdown cells C4 and G4 are unlocked for user interaction
+  // Verify filter dropdown cells C4 and G4 on Executive Dashboard are unlocked for user interaction
   assert.equal(dash.getCell('C4').protection?.locked, false);
   assert.equal(dash.getCell('G4').protection?.locked, false);
+
+  // Verify pivot filter dropdown cells C4 and F4 on Pivot Table Analysis are unlocked for user interaction
+  assert.equal(pivot.getCell('C4').protection?.locked, false);
+  assert.equal(pivot.getCell('F4').protection?.locked, false);
 });
 
 test('file upload enforces 25 MB limit and protects in-browser memory', async () => {
@@ -206,4 +210,160 @@ test('Pro unprotected export generates 100% unlocked workbook without sheet or w
   assert.ok(lifetimeUrl.includes('am=49'));
   assert.ok(lifetimeUrl.includes('cu=INR'));
 });
+
+test('dynamic dropdown filters accurately reflect custom uploaded State/City/Zone categories and domain presets', async () => {
+  const { buildDatasetFromUpload } = await import('./dataImporter');
+  const { exportToProfessionalExcel } = await import('./excelExporter');
+  const { generateProfessionalDataset } = await import('./professionalPresentation');
+
+  // Test 1: Custom upload with State, City, Zone, Store
+  const sampleHeaders = ['Trans_ID', 'Date', 'Customer', 'Product', 'State', 'Zone', 'Amount', 'Cost'];
+  const states = ['California', 'Texas', 'Florida', 'New York', 'Washington', 'Illinois', 'Colorado', 'Ohio'];
+  const zones = ['North Zone', 'South Zone', 'East Zone', 'West Zone', 'Central Metro'];
+  const sampleRows: Record<string, any>[] = Array.from({ length: 60 }, (_, i) => ({
+    Trans_ID: `TRX-${1000 + i}`,
+    Date: `2024-${String((i % 12) + 1).padStart(2, '0')}-15`,
+    Customer: `Client ${i % 10}`,
+    Product: `Product ${i % 5}`,
+    State: states[i % states.length],
+    Zone: zones[i % zones.length],
+    Amount: 1000 + (i * 50),
+    Cost: 400 + (i * 20),
+  }));
+
+  const mockTable: RawParsedTable = {
+    headers: sampleHeaders,
+    rows: sampleRows,
+    totalRows: sampleRows.length,
+    fileName: 'state_zone_sales_data.csv',
+    fileSize: 4096,
+    fileType: 'csv',
+  };
+
+  const importResult = buildDatasetFromUpload(mockTable, {
+    idCol: 'Trans_ID',
+    dateCol: 'Date',
+    entityCol: 'Customer',
+    primaryCategoryCol: 'Product',
+    secondaryCategoryCol: 'State',
+    channelCol: 'Zone',
+    primaryMetricCol: 'Amount',
+    secondaryMetricCol: 'Cost',
+  }, baseConfig);
+
+  // Verify all 8 states and 5 zones were preserved without loss or modulo overwrite
+  const importedStates = new Set(importResult.dataset.transactions.map((t) => t.region));
+  assert.equal(importedStates.size, 8, 'All 8 unique states must be preserved');
+  assert.ok(importedStates.has('California') && importedStates.has('Texas') && importedStates.has('Colorado'));
+
+  const importedZones = new Set(importResult.dataset.transactions.map((t) => t.salesChannel));
+  assert.equal(importedZones.size, 5, 'All 5 unique zones must be preserved');
+  assert.ok(importedZones.has('North Zone') && importedZones.has('Central Metro'));
+
+  // Export to Excel and verify dropdowns in workbook
+  const customExport = await exportToProfessionalExcel(importResult.dataset, baseConfig);
+  const customWb = new ExcelJS.Workbook();
+  await customWb.xlsx.load(await customExport.blob.arrayBuffer());
+  const dashSheet = customWb.getWorksheet('Executive Dashboard')!;
+
+  const filter1Val = dashSheet.getCell('C4').value;
+  const filter2Val = dashSheet.getCell('G4').value;
+  assert.equal(filter1Val, 'All States', 'Filter 1 default should be All States');
+  assert.equal(filter2Val, 'All Zones', 'Filter 2 default should be All Zones');
+
+  // Verify data validation lists do not contain North America or EMEA
+  const f1Validation = dashSheet.getCell('C4').dataValidation;
+  assert.ok(f1Validation?.formulae?.[0]?.includes('California'), 'Data validation must contain California');
+  assert.ok(!f1Validation?.formulae?.[0]?.includes('North America'), 'Must NOT contain hardcoded North America');
+
+  const f2Validation = dashSheet.getCell('G4').dataValidation;
+  assert.ok(f2Validation?.formulae?.[0]?.includes('North Zone'), 'Data validation must contain North Zone');
+  assert.ok(!f2Validation?.formulae?.[0]?.includes('Direct Enterprise'), 'Must NOT contain hardcoded Direct Enterprise');
+
+  // Test 2: Automotive & EV preset has domain-specific gigafactories & channels
+  const autoConfig: DatasetConfig = {
+    ...baseConfig,
+    industry: 'automotive_ev',
+    companyName: 'Veloce Electric Motors',
+  };
+  const autoDataset = generateProfessionalDataset(autoConfig);
+  const autoExport = await exportToProfessionalExcel(autoDataset, autoConfig);
+  const autoWb = new ExcelJS.Workbook();
+  await autoWb.xlsx.load(await autoExport.blob.arrayBuffer());
+  const autoDash = autoWb.getWorksheet('Executive Dashboard')!;
+
+  const autoF1 = autoDash.getCell('C4').value;
+  const autoF2 = autoDash.getCell('G4').value;
+  assert.equal(autoF1, 'All Assembly Gigafactories');
+  assert.equal(autoF2, 'All Channels');
+
+  const autoF1Valid = autoDash.getCell('C4').dataValidation?.formulae?.[0] || '';
+  assert.ok(autoF1Valid.includes('Austin Gigafactory'), 'Must contain Austin Gigafactory');
+  assert.ok(!autoF1Valid.includes('North America'), 'Must NOT contain generic North America');
+});
+
+test('locally imported CSV with State, City, Zone correctly maps roles and presents dynamic filters without glitches', async () => {
+  const { inferColumnMapping, buildDatasetFromUpload } = await import('./dataImporter');
+  const { inspectDatasetSchema } = await import('./schemaDetector');
+  const { getProfessionalSpec } = await import('./professionalPresentation');
+  const { getDimensionAllLabel } = await import('./excelExporter');
+
+  const headers = ['Order ID', 'Order Date', 'State', 'City', 'Zone', 'Department', 'Revenue', 'Profit'];
+  const sampleRows = [
+    { 'Order ID': '101', 'Order Date': '2024-01-10', State: 'Maharashtra', City: 'Mumbai', Zone: 'West Zone', Department: 'Industrial', Revenue: 5000, Profit: 1500 },
+    { 'Order ID': '102', 'Order Date': '2024-02-12', State: 'Gujarat', City: 'Ahmedabad', Zone: 'West Zone', Department: 'Commercial', Revenue: 4200, Profit: 1200 },
+    { 'Order ID': '103', 'Order Date': '2024-03-15', State: 'Karnataka', City: 'Bengaluru', Zone: 'South Zone', Department: 'Technology', Revenue: 8900, Profit: 2800 },
+  ];
+
+  const schema = inspectDatasetSchema(headers, sampleRows);
+  const mapping = inferColumnMapping({
+    headers,
+    rows: sampleRows,
+    totalRows: sampleRows.length,
+    fileName: 'india_state_data.csv',
+    fileSize: 1024,
+    fileType: 'csv',
+    schema,
+  });
+
+  // Verify State is recognized as secondaryCategoryCol and NOT statusCol
+  assert.equal(mapping.secondaryCategoryCol, 'State', 'State must be recognized as Filter 1 dimension');
+  assert.notEqual(mapping.statusCol, 'State', 'Geographic State must not be classified as statusCol');
+  assert.equal(mapping.channelCol, 'City', 'City must be recognized as Filter 2 channel dimension');
+
+  const importResult = buildDatasetFromUpload({
+    headers,
+    rows: sampleRows,
+    totalRows: sampleRows.length,
+    fileName: 'india_state_data.csv',
+    fileSize: 1024,
+    fileType: 'csv',
+    schema,
+  }, mapping, {
+    ...baseConfig,
+    companyName: 'Apex Bharat Logistics',
+  });
+
+  // Verify regionalPerformance contains ONLY the uploaded Indian states, no fake North America
+  const regNames = importResult.dataset.regionalPerformance.map((r) => r.region);
+  assert.ok(regNames.includes('Maharashtra') && regNames.includes('Karnataka') && regNames.includes('Gujarat'));
+  assert.ok(!regNames.includes('North America') && !regNames.includes('EMEA'), 'Must not inject North America or EMEA');
+
+  // Verify professional spec for web UI IndustryDashboard
+  const spec = getProfessionalSpec(importResult.dataset);
+  assert.equal(spec.filter, 'State', 'IndustryDashboard filter must be State, not Global Region');
+  assert.equal(spec.category, 'Department', 'Category must be Department, not Product Category');
+
+  // Verify all-label generator
+  assert.equal(getDimensionAllLabel(spec.filter), 'All States');
+  assert.equal(getDimensionAllLabel('City'), 'All Cities');
+  assert.equal(getDimensionAllLabel('Zone'), 'All Zones');
+
+  // Verify rawRows has non-undefined values for spec.filter
+  const choices = [...new Set((importResult.dataset.rawRows || []).map((r) => String(r[spec.filter])))].sort();
+  assert.ok(!choices.includes('undefined') && !choices.includes('null') && !choices.includes(''));
+  assert.deepEqual(choices, ['Gujarat', 'Karnataka', 'Maharashtra']);
+});
+
+
 

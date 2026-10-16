@@ -30,7 +30,7 @@ for(const industry of Object.keys(DOMAIN_SPECS) as IndustryType[]) {
 test('every preset has a distinct schema and visual composition',()=>{
  const schemas=new Set(),visuals=new Set();
  for(const industry of Object.keys(DOMAIN_SPECS) as IndustryType[]){schemas.add(generateDomainDataset({...config,industry}).originalHeaders!.join('|'));visuals.add(DOMAIN_SPECS[industry].charts.map(c=>c.kind).join('|'));}
- assert.equal(schemas.size,12);assert.equal(visuals.size,12);
+ assert.equal(schemas.size,32);assert.equal(visuals.size,32);
 });
 test('ratios use weighted source totals, not a mean of row ratios',()=>{
  const rows=[{occupied:1,available:2},{occupied:9,available:10}];

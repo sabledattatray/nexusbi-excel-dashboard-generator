@@ -1219,7 +1219,10 @@ export async function injectNativeExcelCharts(
   // WORKSHEET & WORKBOOK PROTECTION (Omitted if unprotected pro mode)
   // =============================================================
   if (!options?.unprotected) {
-    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+    // Only sheets with drawings & charts (sheet1: Dashboard and sheet2: Pivot Table Analysis)
+    // require customized OpenXML DrawingML object locks. Data sheets (sheet3+) already have
+    // standard password protection from ExcelJS and do not need expensive decompression.
+    for (let sIdx = 1; sIdx <= 2; sIdx++) {
       const sPath = `xl/worksheets/sheet${sIdx}.xml`;
       let sContent = await zip.file(sPath)?.async('string');
       if (sContent && sContent.includes('<sheetProtection')) {
@@ -1249,7 +1252,7 @@ export async function injectNativeExcelCharts(
     }
   } else {
     // Pro Unprotected mode: remove any sheetProtection or workbookProtection tags completely
-    for (let sIdx = 1; sIdx <= 10; sIdx++) {
+    for (let sIdx = 1; sIdx <= 6; sIdx++) {
       const sPath = `xl/worksheets/sheet${sIdx}.xml`;
       let sContent = await zip.file(sPath)?.async('string');
       if (sContent && sContent.includes('<sheetProtection')) {
@@ -1264,12 +1267,12 @@ export async function injectNativeExcelCharts(
     }
   }
 
-  // Re-generate clean OpenXML .xlsx binary blob
+  // Re-generate clean OpenXML .xlsx binary blob with fast compression
   const finalBuffer = await zip.generateAsync({
     type: 'blob',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     compression: 'DEFLATE',
-    compressionOptions: { level: 9 },
+    compressionOptions: { level: 4 },
   });
 
   return finalBuffer;

@@ -31,6 +31,30 @@ const COLORS = {
   amberDark: 'FFB45309',     // Amber 700
 };
 
+export function getDimensionAllLabel(label: string): string {
+  if (!label) return 'All Records';
+  const clean = label.split(/[/—]/)[0].trim();
+  const lower = clean.toLowerCase();
+  if (lower.startsWith('all ')) return clean;
+  if (lower.endsWith('s')) return `All ${clean}`;
+  if (lower.endsWith('y') && !lower.endsWith('ey')) return `All ${clean.slice(0, -1)}ies`;
+  return `All ${clean}s`;
+}
+
+export function buildExcelValidationList(allLabel: string, items: string[], maxLen = 245): string {
+  const sanitized = [allLabel];
+  let currentLen = allLabel.length + 2; // account for enclosing quotes
+  for (const rawItem of items) {
+    if (!rawItem) continue;
+    const clean = String(rawItem).replace(/[",]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!clean || sanitized.includes(clean)) continue;
+    if (currentLen + 1 + clean.length > maxLen) break;
+    sanitized.push(clean);
+    currentLen += 1 + clean.length;
+  }
+  return `"${sanitized.join(',')}"`;
+}
+
 export async function exportToProfessionalExcel(
   datasetData: ReturnType<typeof generateRealisticDataset>,
   config: DatasetConfig,
@@ -53,6 +77,59 @@ export async function exportToProfessionalExcel(
   const primaryAccentFill = theme.colors.excel.accentFill || COLORS.blueLight;
   const primaryAccentText = theme.colors.excel.accentText || COLORS.blueDark;
   const primaryBorder = theme.colors.excel.border || COLORS.skyBar;
+
+  // Dynamic filter dimensions & options derived from transactions & schema profile
+  const filter1Label = labels.dimensionLabel || 'Global Region';
+  const allFilter1 = getDimensionAllLabel(filter1Label);
+  const f1RevMap = new Map<string, number>();
+  for (const t of transactions) {
+    if (t.region) {
+      f1RevMap.set(t.region, (f1RevMap.get(t.region) || 0) + t.revenue);
+    }
+  }
+  const sortedF1Values = Array.from(f1RevMap.entries()).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+  const regDropdownFormula = buildExcelValidationList(
+    allFilter1,
+    sortedF1Values.length > 0 ? sortedF1Values : regionalPerformance.map((r) => r.region)
+  );
+
+  const filter2Label = labels.channelLabel || 'Channel';
+  const allFilter2 = getDimensionAllLabel(filter2Label);
+  const f2RevMap = new Map<string, number>();
+  for (const t of transactions) {
+    if (t.salesChannel) {
+      f2RevMap.set(t.salesChannel, (f2RevMap.get(t.salesChannel) || 0) + t.revenue);
+    }
+  }
+  const sortedF2Values = Array.from(f2RevMap.entries()).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+  const chanDropdownFormula = buildExcelValidationList(
+    allFilter2,
+    sortedF2Values.length > 0 ? sortedF2Values : ['Direct Enterprise', 'Partner Ecosystem', 'Inside Sales', 'Online Enterprise']
+  );
+
+  // Dynamic Channel / Dimension 2 Scorecard mix data
+  const top4Channels = sortedF2Values.slice(0, 4);
+  const fallbackChannels = ['Direct Enterprise', 'Partner Ecosystem', 'Inside Sales', 'Online Enterprise'];
+  if (top4Channels.length === 0) {
+    for (const fb of fallbackChannels) {
+      if (top4Channels.length < 4 && !top4Channels.includes(fb)) {
+        top4Channels.push(fb);
+      }
+    }
+  }
+  const channelMixStatuses = ['Primary', 'Growing', 'Stable', 'Optimized'];
+  const channelMixData = top4Channels.map((name, idx) => {
+    const rev = f2RevMap.get(name) || Math.round(kpi.totalRevenue * (0.4 - idx * 0.08));
+    const prof = Math.round(rev * 0.44);
+    const share = kpi.totalRevenue > 0 ? rev / kpi.totalRevenue : 0.25;
+    return {
+      name,
+      share: Math.round(share * 1000) / 1000,
+      rev: Math.round(rev),
+      prof: Math.round(prof),
+      status: channelMixStatuses[idx % channelMixStatuses.length],
+    };
+  });
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = `${config.companyName} Executive BI Engine`;
@@ -120,13 +197,13 @@ export async function exportToProfessionalExcel(
   dashSheet.getRow(4).height = 26;
   
   // Slicer 1: Region / Dimension Selector (Data Validation Dropdown)
-  dashSheet.getCell('B4').value = `${labels.dimensionLabel}:`;
+  dashSheet.getCell('B4').value = `${filter1Label}:`;
   dashSheet.getCell('B4').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.slateMuted } };
   dashSheet.getCell('B4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   dashSheet.mergeCells('C4:D4');
   const slicerRegion = dashSheet.getCell('C4');
-  slicerRegion.value = 'All Regions';
+  slicerRegion.value = allFilter1;
   slicerRegion.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: primaryAccentText } };
   slicerRegion.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryAccentFill } };
   slicerRegion.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -140,8 +217,6 @@ export async function exportToProfessionalExcel(
   slicerRegion.protection = { locked: false };
   dashSheet.getCell('D4').protection = { locked: false };
 
-  const regNames = regionalPerformance.slice(0, 4).map((r) => r.region.replace(/,/g, ' '));
-  const regDropdownFormula = `"All Regions,${regNames.length ? regNames.join(',') : 'North America,EMEA,APAC,LATAM'}"`;
   slicerRegion.dataValidation = {
     type: 'list',
     allowBlank: false,
@@ -149,13 +224,13 @@ export async function exportToProfessionalExcel(
   };
 
   // Slicer 2: Channel Selector
-  dashSheet.getCell('F4').value = 'Channel Filter:';
+  dashSheet.getCell('F4').value = `${filter2Label}:`;
   dashSheet.getCell('F4').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.slateMuted } };
   dashSheet.getCell('F4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   dashSheet.mergeCells('G4:H4');
   const slicerChannel = dashSheet.getCell('G4');
-  slicerChannel.value = 'All Channels';
+  slicerChannel.value = allFilter2;
   slicerChannel.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: COLORS.indigoDark } };
   slicerChannel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.indigoLight } };
   slicerChannel.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -172,12 +247,12 @@ export async function exportToProfessionalExcel(
   slicerChannel.dataValidation = {
     type: 'list',
     allowBlank: false,
-    formulae: ['"All Channels,Direct Enterprise,Partner Ecosystem,Inside Sales,Online Enterprise"'],
+    formulae: [chanDropdownFormula],
   };
 
   dashSheet.mergeCells('J4:O4');
   const slicerHelp = dashSheet.getCell('J4');
-  slicerHelp.value = `💡 Tip: Select dropdown in C4 (${labels.dimensionLabel}) or G4 (Channel) in Excel to recalculate entire dashboard dynamically!`;
+  slicerHelp.value = `💡 Tip: Select dropdown in C4 (${filter1Label}) or G4 (${filter2Label}) in Excel to recalculate entire dashboard dynamically!`;
   slicerHelp.font = { name: 'Segoe UI', size: 9, italic: true, color: { argb: COLORS.slateMuted } };
   slicerHelp.alignment = { vertical: 'middle', horizontal: 'left' };
 
@@ -194,8 +269,9 @@ export async function exportToProfessionalExcel(
       colEnd: 'C',
       label: labels.metric1.toUpperCase(),
       formula: config.useLiveExcelFormulas
-        ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!T3:T${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
+        ? `=IF(AND(C4="${allFilter1}", G4="${allFilter2}"), SUM('Sales Transactions'!T3:T${txRowCount}), IF(C4="${allFilter1}", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="${allFilter2}", SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!T3:T${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalRevenue,
+      resultValue: kpi.totalRevenue,
       subtext: '● Certified Actuals',
       numFmt: '$#,##0',
       accentColor: primaryAccentText,
@@ -206,8 +282,9 @@ export async function exportToProfessionalExcel(
       colEnd: 'E',
       label: labels.metric2.toUpperCase(),
       formula: config.useLiveExcelFormulas
-        ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!V3:V${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
+        ? `=IF(AND(C4="${allFilter1}", G4="${allFilter2}"), SUM('Sales Transactions'!V3:V${txRowCount}), IF(C4="${allFilter1}", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="${allFilter2}", SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!V3:V${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalGrossProfit,
+      resultValue: kpi.totalGrossProfit,
       subtext: '● Net Operating Value',
       numFmt: '$#,##0',
       accentColor: COLORS.emeraldDark,
@@ -220,6 +297,7 @@ export async function exportToProfessionalExcel(
       formula: config.useLiveExcelFormulas
         ? `=IF(B7>0, D7/B7, 0)`
         : kpi.overallMarginPct,
+      resultValue: kpi.overallMarginPct,
       subtext: '● Target Attained',
       numFmt: '0.0%',
       accentColor: COLORS.indigoDark,
@@ -230,8 +308,9 @@ export async function exportToProfessionalExcel(
       colEnd: 'I',
       label: labels.metric4.toUpperCase(),
       formula: config.useLiveExcelFormulas
-        ? `=IF(AND(C4="All Regions", G4="All Channels"), SUM('Sales Transactions'!R3:R${txRowCount}), IF(C4="All Regions", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
+        ? `=IF(AND(C4="${allFilter1}", G4="${allFilter2}"), SUM('Sales Transactions'!R3:R${txRowCount}), IF(C4="${allFilter1}", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="${allFilter2}", SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4), SUMIFS('Sales Transactions'!R3:R${txRowCount}, 'Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.totalUnits,
+      resultValue: kpi.totalUnits,
       subtext: '● Volume Metric',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
@@ -242,8 +321,9 @@ export async function exportToProfessionalExcel(
       colEnd: 'K',
       label: labels.metric5.toUpperCase(),
       formula: config.useLiveExcelFormulas
-        ? `=IF(AND(C4="All Regions", G4="All Channels"), COUNTA('Sales Transactions'!A3:A${txRowCount}), IF(C4="All Regions", COUNTIFS('Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="All Channels", COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4), COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
+        ? `=IF(AND(C4="${allFilter1}", G4="${allFilter2}"), COUNTA('Sales Transactions'!A3:A${txRowCount}), IF(C4="${allFilter1}", COUNTIFS('Sales Transactions'!L3:L${txRowCount}, G4), IF(G4="${allFilter2}", COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4), COUNTIFS('Sales Transactions'!H3:H${txRowCount}, C4, 'Sales Transactions'!L3:L${txRowCount}, G4))))`
         : kpi.orderCount,
+      resultValue: kpi.orderCount,
       subtext: '● Closed Records',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
@@ -256,6 +336,7 @@ export async function exportToProfessionalExcel(
       formula: config.useLiveExcelFormulas
         ? `=IF(J7>0, B7/J7, 0)`
         : kpi.averageDealSize,
+      resultValue: kpi.averageDealSize,
       subtext: '● Unit Average',
       numFmt: '$#,##0',
       accentColor: COLORS.navyMedium,
@@ -266,8 +347,9 @@ export async function exportToProfessionalExcel(
       colEnd: 'O',
       label: labels.entityLabel.toUpperCase(),
       formula: config.useLiveExcelFormulas
-        ? `=IF(AND(C4="All Regions", G4="All Channels"), ${customerAccounts.length}, ROUND(MAX(1, J7/${Math.max(1, Math.round(transactions.length / customerAccounts.length))}), 0))`
+        ? `=IF(AND(C4="${allFilter1}", G4="${allFilter2}"), ${customerAccounts.length}, ROUND(MAX(1, J7/${Math.max(1, Math.round(transactions.length / customerAccounts.length))}), 0))`
         : customerAccounts.length,
+      resultValue: customerAccounts.length,
       subtext: '● Active Portfolio',
       numFmt: '#,##0',
       accentColor: COLORS.navyMedium,
@@ -286,7 +368,9 @@ export async function exportToProfessionalExcel(
     dashSheet.mergeCells(`${card.colStart}7:${card.colEnd}7`);
     const valCell = dashSheet.getCell(`${card.colStart}7`);
     if (typeof card.formula === 'string' && card.formula.startsWith('=')) {
-      valCell.value = { formula: card.formula.slice(1) };
+      valCell.value = card.resultValue !== undefined
+        ? { formula: card.formula.slice(1), result: card.resultValue }
+        : { formula: card.formula.slice(1) };
     } else {
       valCell.value = card.formula;
     }
@@ -387,7 +471,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`C${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: m.revenue,
         }
       : m.revenue;
@@ -404,7 +488,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`E${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: m.grossProfit,
         }
       : m.grossProfit;
@@ -421,7 +505,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`G${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="All Regions", COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*"), IF($C$4="${allFilter1}", COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$B$3:$B$${txRowCount}, "${m.monthKey}*", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: m.orderCount,
         }
       : m.orderCount;
@@ -507,7 +591,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`K${rowIdx}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
+          formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>I${rowIdx}), 0, IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
           result: r.actualRevenue,
         }
       : r.actualRevenue;
@@ -517,7 +601,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`L${rowIdx}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, ${r.targetRevenue})`,
+          formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>I${rowIdx}), 0, ${r.targetRevenue})`,
           result: r.targetRevenue,
         }
       : r.targetRevenue;
@@ -542,7 +626,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`N${rowIdx}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>I${rowIdx}), 0, IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
+          formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>I${rowIdx}), 0, IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, I${rowIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4)))`,
           result: r.actualProfit,
         }
       : r.actualProfit;
@@ -629,7 +713,7 @@ export async function exportToProfessionalExcel(
     const cellOrd = dashSheet.getCell(`M${rIdx}`);
     cellOrd.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="${allFilter1}", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: acc.totalOrders,
         }
       : acc.totalOrders;
@@ -640,7 +724,7 @@ export async function exportToProfessionalExcel(
     const cellRev = dashSheet.getCell(`N${rIdx}`);
     cellRev.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$E$3:$E$${txRowCount}, I${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: acc.lifetimeRevenue,
         }
       : acc.lifetimeRevenue;
@@ -743,7 +827,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`C${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.units,
         }
       : cat.units;
@@ -753,7 +837,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`D${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.revenue,
         }
       : cat.revenue;
@@ -770,7 +854,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`F${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $G$4="All Channels"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $G$4="${allFilter2}"), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4), IF($G$4="${allFilter2}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $G$4))))`,
           result: cat.grossProfit,
         }
       : cat.grossProfit;
@@ -827,18 +911,18 @@ export async function exportToProfessionalExcel(
   // RIGHT SIDE: SALES CHANNEL TABLE (I60:O67)
   dashSheet.mergeCells('I60:O60');
   const chanBanner = dashSheet.getCell('I60');
-  chanBanner.value = `CHANNEL ${labels.metric1.toUpperCase()} DISTRIBUTION & MIX MATRIX`;
+  chanBanner.value = `${filter2Label.toUpperCase()} ${labels.metric1.toUpperCase()} DISTRIBUTION & MIX MATRIX`;
   chanBanner.font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.pureWhite } };
   chanBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   chanBanner.alignment = { vertical: 'middle', horizontal: 'center' };
   dashSheet.getRow(60).height = 22;
 
   const chanHeaders = [
-    { col: 'I', title: 'Sales Channel', align: 'left' },
+    { col: 'I', title: filter2Label, align: 'left' },
     { col: 'J', title: 'Volume Mix', align: 'right' },
-    { col: 'K', title: `Channel ${labels.metric1}`, align: 'right' },
+    { col: 'K', title: `${filter2Label} ${labels.metric1}`, align: 'right' },
     { col: 'L', title: `Est. ${labels.metric2}`, align: 'right' },
-    { col: 'M', title: 'Channel Margin', align: 'right' },
+    { col: 'M', title: 'Margin %', align: 'right' },
     { col: 'N', title: 'Status', align: 'center' },
     { col: 'O', title: 'Mix Bar', align: 'left' },
   ];
@@ -850,13 +934,6 @@ export async function exportToProfessionalExcel(
     c.alignment = { vertical: 'middle', horizontal: ch.align as any };
   });
   dashSheet.getRow(61).height = 20;
-
-  const channelMixData = [
-    { name: 'Direct Enterprise', share: 0.42, rev: Math.round(kpi.totalRevenue * 0.42), prof: Math.round(kpi.totalGrossProfit * 0.43), status: 'Primary' },
-    { name: 'Partner Ecosystem', share: 0.28, rev: Math.round(kpi.totalRevenue * 0.28), prof: Math.round(kpi.totalGrossProfit * 0.27), status: 'Growing' },
-    { name: 'Inside Sales', share: 0.18, rev: Math.round(kpi.totalRevenue * 0.18), prof: Math.round(kpi.totalGrossProfit * 0.18), status: 'Stable' },
-    { name: 'Online Enterprise', share: 0.12, rev: Math.round(kpi.totalRevenue * 0.12), prof: Math.round(kpi.totalGrossProfit * 0.12), status: 'Automated' },
-  ];
 
   channelMixData.forEach((ch, idx) => {
     const rNum = 62 + idx;
@@ -876,7 +953,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`K${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($G$4<>"All Channels", $G$4<>I${rNum}), 0, IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4)))`,
+          formula: `IF(AND($G$4<>"${allFilter2}", $G$4<>I${rNum}), 0, IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4)))`,
           result: ch.rev,
         }
       : ch.rev;
@@ -886,7 +963,7 @@ export async function exportToProfessionalExcel(
 
     dashSheet.getCell(`L${rNum}`).value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($G$4<>"All Channels", $G$4<>I${rNum}), 0, IF($C$4="All Regions", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4)))`,
+          formula: `IF(AND($G$4<>"${allFilter2}", $G$4<>I${rNum}), 0, IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$L$3:$L$${txRowCount}, I${rNum}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4)))`,
           result: ch.prof,
         }
       : ch.prof;
@@ -981,7 +1058,7 @@ export async function exportToProfessionalExcel(
     {
       type: '⚖️ Margin Optimization',
       headline: `Blended product margin stands at ${(kpi.overallMarginPct * 100).toFixed(1)}%, beating initial corporate budget targets by +2.8 bps.`,
-      analysis: `Discounting remained disciplined across Direct Enterprise channels (averaging <7.5%), preserving net unit economics.`,
+      analysis: `Discounting remained disciplined across ${channelMixData[0]?.name || 'commercial'} channels (averaging <7.5%), preserving net unit economics.`,
     },
     {
       type: '🛡️ Portfolio & Account Health',
@@ -1118,7 +1195,7 @@ export async function exportToProfessionalExcel(
   pivotSheet.getCell('B4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   const pivSlicReg = pivotSheet.getCell('C4');
-  pivSlicReg.value = 'All Regions';
+  pivSlicReg.value = allFilter1;
   pivSlicReg.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: primaryAccentText } };
   pivSlicReg.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryAccentFill } };
   pivSlicReg.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1128,18 +1205,20 @@ export async function exportToProfessionalExcel(
     left: { style: 'thin', color: { argb: COLORS.borderDark } },
     right: { style: 'thin', color: { argb: COLORS.borderDark } },
   };
+  // Unlock filter dropdown so users can interact with pivot analysis even when sheet is password-locked
+  pivSlicReg.protection = { locked: false };
   pivSlicReg.dataValidation = {
     type: 'list',
     allowBlank: false,
     formulae: [regDropdownFormula],
   };
 
-  pivotSheet.getCell('E4').value = 'Channel Filter:';
+  pivotSheet.getCell('E4').value = `${filter2Label}:`;
   pivotSheet.getCell('E4').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: COLORS.slateMuted } };
   pivotSheet.getCell('E4').alignment = { vertical: 'middle', horizontal: 'right' };
 
   const pivSlicChan = pivotSheet.getCell('F4');
-  pivSlicChan.value = 'All Channels';
+  pivSlicChan.value = allFilter2;
   pivSlicChan.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.indigoDark } };
   pivSlicChan.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.indigoLight } };
   pivSlicChan.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1149,15 +1228,17 @@ export async function exportToProfessionalExcel(
     left: { style: 'thin', color: { argb: COLORS.borderDark } },
     right: { style: 'thin', color: { argb: COLORS.borderDark } },
   };
+  // Unlock filter dropdown so users can interact with pivot analysis even when sheet is password-locked
+  pivSlicChan.protection = { locked: false };
   pivSlicChan.dataValidation = {
     type: 'list',
     allowBlank: false,
-    formulae: ['"All Channels,Direct Enterprise,Partner Ecosystem,Inside Sales,Online Enterprise"'],
+    formulae: [chanDropdownFormula],
   };
 
   pivotSheet.mergeCells('H4:R4');
   const pivTip = pivotSheet.getCell('H4');
-  pivTip.value = `💡 Tip: Select C4 (${labels.dimensionLabel}) or F4 (Channel) to filter all Pivot Tables & adjacent Pivot Charts dynamically!`;
+  pivTip.value = `💡 Tip: Select C4 (${filter1Label}) or F4 (${filter2Label}) to filter all Pivot Tables & adjacent Pivot Charts dynamically!`;
   pivTip.font = { name: 'Segoe UI', size: 8.5, italic: true, color: { argb: COLORS.slateMuted } };
   pivTip.alignment = { vertical: 'middle', horizontal: 'left' };
 
@@ -1167,7 +1248,7 @@ export async function exportToProfessionalExcel(
   // -------------------------------------------------------------
   pivotSheet.mergeCells('B5:I5');
   const piv1Banner = pivotSheet.getCell('B5');
-  piv1Banner.value = `PIVOT TABLE 1: ${labels.dimensionLabel.toUpperCase()} BY SALES CHANNEL CROSS-TABULATION MATRIX`;
+  piv1Banner.value = `PIVOT TABLE 1: ${labels.dimensionLabel.toUpperCase()} BY ${filter2Label.toUpperCase()} CROSS-TABULATION MATRIX`;
   piv1Banner.font = { name: 'Segoe UI', size: 9.5, bold: true, color: { argb: COLORS.pureWhite } };
   piv1Banner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: primaryHeaderFill } };
   piv1Banner.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1175,10 +1256,10 @@ export async function exportToProfessionalExcel(
 
   const piv1Headers = [
     { col: 'B', title: labels.dimensionLabel },
-    { col: 'C', title: 'Direct Enterprise' },
-    { col: 'D', title: 'Partner Ecosystem' },
-    { col: 'E', title: 'Inside Sales' },
-    { col: 'F', title: 'Online Enterprise' },
+    { col: 'C', title: channelMixData[0]?.name || 'Channel 1' },
+    { col: 'D', title: channelMixData[1]?.name || 'Channel 2' },
+    { col: 'E', title: channelMixData[2]?.name || 'Channel 3' },
+    { col: 'F', title: channelMixData[3]?.name || 'Channel 4' },
     { col: 'G', title: `Total ${labels.metric1}` },
     { col: 'H', title: `Total ${labels.metric2}` },
     { col: 'I', title: 'Blended Margin' },
@@ -1206,7 +1287,7 @@ export async function exportToProfessionalExcel(
       const cell = pivotSheet.getCell(`${col}${rIdx}`);
       cell.value = config.useLiveExcelFormulas
         ? {
-            formula: `IF(AND($C$4<>"All Regions", $C$4<>$B${rIdx}), 0, IF(AND($F$4<>"All Channels", $F$4<>"${channelName}"), 0, SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, "${channelName}")))`,
+            formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>$B${rIdx}), 0, IF(AND($F$4<>"${allFilter2}", $F$4<>"${channelName}"), 0, SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, "${channelName}")))`,
           }
         : Math.round(r.actualRevenue * [0.42, 0.28, 0.18, 0.12][cIdx]);
       cell.numFmt = '$#,##0';
@@ -1223,7 +1304,7 @@ export async function exportToProfessionalExcel(
     const totProfCell = pivotSheet.getCell(`H${rIdx}`);
     totProfCell.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4<>"All Regions", $C$4<>$B${rIdx}), 0, IF($F$4="All Channels", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4)))`,
+          formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>$B${rIdx}), 0, IF($F$4="${allFilter2}", SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}), SUMIFS('Sales Transactions'!$V$3:$V$${txRowCount}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4)))`,
         }
       : r.actualProfit;
     totProfCell.numFmt = '$#,##0';
@@ -1279,10 +1360,10 @@ export async function exportToProfessionalExcel(
 
   const piv2Headers = [
     { col: 'B', title: labels.categoryLabel },
-    { col: 'C', title: 'North America' },
-    { col: 'D', title: 'EMEA' },
-    { col: 'E', title: 'APAC' },
-    { col: 'F', title: 'LATAM' },
+    { col: 'C', title: regionalPerformance[0]?.region || 'Region 1' },
+    { col: 'D', title: regionalPerformance[1]?.region || 'Region 2' },
+    { col: 'E', title: regionalPerformance[2]?.region || 'Region 3' },
+    { col: 'F', title: regionalPerformance[3]?.region || 'Region 4' },
     { col: 'G', title: `Total ${labels.metric1}` },
     { col: 'H', title: `Total ${labels.metric4}` },
     { col: 'I', title: `${labels.metric3.replace(/%/g, '').trim()} %` },
@@ -1306,11 +1387,11 @@ export async function exportToProfessionalExcel(
     pivotSheet.getCell(`B${rIdx}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
 
     ['C', 'D', 'E', 'F'].forEach((col, cIdx) => {
-      const regName = regionalPerformance[cIdx]?.region || 'North America';
+      const regName = piv2Headers[cIdx + 1].title;
       const cell = pivotSheet.getCell(`${col}${rIdx}`);
       cell.value = config.useLiveExcelFormulas
         ? {
-            formula: `IF(AND($C$4<>"All Regions", $C$4<>"${regName}"), 0, IF($F$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, "${regName}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, "${regName}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4)))`,
+            formula: `IF(AND($C$4<>"${allFilter1}", $C$4<>"${regName}"), 0, IF($F$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, "${regName}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, "${regName}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4)))`,
           }
         : Math.round(cat.revenue * 0.25);
       cell.numFmt = '$#,##0';
@@ -1327,7 +1408,7 @@ export async function exportToProfessionalExcel(
     const uC = pivotSheet.getCell(`H${rIdx}`);
     uC.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $F$4="${allFilter2}"), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="${allFilter2}", SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, $B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$R$3:$R$${txRowCount}, 'Sales Transactions'!$O$3:$O$${txRowCount}, B${rIdx}, 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
         }
       : cat.units;
     uC.numFmt = '#,##0';
@@ -1418,7 +1499,7 @@ export async function exportToProfessionalExcel(
     const qRev = pivotSheet.getCell(`C${rIdx}`);
     qRev.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $F$4="${allFilter2}"), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="${allFilter2}", SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$T$3:$T$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
         }
       : Math.round(kpi.totalRevenue * 0.25);
     qRev.numFmt = '$#,##0';
@@ -1428,7 +1509,7 @@ export async function exportToProfessionalExcel(
     const qCogs = pivotSheet.getCell(`D${rIdx}`);
     qCogs.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="All Regions", SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $F$4="${allFilter2}"), SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="${allFilter1}", SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="${allFilter2}", SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), SUMIFS('Sales Transactions'!$U$3:$U$${txRowCount}, 'Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
         }
       : Math.round(kpi.totalCogs * 0.25);
     qCogs.numFmt = '$#,##0';
@@ -1450,7 +1531,7 @@ export async function exportToProfessionalExcel(
     const qDeals = pivotSheet.getCell(`G${rIdx}`);
     qDeals.value = config.useLiveExcelFormulas
       ? {
-          formula: `IF(AND($C$4="All Regions", $F$4="All Channels"), COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="All Regions", COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="All Channels", COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
+          formula: `IF(AND($C$4="${allFilter1}", $F$4="${allFilter2}"), COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}"), IF($C$4="${allFilter1}", COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4), IF($F$4="${allFilter2}", COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4), COUNTIFS('Sales Transactions'!$C$3:$C$${txRowCount}, "${q}", 'Sales Transactions'!$H$3:$H$${txRowCount}, $C$4, 'Sales Transactions'!$L$3:$L$${txRowCount}, $F$4))))`,
         }
       : Math.round(kpi.orderCount * 0.25);
     qDeals.numFmt = '#,##0';
@@ -1607,10 +1688,23 @@ export async function exportToProfessionalExcel(
     to: { row: 2, column: txColumnsDef.length },
   };
 
+  const txFontNormal: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 9 };
+  const txFontBold: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 9, bold: true };
+  const txBorderBottom: Partial<ExcelJS.Borders> = {
+    bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
+  };
+  const txFillWhite: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pureWhite } };
+  const txFillZebra: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.zebraLight } };
+  const isColBold = txColumnsDef.map((col) => ['id', 'customerName', 'revenue', 'grossProfit'].includes(col.key));
+  const colAlignments: Partial<ExcelJS.Alignment>[] = txColumnsDef.map((col) => ({
+    vertical: 'middle',
+    horizontal: col.align as any,
+  }));
+
   transactions.forEach((tx, idx) => {
     const rowNum = 3 + idx;
     const isEven = idx % 2 === 0;
-    const bgFill = isEven ? COLORS.pureWhite : COLORS.zebraLight;
+    const bgFill = isEven ? txFillWhite : txFillZebra;
 
     const revVal = config.useLiveExcelFormulas
       ? { formula: `R${rowNum}*Q${rowNum}*(1-S${rowNum})`, result: tx.revenue }
@@ -1625,55 +1719,45 @@ export async function exportToProfessionalExcel(
       ? { formula: `V${rowNum}/T${rowNum}`, result: tx.marginPct }
       : tx.marginPct;
 
-    const row = txSheet.addRow({
-      id: tx.id,
-      orderDate: tx.orderDate,
-      quarter: tx.quarter,
-      customerId: tx.customerId,
-      customerName: tx.customerName,
-      customerTier: tx.customerTier,
-      industry: tx.industry,
-      region: tx.region,
-      country: tx.country,
-      city: tx.city,
-      salesRep: tx.salesRep,
-      salesChannel: tx.salesChannel,
-      sku: tx.sku,
-      productName: tx.productName,
-      productCategory: tx.productCategory,
-      unitCost: tx.unitCost,
-      unitPrice: tx.unitPrice,
-      quantity: tx.quantity,
-      discountPct: tx.discountPct,
-      revenue: revVal,
-      cogs: cogsVal,
-      grossProfit: profitVal,
-      marginPct: marginVal,
-      paymentTerms: tx.paymentTerms,
-      status: tx.status,
-    });
+    const row = txSheet.addRow([
+      tx.id,
+      tx.orderDate,
+      tx.quarter,
+      tx.customerId,
+      tx.customerName,
+      tx.customerTier,
+      tx.industry,
+      tx.region,
+      tx.country,
+      tx.city,
+      tx.salesRep,
+      tx.salesChannel,
+      tx.sku,
+      tx.productName,
+      tx.productCategory,
+      tx.unitCost,
+      tx.unitPrice,
+      tx.quantity,
+      tx.discountPct,
+      revVal,
+      cogsVal,
+      profitVal,
+      marginVal,
+      tx.paymentTerms,
+      tx.status,
+    ]);
 
     row.height = 19;
 
-    row.eachCell((cell, colNumber) => {
-      const colDef = txColumnsDef[colNumber - 1];
-      cell.font = { name: 'Segoe UI', size: 9 };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgFill } };
-      cell.border = {
-        bottom: { style: 'thin', color: { argb: COLORS.borderGray } },
-      };
-
-      if (colDef) {
-        if (colDef.numFmt) cell.numFmt = colDef.numFmt;
-        cell.alignment = {
-          vertical: 'middle',
-          horizontal: colDef.align as any,
-        };
-        if (['id', 'customerName', 'revenue', 'grossProfit'].includes(colDef.key)) {
-          cell.font = { name: 'Segoe UI', size: 9, bold: true };
-        }
-      }
-    });
+    for (let c = 1; c <= 25; c++) {
+      const cell = row.getCell(c);
+      const colDef = txColumnsDef[c - 1];
+      cell.font = isColBold[c - 1] ? txFontBold : txFontNormal;
+      cell.fill = bgFill;
+      cell.border = txBorderBottom;
+      if (colDef?.numFmt) cell.numFmt = colDef.numFmt;
+      cell.alignment = colAlignments[c - 1];
+    }
   });
 
   const txTotalRowNum = transactions.length + 3;
@@ -1882,51 +1966,62 @@ export async function exportToProfessionalExcel(
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.slateHeader } };
   });
 
-  customerAccounts.forEach((a, idx) => {
-    const bg = idx % 2 === 0 ? COLORS.pureWhite : COLORS.zebraLight;
+  const custFontNormal: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 9 };
+  const custFontHealthOptimal: Partial<ExcelJS.Font> = {
+    name: 'Segoe UI',
+    size: 9,
+    bold: true,
+    color: { argb: COLORS.emeraldDark },
+  };
+  const custFontHealthWarning: Partial<ExcelJS.Font> = {
+    name: 'Segoe UI',
+    size: 9,
+    bold: true,
+    color: { argb: COLORS.amberDark },
+  };
+  const custBorderBottom: Partial<ExcelJS.Borders> = { bottom: { style: 'thin', color: { argb: COLORS.borderGray } } };
 
-    const row = custSheet.addRow({
-      id: a.customerId,
-      name: a.customerName,
-      tier: a.tier,
-      industry: a.industry,
-      country: a.country,
-      rep: a.accountExecutive,
-      orders: a.totalOrders,
-      revenue: a.lifetimeRevenue,
-      profit: a.lifetimeProfit,
-      health: a.accountHealth,
-      renewal: a.contractRenewal,
-    });
+  customerAccounts.forEach((a, idx) => {
+    const bgFill = idx % 2 === 0 ? txFillWhite : txFillZebra;
+
+    const row = custSheet.addRow([
+      a.customerId,
+      a.customerName,
+      a.tier,
+      a.industry,
+      a.country,
+      a.accountExecutive,
+      a.totalOrders,
+      a.lifetimeRevenue,
+      a.lifetimeProfit,
+      a.accountHealth,
+      a.contractRenewal,
+    ]);
     row.height = 20;
 
-    row.eachCell((c, colNum) => {
-      c.font = { name: 'Segoe UI', size: 9 };
-      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
-      c.border = { bottom: { style: 'thin', color: { argb: COLORS.borderGray } } };
-
-      if ([7].includes(colNum)) c.numFmt = '#,##0';
-      if ([8, 9].includes(colNum)) c.numFmt = '$#,##0';
-
-      if (colNum === 10) {
-        c.font = {
-          name: 'Segoe UI',
-          size: 9,
-          bold: true,
-          color: { argb: a.accountHealth === 'Optimal' ? COLORS.emeraldDark : COLORS.amberDark },
-        };
+    for (let c = 1; c <= 11; c++) {
+      const cell = row.getCell(c);
+      cell.fill = bgFill;
+      cell.border = custBorderBottom;
+      if (c === 7) cell.numFmt = '#,##0';
+      if (c === 8 || c === 9) cell.numFmt = '$#,##0';
+      if (c === 10) {
+        cell.font = a.accountHealth === 'Optimal' ? custFontHealthOptimal : custFontHealthWarning;
+      } else {
+        cell.font = custFontNormal;
       }
-    });
+    }
   });
 
   // Protect worksheets unless user has unlocked unprotected Pro mode
   if (!options?.unprotected) {
-    for (const sheet of workbook.worksheets) {
-      sheet.views = sheet.views.length
-        ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+    const firstSheet = workbook.worksheets[0];
+    if (firstSheet) {
+      firstSheet.views = firstSheet.views.length
+        ? firstSheet.views.map(view => ({ ...view, showGridLines: false }))
         : [{ showGridLines: false }];
 
-      await sheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
+      await firstSheet.protect(WORKBOOK_PROTECTION_PASSWORD, {
         selectLockedCells: false, // Locked cells cannot be selected or copied; only unlocked filter cells can be selected
         selectUnlockedCells: true,
         formatCells: false,
@@ -1941,6 +2036,17 @@ export async function exportToProfessionalExcel(
         autoFilter: true,
         pivotTables: true,
       });
+
+      // Share computed cryptographically secure SHA-512 protection metadata across all sheets
+      const protConfig = { ...(firstSheet as any).sheetProtection };
+
+      for (let sIdx = 1; sIdx < workbook.worksheets.length; sIdx++) {
+        const sheet = workbook.worksheets[sIdx];
+        sheet.views = sheet.views.length
+          ? sheet.views.map(view => ({ ...view, showGridLines: false }))
+          : [{ showGridLines: false }];
+        (sheet as any).sheetProtection = { ...protConfig };
+      }
     }
   } else {
     for (const sheet of workbook.worksheets) {
@@ -1951,7 +2057,7 @@ export async function exportToProfessionalExcel(
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
-  
+
   // Inject 100% REAL NATIVE OPENXML EXCEL CHARTS (Pie Chart, Horizontal Bar Chart, Column Run-rate Chart)
   // No image conversion - these are authentic interactive Excel chart objects!
   const blob = await injectNativeExcelCharts(buffer as ArrayBuffer, datasetData, { unprotected: options?.unprotected });

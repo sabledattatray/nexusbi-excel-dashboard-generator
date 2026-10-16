@@ -191,13 +191,13 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           {/* Channel Slicer */}
           <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs">
             <Layers className="w-3.5 h-3.5 text-amber-700" />
-            <span className="text-slate-500 text-[11px]">Channel:</span>
+            <span className="text-slate-500 text-[11px]">{labels.channelLabel || 'Channel'}:</span>
             <select
               value={selectedChannel}
               onChange={(e) => setSelectedChannel(e.target.value)}
               className="bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
             >
-              <option value="ALL">All Channels</option>
+              <option value="ALL">All {labels.channelLabel ? `${labels.channelLabel}s` : 'Channels'}</option>
               {availableChannels.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}

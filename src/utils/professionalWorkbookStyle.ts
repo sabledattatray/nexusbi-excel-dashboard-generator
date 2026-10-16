@@ -19,6 +19,8 @@ export function applyProfessionalStyle(workbook:ExcelJS.Workbook,data:AppDataset
   }));
  }
  const dash=workbook.getWorksheet('Executive Dashboard')!;
+ const allFilter1 = String(dash.getCell('C4').value || 'All Regions');
+ const allFilter2 = String(dash.getCell('G4').value || 'All Channels');
  dash.getCell('B2').value=`${config.companyName.toUpperCase()} — ${spec.title.toUpperCase()}`;
  dash.getCell('B3').value=`${spec.subtitle}  |  ${data.transactions.length.toLocaleString()} source orders  |  Sample commercial data`;
  dash.getCell('B3').font={name:'Aptos',size:9,color:{argb:'FFFFFFFF'}};
@@ -38,7 +40,7 @@ export function applyProfessionalStyle(workbook:ExcelJS.Workbook,data:AppDataset
   if(chart.kind==='scatter') {
    dash.getCell(1,labelCol.number).value=chart.x!;dash.getCell(1,valueCol.number).value=chart.secondary!;
    data.transactions.forEach((tx,j)=>{
-    const row=j+3,condition=`AND(OR($C$4="All Regions",'Sales Transactions'!H${row}=$C$4),OR($G$4="All Channels",'Sales Transactions'!L${row}=$G$4))`;
+    const row=j+3,condition=`AND(OR($C$4="${allFilter1}",'Sales Transactions'!H${row}=$C$4),OR($G$4="${allFilter2}",'Sales Transactions'!L${row}=$G$4))`;
     const values=[Number(data.rawRows![j][chart.x!]),Number(data.rawRows![j][chart.secondary!])];
     [labelCol,valueCol].forEach((col,k)=>{dash.getCell(j+2,col.number).value=config.useLiveExcelFormulas?{formula:`IF(${condition},'Sales Transactions'!${sourceColumns[k===0?chart.x!:chart.secondary!]}${row},NA())`,result:values[k]}:values[k];});
    });return;
@@ -48,7 +50,7 @@ export function applyProfessionalStyle(workbook:ExcelJS.Workbook,data:AppDataset
   groups.forEach((point,j)=>{
    const row=j+2,labelAddress=`$${labelCol.letter}$${row}`;dash.getCell(row,labelCol.number).value=point.label;
    const base=chart.dimension===spec.date?`${range('Order Date')},${labelAddress}&"*"`:`${range(chart.dimension)},${labelAddress}`;
-   const criteria=`${base},${range('Global Region')},IF($C$4="All Regions","*",$C$4),${range('Sales Channel')},IF($G$4="All Channels","*",$G$4)`;
+   const criteria=`${base},${range('Global Region')},IF($C$4="${allFilter1}","*",$C$4),${range('Sales Channel')},IF($G$4="${allFilter2}","*",$G$4)`;
    const sum=(field:string)=>`SUMIFS(${range(field)},${criteria})`,matches=`COUNTIFS(${criteria})`;
    const m=chart.metric;
    const formula=m.operation==='count'?matches:m.operation==='ratio'?`IF(${sum(m.denominator!)}=0,0,${sum(m.field!)}/${sum(m.denominator!)})`:m.operation==='average'?`IF(${matches}=0,0,${sum(m.field!)}/${matches})`:sum(m.field!);

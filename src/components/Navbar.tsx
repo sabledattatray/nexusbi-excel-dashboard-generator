@@ -215,11 +215,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               onOpenCustomizer();
               setIsMobileMenuOpen(false);
             }}
-            title="Browse 12 ready-to-use industry dashboard templates"
+            title="Browse 32 ready-to-use industry dashboard templates"
           >
             <LayoutTemplate size={14.5} />
             <span className="truncate">Ready Templates</span>
-            <span className="nav-badge">12 Ready</span>
+            <span className="nav-badge">32 Ready</span>
           </button>
           <a
             href="https://fabric.dattasable.com/"

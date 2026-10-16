@@ -63,8 +63,8 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
               <LayoutTemplate className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">12 Ready Dashboard Templates</h2>
-              <p className="text-xs text-slate-500">Pick from 12 pre-built industry dashboard models with live formulas, or customize company branding.</p>
+              <h2 className="text-base font-bold text-slate-900">32 Ready Dashboard Templates</h2>
+              <p className="text-xs text-slate-500">Pick from 32 pre-built industry dashboard models with live formulas, or customize company branding.</p>
             </div>
           </div>
           <button
@@ -80,7 +80,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           {/* Industry Preset */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
-              Select from 12 Ready Industry Templates
+              Select from 32 Ready Industry Templates
             </label>
             <div className="grid grid-cols-1 gap-2">
               {(Object.keys(INDUSTRY_PRESETS) as IndustryType[]).map((indKey) => {

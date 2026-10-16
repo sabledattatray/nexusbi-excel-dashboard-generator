@@ -542,8 +542,10 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                         {schema.columns.map((col) => {
                           const isPrimaryMetric = mapping.primaryMetricCol === col.name;
                           const isSecondaryMetric = mapping.secondaryMetricCol === col.name;
+                          const isVolume = mapping.volumeMetricCol === col.name;
                           const isCategory = mapping.primaryCategoryCol === col.name;
                           const isDimension = mapping.secondaryCategoryCol === col.name;
+                          const isChannel = mapping.channelCol === col.name;
                           const isDate = mapping.dateCol === col.name;
                           const isEntity = mapping.entityCol === col.name;
 
@@ -554,6 +556,16 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                                 {isPrimaryMetric && (
                                   <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-800 font-sans">
                                     Primary Value
+                                  </span>
+                                )}
+                                {isDimension && (
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-800 font-sans">
+                                    Filter 1
+                                  </span>
+                                )}
+                                {isChannel && (
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-800 font-sans">
+                                    Filter 2
                                   </span>
                                 )}
                               </td>
@@ -571,10 +583,14 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                                       ? 'primaryMetric'
                                       : isSecondaryMetric
                                       ? 'secondaryMetric'
+                                      : isVolume
+                                      ? 'volumeMetric'
                                       : isCategory
                                       ? 'primaryCategory'
                                       : isDimension
                                       ? 'secondaryCategory'
+                                      : isChannel
+                                      ? 'channel'
                                       : isDate
                                       ? 'date'
                                       : isEntity
@@ -583,10 +599,21 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                                   }
                                   onChange={(e) => {
                                     const role = e.target.value;
-                                    const roles: Record<string, keyof ColumnMapping> = { primaryMetric: 'primaryMetricCol', secondaryMetric: 'secondaryMetricCol', primaryCategory: 'primaryCategoryCol', secondaryCategory: 'secondaryCategoryCol', date: 'dateCol', entity: 'entityCol' };
-                                    setMapping(prev => {
+                                    const roles: Record<string, keyof ColumnMapping> = {
+                                      primaryMetric: 'primaryMetricCol',
+                                      secondaryMetric: 'secondaryMetricCol',
+                                      volumeMetric: 'volumeMetricCol',
+                                      primaryCategory: 'primaryCategoryCol',
+                                      secondaryCategory: 'secondaryCategoryCol',
+                                      channel: 'channelCol',
+                                      date: 'dateCol',
+                                      entity: 'entityCol',
+                                    };
+                                    setMapping((prev) => {
                                       const next = { ...prev };
-                                      for (const key of Object.values(roles)) if (next[key] === col.name) next[key] = undefined;
+                                      for (const key of Object.values(roles)) {
+                                        if (next[key] === col.name) next[key] = undefined;
+                                      }
                                       if (roles[role]) next[roles[role]] = col.name;
                                       return next;
                                     });
@@ -596,8 +623,10 @@ export const DataUploadModal: React.FC<DataUploadModalProps> = ({
                                   <option value="__DEFAULT__">No assigned role</option>
                                   <option value="primaryMetric">Core Metric (Primary Value)</option>
                                   <option value="secondaryMetric">Secondary Numeric Measure</option>
+                                  <option value="volumeMetric">Volume / Quantity / Units</option>
                                   <option value="primaryCategory">Primary Category (Breakdowns)</option>
-                                  <option value="secondaryCategory">Secondary Category</option>
+                                  <option value="secondaryCategory">Filter 1 / Region / State / Territory</option>
+                                  <option value="channel">Filter 2 / Channel / City / Zone / Store</option>
                                   <option value="date">Time / Date (Monthly Trend)</option>
                                   <option value="entity">Entity / Account Name</option>
                                 </select>

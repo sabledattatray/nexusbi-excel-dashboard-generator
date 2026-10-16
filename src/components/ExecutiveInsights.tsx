@@ -98,7 +98,7 @@ export const ExecutiveInsights: React.FC<ExecutiveInsightsProps> = ({
               </span>
             </div>
             <h4 className="text-sm font-bold text-slate-900 mb-1.5">
-              {topRegion?.region || 'North America'} Theater
+              {topRegion?.region ? `${topRegion.region} Territory` : 'Primary Territory'}
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed">
               Under leadership of <strong>{topRegion?.regionalDirector || 'Victoria Sterling'}</strong>, bookings reached{' '}
