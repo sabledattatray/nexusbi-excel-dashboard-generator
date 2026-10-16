@@ -370,7 +370,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="primary-button"
             onClick={onDownloadExcel}
             disabled={isDownloading}
-            title="Download Full Unprotected Excel Dashboard (.xlsx)"
+            title="Download Executive Excel Dashboard (.xlsx)"
           >
             <Download size={14} />
             <span className="hidden sm:inline">

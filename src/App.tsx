@@ -178,8 +178,8 @@ export default function App() {
       let blob: Blob;
       let filename: string;
 
-      // Free access period: all downloads are 100% unprotected & editable
-      const shouldBeUnprotected = true;
+      // Completely lock and password-protect the downloaded workbook
+      const shouldBeUnprotected = false;
 
       if (customImportResult) {
         const { exportAdaptiveExcel } = await import('./utils/adaptiveExcelExporter');

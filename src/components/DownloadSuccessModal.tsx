@@ -8,7 +8,7 @@ import {
   Sparkles,
   BarChart,
   Table,
-  Unlock,
+  Lock,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -101,11 +101,11 @@ export const DownloadSuccessModal: React.FC<DownloadSuccessModalProps> = ({
             </div>
           </div>
 
-          {/* Unlocked File Banner */}
+          {/* Protected File Banner */}
           <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 flex items-start gap-3 text-emerald-950">
-            <Unlock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <Lock className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong className="font-semibold text-emerald-900">100% Free &amp; Fully Unlocked:</strong> All worksheets, formula cells, and chart objects are completely unlocked with zero password restrictions. You can freely edit formulas, modify charts, and customize for your needs.
+              <strong className="font-semibold text-emerald-900">Protected Excel Workbook:</strong> Worksheets, charts, and formula cells are locked with password protection to preserve executive layout and formula integrity. Slicers and filter dropdowns remain interactive.
             </div>
           </div>
 
