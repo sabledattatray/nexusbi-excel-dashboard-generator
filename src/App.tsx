@@ -34,7 +34,6 @@ const AdaptiveDashboard = lazy(() => import('./components/AdaptiveDashboard').th
 const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((m) => ({ default: m.CustomizerModal })));
 const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
-const ProUnlockModal = lazy(() => import('./components/ProUnlockModal').then((m) => ({ default: m.ProUnlockModal })));
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
 import { LegalTab } from './components/LegalModal';
 import { trackEvent, trackPageView } from './utils/analytics';
@@ -117,7 +116,6 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
-  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
   const [isLegalOpen, setIsLegalOpen] = useState(initialRoute.isLegalOpen);
   const [legalTab, setLegalTab] = useState<LegalTab>(initialRoute.legalTab);
   const [isProUser, setIsProUser] = useState<boolean>(false);
@@ -174,21 +172,13 @@ export default function App() {
   useEffect(() => { setAnalysisSelection(initialSelection(dataset)); }, [dataset]);
 
   // Handle Download Excel with dynamic chunk import to keep initial bundle tiny
-  const handleDownloadExcel = useCallback(async (unprotectedOverride?: boolean) => {
-    // Paywall all downloads: if user is not unlocked, open payment QR modal immediately!
-    const unlocked = isProUnlocked();
-    if (!unlocked && !unprotectedOverride) {
-      trackEvent('download_blocked_paywall', { industry: config.industry, company: config.companyName });
-      setIsUnlockModalOpen(true);
-      return;
-    }
-
+  const handleDownloadExcel = useCallback(async () => {
     try {
       setIsDownloading(true);
       let blob: Blob;
       let filename: string;
 
-      // All verified paid / VIP downloads are 100% unprotected & editable
+      // Free access period: all downloads are 100% unprotected & editable
       const shouldBeUnprotected = true;
 
       if (customImportResult) {
@@ -316,8 +306,6 @@ export default function App() {
         isCustomDataActive={!!customImportResult}
         isSidebarVisible={isSidebarVisible}
         onToggleSidebar={() => setIsSidebarVisible((prev) => !prev)}
-        isProUnlocked={isProUser}
-        onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -339,8 +327,6 @@ export default function App() {
               setActiveTab('dashboard');
             }}
             currentIndustry={config.industry}
-            isProUnlocked={isProUser}
-            onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
           />
         ) : (
           <Suspense fallback={<WorkspaceLoader />}>
@@ -443,31 +429,12 @@ export default function App() {
         {isSuccessOpen && (
           <DownloadSuccessModal
             isOpen={isSuccessOpen}
-            onClose={() => {
-              setIsSuccessOpen(false);
-              setIsProUser(isProUnlocked());
-            }}
+            onClose={() => setIsSuccessOpen(false)}
             filename={lastDownloadedFilename}
             rowCount={config.recordCount}
-            onReDownload={() => handleDownloadExcel(isProUnlocked())}
+            onReDownload={handleDownloadExcel}
             sourceBased={!!customImportResult}
-            isProUnlocked={isProUser}
-            onOpenUnlockModal={() => setIsUnlockModalOpen(true)}
-          />
-        )}
-
-        {isUnlockModalOpen && (
-          <ProUnlockModal
-            isOpen={isUnlockModalOpen}
-            onClose={() => {
-              setIsUnlockModalOpen(false);
-              setIsProUser(isProUnlocked());
-            }}
-            onUnlockSuccess={() => {
-              setIsProUser(true);
-              setIsUnlockModalOpen(false);
-              handleDownloadExcel(true);
-            }}
+            isProUnlocked={true}
           />
         )}
 

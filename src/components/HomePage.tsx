@@ -172,7 +172,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     },
     {
       q: 'Can I download 100% editable and unprotected Excel files?',
-      a: 'Yes. You can unlock fully unprotected and unrestricted .xlsx downloads starting from ₹9 for a single workbook pass, or ₹49 for unlimited lifetime access across all 12 templates and custom file uploads via UPI QR code.',
+      a: 'Yes. All Excel (.xlsx) dashboard downloads are 100% free, fully unprotected, and unrestricted. You can download all 12 ready industry templates and custom file uploads with complete formula and chart editing freedom with zero payment required.',
     },
     {
       q: 'Is my company data private and secure?',
@@ -253,26 +253,15 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span>Import CSV / Excel</span>
             </button>
 
-            {!isProUnlocked ? (
-              <button
-                onClick={onOpenUnlockModal}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-950/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all w-full sm:w-auto cursor-pointer"
-                title="Get Excel Dashboard (.xlsx) — ₹9 Single File / ₹49 Lifetime Unlimited"
-              >
-                <Download size={17} className="stroke-[2.5]" />
-                <span>Get Excel (.xlsx) — ₹9 / ₹49</span>
-              </button>
-            ) : (
-              <button
-                onClick={onDownloadExcel}
-                disabled={isDownloading}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-sm font-bold shadow-lg hover:-translate-y-0.5 active:scale-[0.98] transition-all w-full sm:w-auto cursor-pointer"
-                title="Download 100% Unprotected & Editable Excel Dashboard"
-              >
-                <Unlock size={17} />
-                <span>{isDownloading ? 'Compiling…' : 'Download Unprotected Excel'}</span>
-              </button>
-            )}
+            <button
+              onClick={onDownloadExcel}
+              disabled={isDownloading}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-sm font-extrabold shadow-lg shadow-emerald-950/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all w-full sm:w-auto cursor-pointer"
+              title="Download Free Unprotected & Editable Excel Dashboard (.xlsx)"
+            >
+              <Download size={17} className="stroke-[2.5]" />
+              <span>{isDownloading ? 'Compiling Dashboard…' : 'Download Excel Dashboard'}</span>
+            </button>
           </div>
 
           {/* Quick Trust Checks */}

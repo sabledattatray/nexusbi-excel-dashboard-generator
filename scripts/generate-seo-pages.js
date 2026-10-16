@@ -82,7 +82,7 @@ const pages = [
   {
     slug: 'terms',
     title: 'Terms of Service | excel.dattasable.com — Commercial & License Terms',
-    description: 'Read the official Terms of Service for excel.dattasable.com governing commercial workbook usage, single-file downloads, and Lifetime VIP access.',
+    description: 'Read the official Terms of Service for excel.dattasable.com governing commercial workbook usage, permissions, and licensing terms.',
     canonical: 'https://excel.dattasable.com/terms',
     h1: 'Terms of Service – Commercial Licensing & Usage Rights',
     metaHeading: 'Terms of Service',
@@ -90,9 +90,9 @@ const pages = [
   {
     slug: 'refund-policy',
     title: 'Refund & Cancellation Policy | excel.dattasable.com',
-    description: 'Official refund and cancellation policy for digital Excel downloads, duplicate payment resolution, and VIP license purchases at excel.dattasable.com.',
+    description: 'Official refund and cancellation policy for digital Excel downloads and user assistance at excel.dattasable.com.',
     canonical: 'https://excel.dattasable.com/refund-policy',
-    h1: 'Refund & Cancellation Policy – Digital Products & UPI Payments',
+    h1: 'Refund & Cancellation Policy – Digital Products & User Support',
     metaHeading: 'Refund & Cancellation Policy',
   },
   {

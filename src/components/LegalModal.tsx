@@ -246,10 +246,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
                   <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
                     <Award size={16} />
-                    <span>ACCESSIBLE &amp; FAIR PRICING</span>
+                    <span>100% FREE ACCESS</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Free live interactive analytics for everyone. Single unlocked Excel downloads for ₹9, or Lifetime Unlimited VIP access for ₹49 via instant UPI QR payment.
+                    Free live interactive analytics and unrestricted full Excel workbook downloads for all users. Zero payment method required.
                   </p>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   2. Payment &amp; Transaction Information
                 </h3>
                 <p>
-                  Payments for single unlocked Excel workbooks (₹9) or Lifetime VIP access (₹49) are conducted peer-to-peer via official Unified Payments Interface (UPI) banking rails in India. The application does not collect or store sensitive banking credentials, debit card PINs, or card CVVs. License activation keys are held securely in your device's browser <code>localStorage</code> for verification.
+                  The platform currently provides free access to all interactive dashboards and downloadable Excel workbooks without requiring any payment method or credit card details. The application executes client-side inside your browser sandbox.
                 </p>
               </section>
 
@@ -334,8 +334,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   We do not use invasive third-party advertising cookies. We use browser <code>localStorage</code> exclusively to save:
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-slate-600">
-                  <li>Your VIP license key or download credits status</li>
                   <li>Workspace UI preferences (e.g., active view, formula visibility)</li>
+                  <li>Local session configuration</li>
                 </ul>
               </section>
 
@@ -367,7 +367,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   2. Permitted Commercial and Personal License
                 </h3>
                 <p>
-                  When you download an unlocked Microsoft Excel workbook (.xlsx) via a Single File License (₹9) or Lifetime VIP License (₹49), you are granted a non-exclusive, perpetual, royalty-free commercial license to:
+                  When you download a Microsoft Excel workbook (.xlsx) from excel.dattasable.com, you are granted a non-exclusive, perpetual, royalty-free commercial license to:
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-slate-600">
                   <li>Edit, modify, re-brand, and extend the generated Excel spreadsheets and formulas.</li>
@@ -464,9 +464,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-1.5">
-                  <span className="text-[10px] font-mono uppercase text-emerald-800 font-semibold">Official UPI VPA</span>
-                  <h4 className="text-sm font-bold text-slate-900 font-mono">8010803756@upi</h4>
-                  <p className="text-xs text-slate-600">Verified Payee: Datta Sable</p>
+                  <span className="text-[10px] font-mono uppercase text-emerald-800 font-semibold">Support Desk</span>
+                  <h4 className="text-sm font-bold text-slate-900">Direct Support</h4>
+                  <p className="text-xs text-slate-600">WhatsApp &amp; Email Support</p>
                 </div>
               </div>
 

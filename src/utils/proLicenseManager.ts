@@ -175,12 +175,12 @@ export function getProLicense(): ProLicense {
 }
 
 export function isProUnlocked(): boolean {
-  const license = getProLicense();
-  return license.isLifetime || license.singleCredits > 0;
+  // Payment temporarily removed: all users have full free access
+  return true;
 }
 
 export function isLifetimeUnlocked(): boolean {
-  return getProLicense().isLifetime;
+  return true;
 }
 
 export function getSingleCreditsRemaining(): number {
@@ -192,21 +192,7 @@ export function getSingleCreditsRemaining(): number {
  * Lifetime users and VIP pass holders have infinite downloads with zero deductions.
  */
 export function consumeDownloadCredit(): boolean {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  const current = getProLicense();
-  if (current.isLifetime || current.method === 'vip_pass' || isVipPasscode(current.refId)) {
-    return true; // Infinite downloads, zero deductions
-  }
-  if (current.singleCredits > 0) {
-    const updated: ProLicense = {
-      ...current,
-      singleCredits: current.singleCredits - 1,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    dispatchLicenseChangedEvent();
-    return true;
-  }
-  return false;
+  return true; // Infinite free downloads while payment is removed
 }
 
 export function unlockProLicense(
