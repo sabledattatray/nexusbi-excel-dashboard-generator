@@ -278,12 +278,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => handleSelectView('home')}
-            className="hover:text-emerald-700 transition-colors font-mono font-medium text-left truncate max-w-[120px] sm:max-w-none"
+            className="text-slate-800 hover:text-emerald-700 transition-colors font-mono font-semibold text-left truncate max-w-[120px] sm:max-w-none"
+            aria-label="excel.dattasable.com Home"
           >
             excel.dattasable.com
           </button>
-          <ChevronRight size={13} className="shrink-0 text-slate-400" />
-          <strong className="truncate">{views.find((v) => v.id === activeTab)?.label}</strong>
+          <ChevronRight size={13} className="shrink-0 text-slate-500" />
+          <strong className="truncate text-slate-900 font-semibold">{views.find((v) => v.id === activeTab)?.label}</strong>
         </div>
 
         <div className="topbar-actions shrink-0">
@@ -292,12 +293,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://fabric.dattasable.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center gap-1.5 text-xs text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-1 rounded-full font-medium transition-colors"
+            className="hidden md:inline-flex items-center gap-1.5 text-xs text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-300 px-2.5 py-1 rounded-full font-medium transition-colors"
             title="Explore Fabric Master — Microsoft Fabric Architecture & FinOps Platform"
+            aria-label="Explore Fabric Master Platform"
           >
-            <Cpu size={13} className="text-sky-600" />
+            <Cpu size={13} className="text-sky-700" />
             <span>fabric.dattasable.com</span>
-            <ArrowUpRight size={11} className="text-sky-500" />
+            <ArrowUpRight size={11} className="text-sky-600" />
           </a>
 
           {/* Portfolio Link */}
@@ -305,12 +307,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://dattasable.com/dashboards"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1 rounded-full font-medium transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-full font-medium transition-colors"
             title="Explore Datta Sable's Business Intelligence Dashboards Portfolio"
+            aria-label="Datta Sable Business Intelligence Dashboards Portfolio"
           >
-            <Globe size={13} />
-            <span>dattasable.com</span>
-            <ArrowUpRight size={11} />
+            <Globe size={13} className="text-emerald-800" />
+            <span>dattasable.com/dashboards</span>
+            <ArrowUpRight size={11} className="text-emerald-700" />
           </a>
 
           <span className="local-status hidden xs:flex">

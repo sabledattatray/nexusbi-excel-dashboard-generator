@@ -1,0 +1,55 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/spec/catalog.schema.json",
+  "version": "1.0.0",
+  "name": "Excel to Dashboards",
+  "description": "Automated Excel and Executive KPI Dashboard Generator by Datta Sable. In-browser client-side workbook generation with native formulas.",
+  "url": "https://excel.dattasable.com/",
+  "provider": {
+    "name": "Datta Sable Analytics",
+    "url": "https://dattasable.com/"
+  },
+  "capabilities": [
+    "data_visualization",
+    "excel_generation",
+    "kpi_analytics",
+    "mis_reporting",
+    "csv_analysis"
+  ],
+  "resources": [
+    {
+      "id": "excel-dashboard-generator",
+      "name": "Excel Dashboard Generator",
+      "type": "application",
+      "description": "Transforms raw CSV/XLSX data into multi-sheet Excel files with native formulas, KPI scorecards, and interactive charts.",
+      "url": "https://excel.dattasable.com/excel-dashboard-generator"
+    },
+    {
+      "id": "mis-report-generator",
+      "name": "Excel MIS Report Generator",
+      "type": "application",
+      "description": "Compiles executive-grade MIS reports with grouped pivot tables and calculation formulas without server uploads.",
+      "url": "https://excel.dattasable.com/mis-report-generator"
+    },
+    {
+      "id": "sales-dashboard",
+      "name": "Sales & Revenue Analytics",
+      "type": "template",
+      "description": "Pre-built models for ARR, NRR, customer retention, sales velocity, and sales transactions.",
+      "url": "https://excel.dattasable.com/sales-dashboard"
+    },
+    {
+      "id": "hr-dashboard",
+      "name": "HR & Workforce Analytics",
+      "type": "template",
+      "description": "Workforce analytics, headcount tracking, retention rate, and departmental compensation models.",
+      "url": "https://excel.dattasable.com/hr-dashboard"
+    },
+    {
+      "id": "financial-dashboard",
+      "name": "Financial & Banking Analytics",
+      "type": "template",
+      "description": "Financial performance reporting, loan originations, net interest margins, and portfolio performance.",
+      "url": "https://excel.dattasable.com/financial-dashboard"
+    }
+  ]
+}

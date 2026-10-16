@@ -1,0 +1,30 @@
+# Excel to Dashboards — Automated KPI Reports & Business Intelligence Generator
+
+> Excel to Dashboards (excel.dattasable.com) is a free, 100% client-side web application built by Datta Sable that transforms raw CSV and spreadsheet datasets into boardroom-ready multi-sheet Microsoft Excel (.xlsx) workbooks featuring native formulas (SUMIFS, AVERAGEIFS), interactive KPI scorecards, dynamic charts, and executive presentation layouts.
+
+## Core Capabilities
+- In-Browser Processing: 100% private execution inside the client sandbox with zero cloud data storage.
+- Native Excel Formulas: Real SUMIFS, AVERAGEIFS, and calculation formulas embedded directly into exported .xlsx files.
+- Automated Schema Inference: Automatically infers dates, revenue amounts, quantities, categories, and geographical regions.
+- Multi-Tab Workbooks: Produces Executive Overview, Pivot Table Analysis, Source Records, and Regional/Product Breakdowns.
+- 32 Enterprise Industry Models: Pre-configured benchmarks for SaaS, Retail, Healthcare, Finance, Manufacturing, Logistics, and more.
+
+## Landing Pages & Documentation
+- [Free Excel Dashboard Generator](https://excel.dattasable.com/): Interactive online dashboard generator workspace.
+- [Excel Dashboard Generator Online](https://excel.dattasable.com/excel-dashboard-generator): Overview of online spreadsheet to dashboard compilation.
+- [Excel MIS Report Generator](https://excel.dattasable.com/mis-report-generator): Automated monthly MIS reporting tools and templates.
+- [Excel Sales Dashboard Generator](https://excel.dattasable.com/sales-dashboard): ARR, NRR, customer retention, and sales pipeline analytics.
+- [Excel HR Dashboard Generator](https://excel.dattasable.com/hr-dashboard): Workforce analytics, headcount trends, and compensation scorecards.
+- [Excel Financial Dashboard Generator](https://excel.dattasable.com/financial-dashboard): Banking metrics, loan originations, and portfolio yield reports.
+- [KPI Dashboard Generator](https://excel.dattasable.com/kpi-dashboard): Automated KPI scorecard generation with variance tracking.
+- [Excel Dashboard Examples & Templates](https://excel.dattasable.com/excel-dashboard-examples): 32 industry-specific dashboard examples and models.
+- [Privacy Policy](https://excel.dattasable.com/privacy): Details on 100% in-browser client-side privacy architecture.
+- [Terms of Service](https://excel.dattasable.com/terms): Commercial licensing and usage terms.
+- [Refund & Cancellation Policy](https://excel.dattasable.com/refund-policy): Product support and license policy.
+- [About Datta Sable](https://excel.dattasable.com/about): Background on Business Intelligence Architect Datta Sable.
+- [Contact & Support](https://excel.dattasable.com/contact): Developer contact, email support, and grievance details.
+
+## External Resources & Author
+- [Datta Sable Official Website](https://dattasable.com/): Official portfolio and analytics case studies.
+- [Datta Sable Dashboards](https://dattasable.com/dashboards): Business intelligence and executive dashboards showcase.
+- [Fabric Master](https://fabric.dattasable.com/): Microsoft Fabric architecture, capacity sizing, and FinOps platform.

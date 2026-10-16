@@ -199,15 +199,15 @@ export const HomePage: React.FC<HomePageProps> = ({
             backgroundSize: '40px 40px',
           }}
         />
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-[#34d399]/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-[#34d399]/10 blur-3xl pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-4xl">
           {/* Eyebrow Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1e4238] border border-[#376b5b] text-[#86efac] text-xs font-mono font-medium mb-6 shadow-sm">
             <Sparkles size={14} className="text-[#86efac] animate-pulse" />
             <span>EXCEL.DATTASABLE.COM</span>
-            <span className="text-[#a7f3d0]/60">· Free Online Analytics Tool</span>
+            <span className="text-[#a7f3d0] font-semibold">· Free Online Analytics Tool</span>
           </div>
 
           {/* Main H1 Headline */}
@@ -350,10 +350,10 @@ export const HomePage: React.FC<HomePageProps> = ({
           {/* Simulated Excel Grid & KPI Cards */}
           <div className="p-4 sm:p-6 bg-[#fbfdfa] space-y-5 sm:space-y-6">
             {/* Live Formula Bar Preview */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-200 font-mono text-xs text-slate-600 overflow-x-auto">
-              <span className="font-bold text-slate-400 select-none shrink-0">fx</span>
-              <span className="text-slate-400 select-none shrink-0">|</span>
-              <span className="text-emerald-700 font-medium whitespace-nowrap">
+            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-300 font-mono text-xs text-slate-700 overflow-x-auto">
+              <span className="font-bold text-emerald-800 select-none shrink-0" aria-label="Formula">fx</span>
+              <span className="text-slate-600 select-none shrink-0" aria-hidden="true">|</span>
+              <span className="text-emerald-800 font-semibold whitespace-nowrap">
                 =SUMIFS(Transactions!$G:$G, Transactions!$C:$C, $B$4, Transactions!$E:$E, C$2)
               </span>
             </div>
@@ -715,8 +715,9 @@ export const HomePage: React.FC<HomePageProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] active:scale-[0.98] text-slate-950 text-xs font-bold transition-all shadow-md w-full sm:w-auto"
+            aria-label="View Datta Sable's Business Intelligence Dashboards Portfolio"
           >
-            <span>BI Portfolio</span>
+            <span>BI Dashboards Showcase</span>
             <ExternalLink size={12} />
           </a>
           <a
@@ -724,8 +725,9 @@ export const HomePage: React.FC<HomePageProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-500/40 hover:bg-white/10 active:scale-[0.98] text-emerald-200 text-xs font-semibold transition-colors w-full sm:w-auto"
+            aria-label="Visit Datta Sable Official Portfolio Homepage"
           >
-            <span>dattasable.com</span>
+            <span>Visit dattasable.com</span>
             <ArrowRight size={12} />
           </a>
         </div>

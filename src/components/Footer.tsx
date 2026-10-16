@@ -42,6 +42,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#203b35] hover:bg-[#284a43] text-emerald-300 text-xs font-medium border border-[#31574e] transition-colors"
                 title="Visit Datta Sable's Official Website"
+                aria-label="Visit Datta Sable's Official Website"
               >
                 <Globe size={13} />
                 <span>dattasable.com</span>
@@ -208,6 +209,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white flex items-center gap-1.5 transition-colors"
+                  aria-label="Datta Sable Analytics and Engineering Portfolio"
                 >
                   <span>Datta Sable Portfolio</span>
                   <ExternalLink size={11} className="opacity-70" />
