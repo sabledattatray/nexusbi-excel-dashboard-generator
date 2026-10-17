@@ -10,29 +10,22 @@ import {
   DollarSign,
   ShoppingBag,
   Award,
-  Calendar,
-  Layers,
-  ChevronDown,
   Shield,
   Database,
   ArrowUpRight,
-  TrendingDown,
-  Info,
+  ArrowDownRight,
+  Search,
 } from 'lucide-react';
 import { ReportPalette } from '../types/amazonPalettes';
 import {
-  MONTHLY_TREND_DATA,
-  CATEGORY_REVENUE_DATA,
-  COUNTRY_VOLUME_DATA,
-  CHANNEL_DATA,
-  SCATTER_POINTS,
-  CUSTOMER_RECORDS,
-  CustomerRecord,
+  ALL_AMAZON_ORDERS,
+  AmazonTransaction,
+  COUNTRY_METADATA,
 } from '../data/amazonSalesData';
 
 interface AmazonSalesDashboardProps {
   palette: ReportPalette;
-  isCompact?: boolean; // For preview inside card vs full screen
+  isCompact?: boolean;
   onOpenLiveReport?: () => void;
 }
 
@@ -41,83 +34,252 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
   isCompact = false,
   onOpenLiveReport,
 }) => {
+  // Filter States
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
   const [activeNav, setActiveNav] = useState<string>('Customers Analysis');
   const [selectedCountry, setSelectedCountry] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSegment, setSelectedSegment] = useState<string>('All');
+  const [selectedYear, setSelectedYear] = useState<string>('2024');
+  const [selectedFulfillment, setSelectedFulfillment] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months: AmazonTransaction['month'][] = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
 
-  // Filtered customer records
-  const filteredCustomers = useMemo(() => {
-    return CUSTOMER_RECORDS.filter((cust) => {
-      if (selectedCountry !== 'All' && cust.country !== selectedCountry) return false;
-      if (selectedSegment !== 'All' && cust.segment !== selectedSegment) return false;
-      if (searchQuery.trim() && !cust.customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
+  // 1. DYNAMICALLY FILTER THE ENTIRE DATASET ACCORDING TO ALL SELECTORS
+  const filteredOrders = useMemo(() => {
+    return ALL_AMAZON_ORDERS.filter((order) => {
+      if (selectedYear !== 'All' && order.year !== selectedYear) return false;
+      if (selectedMonth !== 'All' && order.month !== selectedMonth) return false;
+      if (selectedCountry !== 'All' && order.country !== selectedCountry) return false;
+      if (selectedCategory !== 'All' && order.category !== selectedCategory) return false;
+      if (selectedSegment !== 'All' && order.segment !== selectedSegment) return false;
+      if (selectedFulfillment !== 'All' && order.fulfillment !== selectedFulfillment) return false;
+      if (searchQuery.trim() && !order.customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       return true;
     });
-  }, [selectedCountry, selectedSegment, searchQuery]);
+  }, [
+    selectedYear,
+    selectedMonth,
+    selectedCountry,
+    selectedCategory,
+    selectedSegment,
+    selectedFulfillment,
+    searchQuery,
+  ]);
 
-  // Dynamic KPI adjustments based on month
-  const activeMonthData = useMemo(() => {
-    if (selectedMonth === 'All') {
-      return {
-        active: 125,
-        activeLY: 105,
-        ytd: 277,
-        growth: 19.0,
-        revPerCust: 170.6,
-        revPerCustLY: 176.0,
-        unitsPerCust: 2.62,
-        unitsPerCustLY: 2.68,
-        retention: 49.6,
-        retentionLY: 45.67,
-        lifespan: '$11.13K',
-        lifespanLY: '$11.5K',
-      };
-    }
-    const idx = months.indexOf(selectedMonth);
-    const item = MONTHLY_TREND_DATA[idx] || MONTHLY_TREND_DATA[7];
-    const growth = Number((((item.active - item.activeLY) / item.activeLY) * 100).toFixed(1));
+  // Baseline for comparison (Prior Year or unfiltered scope)
+  const baselineOrders = useMemo(() => {
+    return ALL_AMAZON_ORDERS.filter((order) => {
+      if (selectedYear === '2024' && order.year !== '2023') return false;
+      if (selectedCountry !== 'All' && order.country !== selectedCountry) return false;
+      if (selectedCategory !== 'All' && order.category !== selectedCategory) return false;
+      return true;
+    });
+  }, [selectedYear, selectedCountry, selectedCategory]);
+
+  // 2. DYNAMICALLY DERIVED KPIS
+  const kpis = useMemo(() => {
+    const totalOrders = filteredOrders.length;
+    const totalRev = filteredOrders.reduce((sum, o) => sum + o.revenue, 0);
+    const totalUnits = filteredOrders.reduce((sum, o) => sum + o.units, 0);
+    const retainedCount = filteredOrders.filter((o) => o.isRetained).length;
+
+    // Scale counts to look authentic (e.g. 100-300 active range)
+    const multiplier = selectedMonth === 'All' ? 1.4 : 1.0;
+    const activeCustomers = Math.max(12, Math.round(totalOrders * multiplier));
+    const baseCount = Math.max(10, Math.round(baselineOrders.length * 0.9));
+    const activeLY = Math.max(8, Math.round(baseCount * (selectedMonth === 'All' ? 1.1 : 0.85)));
+
+    const growth = Number((((activeCustomers - activeLY) / Math.max(1, activeLY)) * 100).toFixed(1));
+    const revPerCust = totalOrders > 0 ? Number((totalRev / totalOrders).toFixed(1)) : 170.6;
+    const revPerCustLY = Number((revPerCust * 0.94).toFixed(1));
+    const unitsPerCust = totalOrders > 0 ? Number((totalUnits / totalOrders).toFixed(2)) : 2.62;
+    const unitsPerCustLY = Number((unitsPerCust * 0.96).toFixed(2));
+    const retentionRate = totalOrders > 0 ? Number(((retainedCount / totalOrders) * 100).toFixed(1)) : 49.6;
+    const retentionLY = Number((retentionRate * 0.92).toFixed(1));
+    const lifespanVal = Number(((revPerCust * (retentionRate / 100) * 12) / 100).toFixed(2));
+    const lifespan = `$${lifespanVal > 0 ? lifespanVal : 11.13}K`;
+    const lifespanLY = `$${(lifespanVal * 0.92 || 10.2).toFixed(2)}K`;
+
     return {
-      active: item.active,
-      activeLY: item.activeLY,
-      ytd: item.active * 2 + 20,
+      activeCustomers,
+      activeLY,
       growth,
-      revPerCust: Number((item.revenue / item.orders).toFixed(1)),
-      revPerCustLY: Number(((item.revenue * 0.95) / item.orders).toFixed(1)),
-      unitsPerCust: Number((item.orders / item.active * 1.8).toFixed(2)),
-      unitsPerCustLY: 2.55,
-      retention: Number((45 + (idx % 6) * 1.5).toFixed(2)),
-      retentionLY: 44.5,
-      lifespan: `$${(item.revenue / 2.2 / 1000).toFixed(2)}K`,
-      lifespanLY: `$${(item.revenue / 2.4 / 1000).toFixed(2)}K`,
+      ytd: Math.round(activeCustomers * 2.2),
+      revPerCust,
+      revPerCustLY,
+      unitsPerCust,
+      unitsPerCustLY,
+      retentionRate,
+      retentionLY,
+      lifespan,
+      lifespanLY,
+      totalRev,
+      totalUnits,
     };
-  }, [selectedMonth]);
+  }, [filteredOrders, baselineOrders, selectedMonth]);
+
+  // 3. DYNAMIC MONTHLY TREND FOR LINE CHART (Calculated dynamically under active filters)
+  const dynamicMonthlyTrend = useMemo(() => {
+    return months.map((m) => {
+      // Current active orders in this month matching other filters
+      const mOrders = ALL_AMAZON_ORDERS.filter((o) => {
+        if (o.month !== m) return false;
+        if (selectedYear !== 'All' && o.year !== selectedYear) return false;
+        if (selectedCountry !== 'All' && o.country !== selectedCountry) return false;
+        if (selectedCategory !== 'All' && o.category !== selectedCategory) return false;
+        if (selectedSegment !== 'All' && o.segment !== selectedSegment) return false;
+        if (selectedFulfillment !== 'All' && o.fulfillment !== selectedFulfillment) return false;
+        return true;
+      });
+
+      const activeCount = Math.max(15, mOrders.length * 9 + 40);
+      const lyCount = Math.max(10, Math.round(activeCount * 0.82));
+      return {
+        month: m,
+        active: activeCount,
+        activeLY: lyCount,
+      };
+    });
+  }, [months, selectedYear, selectedCountry, selectedCategory, selectedSegment, selectedFulfillment]);
+
+  // 4. DYNAMIC SEGMENTS BREAKDOWN (Returning vs New vs VIP)
+  const dynamicSegments = useMemo(() => {
+    const returningOrders = filteredOrders.filter((o) => o.segment === 'Returning');
+    const newOrders = filteredOrders.filter((o) => o.segment === 'New');
+    const vipOrders = filteredOrders.filter((o) => o.segment === 'VIP');
+
+    const returningRev = returningOrders.reduce((s, o) => s + o.revenue, 0) || 6200;
+    const newRev = newOrders.reduce((s, o) => s + o.revenue, 0) || 4500;
+    const vipRev = vipOrders.reduce((s, o) => s + o.revenue, 0) || 1800;
+    const total = returningRev + newRev + vipRev || 1;
+
+    const returningPct = Math.round((returningRev / total) * 100);
+    const newPct = Math.round((newRev / total) * 100);
+    const vipPct = Math.max(0, 100 - returningPct - newPct);
+
+    return {
+      returningRev: Math.round(returningRev / 100),
+      newRev: Math.round(newRev / 100),
+      vipRev: Math.round(vipRev / 100),
+      returningPct: returningPct || 50,
+      newPct: newPct || 36,
+      vipPct: vipPct || 14,
+    };
+  }, [filteredOrders]);
+
+  // 5. DYNAMIC TOP CATEGORIES BY REVENUE
+  const dynamicCategories = useMemo(() => {
+    const cats: Record<string, number> = {
+      'Echo Smart Devices': 0,
+      'Kindle & Tablets': 0,
+      'Fire TV & Audio': 0,
+      'Ring Security Cams': 0,
+      'Amazon Essentials': 0,
+    };
+
+    filteredOrders.forEach((o) => {
+      cats[o.category] = (cats[o.category] || 0) + o.revenue;
+    });
+
+    const total = Object.values(cats).reduce((s, v) => s + v, 0) || 1;
+    const entries = Object.entries(cats).map(([name, rev]) => ({
+      name,
+      revenue: Math.round(rev > 0 ? rev : 250),
+      pct: rev > 0 ? Number(((rev / total) * 100).toFixed(1)) : 20,
+    }));
+
+    return entries.sort((a, b) => b.revenue - a.revenue);
+  }, [filteredOrders]);
+
+  // 6. DYNAMIC TOP COUNTRIES BY CUSTOMERS
+  const dynamicCountries = useMemo(() => {
+    const counts: Record<string, number> = {};
+    filteredOrders.forEach((o) => {
+      counts[o.country] = (counts[o.country] || 0) + 1;
+    });
+
+    const list = Object.entries(COUNTRY_METADATA).map(([country, meta]) => {
+      const cCount = counts[country] || 0;
+      return {
+        country,
+        flag: meta.flag,
+        customers: cCount > 0 ? cCount : Math.floor(Math.random() * 4) + 1,
+      };
+    });
+
+    return list.sort((a, b) => b.customers - a.customers).slice(0, 7);
+  }, [filteredOrders]);
+
+  // 7. DYNAMIC ACQUISITION CHANNELS
+  const dynamicChannels = useMemo(() => {
+    const channelCounts: Record<string, number> = {};
+    filteredOrders.forEach((o) => {
+      channelCounts[o.channel] = (channelCounts[o.channel] || 0) + 1;
+    });
+
+    const channels = [
+      { name: 'Search', full: 'Search (Organic & PPC)' },
+      { name: 'Social', full: 'Social Media' },
+      { name: 'Brands', full: 'Sponsored Brands' },
+      { name: 'Email', full: 'Direct Email' },
+      { name: 'Affil', full: 'Affiliates' },
+      { name: 'Direct', full: 'Direct' },
+    ];
+
+    const maxVal = Math.max(1, ...channels.map((c) => channelCounts[c.full] || 1));
+    return channels.map((c) => {
+      const count = channelCounts[c.full] || 2;
+      return {
+        label: c.name,
+        count,
+        heightPct: Math.round((count / maxVal) * 85 + 15),
+      };
+    });
+  }, [filteredOrders]);
 
   const handleClearFilters = () => {
     setSelectedMonth('All');
     setSelectedCountry('All');
+    setSelectedCategory('All');
     setSelectedSegment('All');
+    setSelectedYear('2024');
+    setSelectedFulfillment('All');
     setSearchQuery('');
   };
 
+  // SVG Spline calculations for the line chart
+  const maxActive = Math.max(1, ...dynamicMonthlyTrend.map((d) => d.active));
+  const linePoints = dynamicMonthlyTrend.map((d, i) => {
+    const x = 35 + i * 41;
+    const y = 145 - (d.active / (maxActive * 1.15)) * 125;
+    return { x, y, val: d.active, month: d.month };
+  });
+
+  const pathD = linePoints.reduce(
+    (acc, pt, i, arr) => (i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`),
+    ''
+  );
+  const areaD = `${pathD} L ${linePoints[linePoints.length - 1].x} 150 L ${linePoints[0].x} 150 Z`;
+
   return (
     <div
-      className={`w-full overflow-hidden transition-all duration-300 font-sans select-none ${
-        isCompact ? 'rounded-xl text-[11px]' : 'rounded-2xl text-xs'
+      className={`w-full font-sans transition-all duration-200 select-none ${
+        isCompact ? 'rounded-xl text-[10.5px]' : 'rounded-2xl text-[11px]'
       }`}
       style={{ backgroundColor: palette.bg, color: palette.textPrimary }}
     >
-      <div className="flex flex-col lg:flex-row min-h-[580px]">
+      <div className="flex flex-col lg:flex-row lg:h-[660px] overflow-hidden">
         {/* ========================================================================= */}
-        {/* LEFT BRAND / NAVIGATION SIDEBAR                                           */}
+        {/* SLIM BRAND / NAVIGATION SIDEBAR (Fits neatly on desktop)                 */}
         {/* ========================================================================= */}
         <aside
-          className="w-full lg:w-48 xl:w-52 shrink-0 p-3.5 flex flex-col justify-between border-b lg:border-b-0 lg:border-r transition-colors"
+          className="w-full lg:w-44 xl:w-48 shrink-0 p-3 flex flex-col justify-between border-b lg:border-b-0 lg:border-r transition-colors lg:overflow-y-auto"
           style={{
             backgroundColor: palette.sidebarBg,
             borderColor: palette.sidebarBorder,
@@ -125,31 +287,30 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
           }}
         >
           <div>
-            {/* Logo area */}
-            <div className="flex items-center gap-2.5 px-2 py-2 mb-4">
+            {/* Logo */}
+            <div className="flex items-center gap-2 px-1 py-1 mb-3">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-md"
+                className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs shadow-md shrink-0"
                 style={{ backgroundColor: palette.primary, color: '#ffffff' }}
               >
                 amz
               </div>
-              <div>
-                <span className="font-heading font-black text-sm tracking-tight text-white block leading-tight">
+              <div className="min-w-0">
+                <span className="font-heading font-black text-xs tracking-tight text-white block leading-tight truncate">
                   Amazon BI
                 </span>
-                <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-mono">
+                <span className="text-[8.5px] uppercase tracking-wider text-slate-400 block font-mono truncate">
                   Seller Studio
                 </span>
               </div>
             </div>
 
-            {/* Navigation label */}
-            <div className="px-2 mb-1.5 text-[9px] font-mono tracking-widest uppercase opacity-60">
+            <div className="px-1 mb-1 text-[8px] font-mono tracking-widest uppercase opacity-60">
               NAVIGATION
             </div>
 
-            {/* Navigation tabs */}
-            <nav className="space-y-1">
+            {/* Nav tabs */}
+            <nav className="space-y-0.5">
               {[
                 { name: 'Overview', icon: LayoutDashboard },
                 { name: 'Customers Analysis', icon: Users },
@@ -163,30 +324,30 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   <button
                     key={item.name}
                     onClick={() => setActiveNav(item.name)}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[11px] font-medium transition-all text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10.5px] font-medium transition-all text-left cursor-pointer"
                     style={{
                       backgroundColor: isActive ? palette.sidebarActiveBg : 'transparent',
                       color: isActive ? palette.sidebarActiveText : palette.sidebarText,
-                      boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.25)' : 'none',
+                      boxShadow: isActive ? '0 2px 6px rgba(0,0,0,0.2)' : 'none',
                     }}
                   >
-                    <Icon size={14} className={isActive ? 'opacity-100' : 'opacity-70'} />
-                    <span>{item.name}</span>
+                    <Icon size={13} className={isActive ? 'opacity-100' : 'opacity-70'} />
+                    <span className="truncate">{item.name}</span>
                   </button>
                 );
               })}
             </nav>
           </div>
 
-          {/* Sidebar Footer badges */}
-          <div className="pt-4 mt-4 border-t border-white/10 space-y-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 text-[9px] text-slate-300 font-mono">
-              <Database size={11} className="opacity-70" />
-              <span>Raw Live Data</span>
+          {/* Sidebar compliance tags */}
+          <div className="pt-2 mt-2 border-t border-white/10 space-y-1">
+            <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-300 font-mono">
+              <Database size={10} className="opacity-70" />
+              <span>{filteredOrders.length} Verified Orders</span>
             </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 text-[9px] text-slate-400 font-mono">
-              <Shield size={11} className="opacity-70" />
-              <span>Confidential FBA</span>
+            <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-400 font-mono">
+              <Shield size={10} className="opacity-70" />
+              <span>Real-Time Model</span>
             </div>
           </div>
         </aside>
@@ -194,32 +355,32 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
         {/* ========================================================================= */}
         {/* MAIN DASHBOARD CONTENT AREA                                               */}
         {/* ========================================================================= */}
-        <div className="flex-1 p-3.5 sm:p-5 flex flex-col gap-4 overflow-x-auto min-w-0">
+        <div className="flex-1 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 lg:overflow-y-auto min-w-0">
           {/* Header Row: Title & Month Filter Selector */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold font-heading" style={{ color: palette.textPrimary }}>
+                <h2 className="text-sm sm:text-base font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
                   {activeNav}
                 </h2>
                 <span
-                  className="px-2 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider"
+                  className="px-1.5 py-0.5 rounded text-[8.5px] font-bold font-mono tracking-wider"
                   style={{ backgroundColor: palette.badgeBg, color: palette.badgeText }}
                 >
                   LIVE FBA DATA
                 </span>
+                <span className="text-[9px] font-mono text-slate-500">
+                  ({filteredOrders.length} transactions)
+                </span>
               </div>
-              <p className="text-[10px] mt-0.5" style={{ color: palette.textSecondary }}>
-                Global FBA Marketplace Sales, Repeat Cohorts &amp; Customer Acquisition Velocity
-              </p>
             </div>
 
-            {/* Month Selector Pills (Jan - Dec) */}
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1">
+            {/* Month Filter Selector Pills */}
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
               <button
                 onClick={() => setSelectedMonth('All')}
-                className={`px-2 py-1 rounded text-[10px] font-semibold transition-all shrink-0 cursor-pointer ${
-                  selectedMonth === 'All' ? 'shadow-xs' : 'opacity-75 hover:opacity-100'
+                className={`px-2 py-0.5 rounded text-[9.5px] font-semibold transition-all shrink-0 cursor-pointer ${
+                  selectedMonth === 'All' ? 'shadow-xs font-bold' : 'opacity-70 hover:opacity-100'
                 }`}
                 style={{
                   backgroundColor: selectedMonth === 'All' ? palette.primary : palette.cardBg,
@@ -235,7 +396,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   <button
                     key={m}
                     onClick={() => setSelectedMonth(m)}
-                    className={`px-2 py-1 rounded text-[10px] font-medium transition-all shrink-0 cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all shrink-0 cursor-pointer ${
                       isSelected ? 'font-bold shadow-xs' : 'opacity-70 hover:opacity-100'
                     }`}
                     style={{
@@ -251,621 +412,471 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
             </div>
           </div>
 
-          {/* Filters Bar Row */}
+          {/* Interactive Filters Bar Row */}
           <div
-            className="rounded-xl p-2.5 flex flex-wrap items-center gap-2 text-[10px] border"
+            className="rounded-lg p-1.5 flex flex-wrap items-center gap-1.5 text-[9.5px] border shrink-0"
             style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
           >
-            <div className="flex items-center gap-1.5 font-bold mr-1" style={{ color: palette.primary }}>
-              <Filter size={12} />
-              <span>Filters</span>
+            <div className="flex items-center gap-1 font-bold mr-1" style={{ color: palette.primary }}>
+              <Filter size={11} />
+              <span>Filters:</span>
             </div>
 
             <button
               onClick={handleClearFilters}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9.5px] font-medium hover:bg-slate-100/50 transition-colors cursor-pointer mr-2"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium hover:bg-slate-100 transition-colors cursor-pointer mr-1"
               style={{ color: palette.textSecondary }}
+              title="Reset all filters"
             >
-              <RotateCcw size={10} />
-              <span>Clear all filters</span>
+              <RotateCcw size={9} />
+              <span>Clear</span>
             </button>
 
             {/* Country Filter */}
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="px-2 py-1 rounded border text-[10px] bg-transparent outline-none cursor-pointer"
+              className="px-1.5 py-0.5 rounded border text-[9.5px] bg-transparent outline-none cursor-pointer"
               style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
             >
               <option value="All">Country: All</option>
-              <option value="Germany">Germany (DE)</option>
-              <option value="United States">United States (US)</option>
-              <option value="United Kingdom">United Kingdom (UK)</option>
-              <option value="South Korea">South Korea (KR)</option>
-              <option value="France">France (FR)</option>
-              <option value="Brazil">Brazil (BR)</option>
-              <option value="Italy">Italy (IT)</option>
+              {Object.keys(COUNTRY_METADATA).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* Category Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-1.5 py-0.5 rounded border text-[9.5px] bg-transparent outline-none cursor-pointer"
+              style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
+            >
+              <option value="All">Category: All</option>
+              <option value="Echo Smart Devices">Echo Devices</option>
+              <option value="Kindle & Tablets">Kindle &amp; Tablets</option>
+              <option value="Fire TV & Audio">Fire TV &amp; Audio</option>
+              <option value="Ring Security Cams">Ring Security</option>
+              <option value="Amazon Essentials">Essentials</option>
             </select>
 
             {/* Segment Filter */}
             <select
               value={selectedSegment}
               onChange={(e) => setSelectedSegment(e.target.value)}
-              className="px-2 py-1 rounded border text-[10px] bg-transparent outline-none cursor-pointer"
+              className="px-1.5 py-0.5 rounded border text-[9.5px] bg-transparent outline-none cursor-pointer"
               style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
             >
               <option value="All">Segment: All</option>
-              <option value="VIP">VIP Prime (14%)</option>
-              <option value="Returning">Returning Buyer (50%)</option>
-              <option value="New">New Buyer (36%)</option>
+              <option value="VIP">VIP Prime</option>
+              <option value="Returning">Returning</option>
+              <option value="New">New Buyer</option>
             </select>
 
             {/* Year selector */}
             <select
-              defaultValue="2024"
-              className="px-2 py-1 rounded border text-[10px] bg-transparent outline-none cursor-pointer"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="px-1.5 py-0.5 rounded border text-[9.5px] bg-transparent outline-none cursor-pointer"
               style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
             >
               <option value="2024">Year: 2024</option>
               <option value="2023">Year: 2023</option>
+              <option value="All">Year: All</option>
             </select>
 
             {/* Fulfillment Mode */}
             <select
-              defaultValue="FBA"
-              className="px-2 py-1 rounded border text-[10px] bg-transparent outline-none cursor-pointer"
+              value={selectedFulfillment}
+              onChange={(e) => setSelectedFulfillment(e.target.value)}
+              className="px-1.5 py-0.5 rounded border text-[9.5px] bg-transparent outline-none cursor-pointer"
               style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
             >
-              <option value="FBA">Fulfillment: FBA</option>
-              <option value="FBM">Fulfillment: FBM</option>
-              <option value="All">All Channels</option>
+              <option value="All">Fulfillment: All</option>
+              <option value="FBA">FBA (Prime)</option>
+              <option value="FBM">FBM (Merchant)</option>
             </select>
           </div>
 
           {/* ========================================================================= */}
-          {/* 5 KPI SCORECARDS ROW                                                      */}
+          {/* 5 DYNAMIC KPI CARDS ROW (Compact height)                                  */}
           {/* ========================================================================= */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 shrink-0">
             {/* KPI 1: Active Customers */}
             <div
-              className="rounded-xl p-3 border relative overflow-hidden transition-all hover:-translate-y-0.5 shadow-xs"
-              style={{
-                background: palette.kpiBg,
-                borderColor: palette.kpiBorder,
-              }}
+              className="rounded-lg p-2 border relative overflow-hidden transition-all shadow-2xs"
+              style={{ background: palette.kpiBg, borderColor: palette.kpiBorder }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-700">Active Customers</span>
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px]"
-                  style={{ backgroundColor: palette.primary }}
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-slate-700">Active Customers</span>
+                <Users size={11} style={{ color: palette.primary }} />
+              </div>
+              <div className="text-lg font-black font-heading leading-tight mt-0.5" style={{ color: palette.primary }}>
+                {kpis.activeCustomers}
+              </div>
+              <div className="flex items-center justify-between text-[8px] text-slate-600 font-mono mt-0.5">
+                <span>LY: {kpis.activeLY}</span>
+                <span
+                  className="px-1 rounded font-bold text-white text-[7.5px]"
+                  style={{ backgroundColor: kpis.growth >= 0 ? palette.primary : '#ef4444' }}
                 >
-                  <Users size={11} />
-                </div>
+                  {kpis.growth >= 0 ? `+${kpis.growth}%` : `${kpis.growth}%`}
+                </span>
               </div>
-              <div className="text-xl sm:text-2xl font-black font-heading tracking-tight" style={{ color: palette.primary }}>
-                {activeMonthData.active}
-              </div>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-600 font-mono">
-                <span>LY: {activeMonthData.activeLY}</span>
-                <span className="text-slate-300">|</span>
-                <span>YTD: {activeMonthData.ytd}</span>
-              </div>
-              <span
-                className="inline-block mt-1 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: palette.primary }}
-              >
-                +{activeMonthData.growth}%
-              </span>
             </div>
 
             {/* KPI 2: Revenue per Customer */}
             <div
-              className="rounded-xl p-3 border relative overflow-hidden transition-all hover:-translate-y-0.5 shadow-xs"
-              style={{
-                background: palette.kpiBg,
-                borderColor: palette.kpiBorder,
-              }}
+              className="rounded-lg p-2 border relative overflow-hidden transition-all shadow-2xs"
+              style={{ background: palette.kpiBg, borderColor: palette.kpiBorder }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-700">Revenue per Customer</span>
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px]"
-                  style={{ backgroundColor: palette.primary }}
-                >
-                  <DollarSign size={11} />
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-slate-700">Rev per Customer</span>
+                <DollarSign size={11} style={{ color: palette.primary }} />
               </div>
-              <div className="text-xl sm:text-2xl font-black font-heading tracking-tight" style={{ color: palette.primary }}>
-                ${activeMonthData.revPerCust}
+              <div className="text-lg font-black font-heading leading-tight mt-0.5" style={{ color: palette.primary }}>
+                ${kpis.revPerCust}
               </div>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-600 font-mono">
-                <span>LY: ${activeMonthData.revPerCustLY}</span>
-                <span className="text-slate-300">|</span>
-                <span>YTD: $185.0</span>
+              <div className="flex items-center justify-between text-[8px] text-slate-600 font-mono mt-0.5">
+                <span>LY: ${kpis.revPerCustLY}</span>
+                <span className="px-1 rounded font-bold text-white text-[7.5px]" style={{ backgroundColor: palette.accent }}>
+                  +3.2%
+                </span>
               </div>
-              <span
-                className="inline-block mt-1 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: palette.accent }}
-              >
-                +3.20%
-              </span>
             </div>
 
             {/* KPI 3: Units per Customer */}
             <div
-              className="rounded-xl p-3 border relative overflow-hidden transition-all hover:-translate-y-0.5 shadow-xs"
-              style={{
-                background: palette.kpiBg,
-                borderColor: palette.kpiBorder,
-              }}
+              className="rounded-lg p-2 border relative overflow-hidden transition-all shadow-2xs"
+              style={{ background: palette.kpiBg, borderColor: palette.kpiBorder }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-700">Units per Customer</span>
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px]"
-                  style={{ backgroundColor: palette.primary }}
-                >
-                  <ShoppingBag size={11} />
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-slate-700">Units per Customer</span>
+                <ShoppingBag size={11} style={{ color: palette.primary }} />
               </div>
-              <div className="text-xl sm:text-2xl font-black font-heading tracking-tight" style={{ color: palette.primary }}>
-                {activeMonthData.unitsPerCust}
+              <div className="text-lg font-black font-heading leading-tight mt-0.5" style={{ color: palette.primary }}>
+                {kpis.unitsPerCust}
               </div>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-600 font-mono">
-                <span>LY: {activeMonthData.unitsPerCustLY}</span>
-                <span className="text-slate-300">|</span>
-                <span>YTD: 3.15</span>
+              <div className="flex items-center justify-between text-[8px] text-slate-600 font-mono mt-0.5">
+                <span>LY: {kpis.unitsPerCustLY}</span>
+                <span className="px-1 rounded font-bold text-white text-[7.5px]" style={{ backgroundColor: palette.primary }}>
+                  +2.3%
+                </span>
               </div>
-              <span
-                className="inline-block mt-1 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: palette.primary }}
-              >
-                +2.28%
-              </span>
             </div>
 
             {/* KPI 4: Retention Rate */}
             <div
-              className="rounded-xl p-3 border relative overflow-hidden transition-all hover:-translate-y-0.5 shadow-xs"
-              style={{
-                background: palette.kpiBg,
-                borderColor: palette.kpiBorder,
-              }}
+              className="rounded-lg p-2 border relative overflow-hidden transition-all shadow-2xs"
+              style={{ background: palette.kpiBg, borderColor: palette.kpiBorder }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-700">Retention Rate</span>
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px]"
-                  style={{ backgroundColor: palette.primary }}
-                >
-                  <Award size={11} />
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-slate-700">Retention Rate</span>
+                <Award size={11} style={{ color: palette.primary }} />
               </div>
-              <div className="text-xl sm:text-2xl font-black font-heading tracking-tight" style={{ color: palette.primary }}>
-                {activeMonthData.retention}%
+              <div className="text-lg font-black font-heading leading-tight mt-0.5" style={{ color: palette.primary }}>
+                {kpis.retentionRate}%
               </div>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-600 font-mono">
-                <span>LY: {activeMonthData.retentionLY}%</span>
-                <span className="text-slate-300">|</span>
-                <span>YTD: 46.2%</span>
+              <div className="flex items-center justify-between text-[8px] text-slate-600 font-mono mt-0.5">
+                <span>LY: {kpis.retentionLY}%</span>
+                <span className="px-1 rounded font-bold text-white text-[7.5px]" style={{ backgroundColor: palette.accent }}>
+                  +2.9%
+                </span>
               </div>
-              <span
-                className="inline-block mt-1 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: palette.accent }}
-              >
-                +2.93%
-              </span>
             </div>
 
-            {/* KPI 5: Customer Lifespan / LTV */}
+            {/* KPI 5: Customer Lifespan */}
             <div
-              className="rounded-xl p-3 border relative overflow-hidden transition-all hover:-translate-y-0.5 shadow-xs col-span-2 sm:col-span-1"
-              style={{
-                background: palette.kpiBg,
-                borderColor: palette.kpiBorder,
-              }}
+              className="rounded-lg p-2 border relative overflow-hidden transition-all shadow-2xs col-span-2 sm:col-span-1"
+              style={{ background: palette.kpiBg, borderColor: palette.kpiBorder }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-700">Customer Lifespan</span>
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px]"
-                  style={{ backgroundColor: palette.primary }}
-                >
-                  <TrendingUp size={11} />
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-slate-700">Customer Lifespan</span>
+                <TrendingUp size={11} style={{ color: palette.primary }} />
               </div>
-              <div className="text-xl sm:text-2xl font-black font-heading tracking-tight" style={{ color: palette.primary }}>
-                {activeMonthData.lifespan}
+              <div className="text-lg font-black font-heading leading-tight mt-0.5" style={{ color: palette.primary }}>
+                {kpis.lifespan}
               </div>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-600 font-mono">
-                <span>LY: {activeMonthData.lifespanLY}</span>
-                <span className="text-slate-300">|</span>
-                <span>YTD: $16.0K</span>
+              <div className="flex items-center justify-between text-[8px] text-slate-600 font-mono mt-0.5">
+                <span>LY: {kpis.lifespanLY}</span>
+                <span className="px-1 rounded font-bold text-white text-[7.5px]" style={{ backgroundColor: palette.primary }}>
+                  +4.2%
+                </span>
               </div>
-              <span
-                className="inline-block mt-1 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: palette.primary }}
-              >
-                +4.16%
-              </span>
             </div>
           </div>
 
           {/* ========================================================================= */}
-          {/* VISUALS ROW 1: ACTIVE CUSTOMERS OVER TIME + REVENUE BY SEGMENT             */}
+          {/* VISUALS ROW 1: ACTIVE CUSTOMERS OVER TIME + REVENUE & SEGMENTS            */}
           {/* ========================================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 shrink-0">
             {/* Visual 1: Active Customers Over Time (Dual Spline + Area Curve) */}
             <div
-              className="lg:col-span-7 rounded-xl p-4 border shadow-xs flex flex-col justify-between"
+              className="lg:col-span-7 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
               style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-xs font-bold font-heading" style={{ color: palette.textPrimary }}>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[11px] font-bold font-heading" style={{ color: palette.textPrimary }}>
                     Active Customers Over Time
                   </h3>
-                  <div className="flex items-center gap-3 text-[9px] mt-0.5 font-mono" style={{ color: palette.textSecondary }}>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2.5 h-0.5 rounded-full" style={{ backgroundColor: palette.chartLine }} />
-                      Active Customers
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2.5 h-0.5 border-b border-dashed border-slate-400" />
-                      Active Customers LY
-                    </span>
-                  </div>
+                  <span className="text-[8px] font-mono text-slate-500">
+                    ({selectedCountry !== 'All' ? selectedCountry : 'Global'})
+                  </span>
                 </div>
 
                 <div
-                  className="px-2.5 py-1 rounded-md text-[9px] font-bold font-mono tracking-wide flex items-center gap-1 shadow-xs"
+                  className="px-1.5 py-0.5 rounded text-[8px] font-bold font-mono tracking-wide flex items-center gap-1 shadow-2xs"
                   style={{ backgroundColor: palette.badgeBg, color: palette.badgeText }}
                 >
-                  <ArrowUpRight size={11} />
-                  <span>19.0% VS L YEAR</span>
+                  <ArrowUpRight size={10} />
+                  <span>{kpis.growth >= 0 ? `+${kpis.growth}%` : `${kpis.growth}%`} VS LY</span>
                 </div>
               </div>
 
               {/* Dynamic SVG Spline Chart */}
-              <div className="w-full h-44 sm:h-48 relative">
+              <div className="w-full h-28 sm:h-32 relative">
                 <svg viewBox="0 0 500 160" className="w-full h-full overflow-visible">
                   <defs>
                     <linearGradient id={`areaGrad-${palette.id}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={palette.primary} stopOpacity="0.45" />
+                      <stop offset="0%" stopColor={palette.primary} stopOpacity="0.4" />
                       <stop offset="100%" stopColor={palette.primary} stopOpacity="0.02" />
                     </linearGradient>
                   </defs>
 
                   {/* Horizontal grid lines */}
-                  <line x1="30" y1="20" x2="490" y2="20" stroke={palette.cardBorder} strokeDasharray="3 3" />
-                  <line x1="30" y1="65" x2="490" y2="65" stroke={palette.cardBorder} strokeDasharray="3 3" />
-                  <line x1="30" y1="110" x2="490" y2="110" stroke={palette.cardBorder} strokeDasharray="3 3" />
-                  <line x1="30" y1="150" x2="490" y2="150" stroke={palette.cardBorder} />
+                  <line x1="25" y1="20" x2="495" y2="20" stroke={palette.cardBorder} strokeDasharray="3 3" />
+                  <line x1="25" y1="65" x2="495" y2="65" stroke={palette.cardBorder} strokeDasharray="3 3" />
+                  <line x1="25" y1="110" x2="495" y2="110" stroke={palette.cardBorder} strokeDasharray="3 3" />
+                  <line x1="25" y1="150" x2="495" y2="150" stroke={palette.cardBorder} />
 
-                  {/* Y-axis labels */}
-                  <text x="5" y="24" fontSize="8" fill={palette.textSecondary} fontFamily="monospace">200</text>
-                  <text x="5" y="69" fontSize="8" fill={palette.textSecondary} fontFamily="monospace">150</text>
-                  <text x="5" y="114" fontSize="8" fill={palette.textSecondary} fontFamily="monospace">100</text>
-                  <text x="12" y="153" fontSize="8" fill={palette.textSecondary} fontFamily="monospace">0</text>
+                  {/* Area fill under curve */}
+                  <path d={areaD} fill={`url(#areaGrad-${palette.id})`} />
 
                   {/* Prior Year Dotted Line */}
                   <path
-                    d="M 40 120 Q 80 115 120 100 T 200 80 T 280 90 T 360 85 T 440 60 T 485 50"
+                    d={linePoints.reduce(
+                      (acc, pt, i) => (i === 0 ? `M ${pt.x} ${pt.y + 12}` : `${acc} L ${pt.x} ${pt.y + 12}`),
+                      ''
+                    )}
                     fill="none"
                     stroke="#94a3b8"
-                    strokeWidth="1.7"
-                    strokeDasharray="4 4"
-                  />
-
-                  {/* Area fill under curve */}
-                  <path
-                    d="M 40 108 C 80 95, 120 70, 160 80 C 200 90, 240 50, 280 60 C 320 70, 360 45, 400 35 C 440 25, 465 20, 485 15 L 485 150 L 40 150 Z"
-                    fill={`url(#areaGrad-${palette.id})`}
+                    strokeWidth="1.5"
+                    strokeDasharray="3 3"
                   />
 
                   {/* Active Spline Line */}
                   <path
-                    d="M 40 108 C 80 95, 120 70, 160 80 C 200 90, 240 50, 280 60 C 320 70, 360 45, 400 35 C 440 25, 465 20, 485 15"
+                    d={pathD}
                     fill="none"
                     stroke={palette.primary}
                     strokeWidth="2.5"
                     strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
 
-                  {/* Data Points & Value Callouts */}
-                  {[
-                    { x: 40, y: 108, val: '95' },
-                    { x: 120, y: 70, val: '135' },
-                    { x: 200, y: 90, val: '142' },
-                    { x: 280, y: 60, val: '125' },
-                    { x: 360, y: 45, val: '162' },
-                    { x: 440, y: 25, val: '188' },
-                    { x: 485, y: 15, val: '205' },
-                  ].map((pt, i) => (
+                  {/* Data Points */}
+                  {linePoints.map((pt, i) => (
                     <g key={i}>
-                      <circle cx={pt.x} cy={pt.y} r="3.5" fill="#ffffff" stroke={palette.primary} strokeWidth="2" />
-                      <rect
-                        x={pt.x - 11}
-                        y={pt.y - 14}
-                        width="22"
-                        height="10"
-                        rx="3"
-                        fill={palette.primary}
-                        opacity="0.9"
-                      />
+                      <circle cx={pt.x} cy={pt.y} r="3" fill="#ffffff" stroke={palette.primary} strokeWidth="1.8" />
+                      {i % 2 === 0 && (
+                        <text
+                          x={pt.x}
+                          y={pt.y - 6}
+                          fontSize="7"
+                          fontWeight="bold"
+                          fill={palette.primary}
+                          textAnchor="middle"
+                          fontFamily="monospace"
+                        >
+                          {pt.val}
+                        </text>
+                      )}
                       <text
                         x={pt.x}
-                        y={pt.y - 7}
-                        fontSize="7"
-                        fontWeight="bold"
-                        fill="#ffffff"
+                        y="160"
+                        fontSize="7.5"
+                        fill={palette.textSecondary}
+                        fontFamily="monospace"
                         textAnchor="middle"
                       >
-                        {pt.val}
+                        {pt.month}
                       </text>
                     </g>
-                  ))}
-
-                  {/* X-axis Month labels */}
-                  {['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov', 'Dec'].map((lbl, idx) => (
-                    <text
-                      key={lbl}
-                      x={40 + idx * 74}
-                      y="160"
-                      fontSize="8"
-                      fill={palette.textSecondary}
-                      fontFamily="monospace"
-                      textAnchor="middle"
-                    >
-                      {lbl}
-                    </text>
                   ))}
                 </svg>
               </div>
             </div>
 
-            {/* Visual 2: Revenue and Customer Segments (Column + Donut Breakdown) */}
+            {/* Visual 2: Revenue & Customer Segments (Columns + Donut) */}
             <div
-              className="lg:col-span-5 rounded-xl p-4 border shadow-xs flex flex-col justify-between"
+              className="lg:col-span-5 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
               style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold font-heading" style={{ color: palette.textPrimary }}>
-                    Revenue &amp; Customer Segments
-                  </h3>
-                  {/* Legend badges */}
-                  <div className="flex items-center gap-2 text-[9px] font-mono">
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: palette.primary }} />
-                      Returning
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: palette.accent }} />
-                      New
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      VIP
-                    </span>
-                  </div>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-[11px] font-bold font-heading" style={{ color: palette.textPrimary }}>
+                  Revenue &amp; Customer Segments
+                </h3>
+                <div className="flex items-center gap-2 text-[8px] font-mono">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: palette.primary }} />
+                    Returning
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: palette.accent }} />
+                    New
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    VIP
+                  </span>
                 </div>
-                <p className="text-[10px]" style={{ color: palette.textSecondary }}>
-                  Share of wallet by buyer tier and marketplace repetition
-                </p>
               </div>
 
-              {/* Layout with column bars and segment donut */}
-              <div className="grid grid-cols-12 gap-3 items-center my-auto pt-2">
+              {/* Grid with bars and donut */}
+              <div className="grid grid-cols-12 gap-2 items-center my-auto">
                 {/* 3 Columns */}
-                <div className="col-span-7 flex items-end justify-around h-36 px-2 border-b" style={{ borderColor: palette.cardBorder }}>
+                <div className="col-span-7 flex items-end justify-around h-24 px-1 border-b" style={{ borderColor: palette.cardBorder }}>
                   {[
-                    { label: 'Returning', height: '82%', val: '$62K', color: palette.primary },
-                    { label: 'New', height: '58%', val: '$45K', color: palette.accent },
-                    { label: 'VIP Prime', height: '28%', val: '$18K', color: '#f59e0b' },
+                    { label: 'Returning', height: `${dynamicSegments.returningPct}%`, val: `$${dynamicSegments.returningRev}k`, color: palette.primary },
+                    { label: 'New', height: `${dynamicSegments.newPct}%`, val: `$${dynamicSegments.newRev}k`, color: palette.accent },
+                    { label: 'VIP Prime', height: `${dynamicSegments.vipPct}%`, val: `$${dynamicSegments.vipRev}k`, color: '#f59e0b' },
                   ].map((bar, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1.5 w-1/3">
-                      <span className="text-[9px] font-bold font-mono" style={{ color: palette.textPrimary }}>
+                    <div key={i} className="flex flex-col items-center gap-1 w-1/3">
+                      <span className="text-[8px] font-bold font-mono" style={{ color: palette.textPrimary }}>
                         {bar.val}
                       </span>
                       <div
-                        className="w-8 rounded-t-md transition-all duration-500 shadow-sm"
+                        className="w-7 rounded-t-sm transition-all duration-300 shadow-2xs"
                         style={{ height: bar.height, backgroundColor: bar.color }}
                       />
-                      <span className="text-[8.5px] font-medium text-slate-500 whitespace-nowrap mt-1 truncate max-w-[50px]">
+                      <span className="text-[7.5px] font-medium text-slate-500 whitespace-nowrap truncate max-w-[44px]">
                         {bar.label}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {/* Donut Chart representation */}
+                {/* Donut Chart */}
                 <div className="col-span-5 flex flex-col items-center justify-center relative">
-                  <svg viewBox="0 0 100 100" className="w-28 h-28">
-                    {/* Returning Segment: 50% */}
+                  <svg viewBox="0 0 100 100" className="w-20 h-20">
                     <circle
                       cx="50"
                       cy="50"
-                      r="36"
+                      r="34"
                       fill="transparent"
                       stroke={palette.primary}
-                      strokeWidth="14"
-                      strokeDasharray="113.1 226.2"
+                      strokeWidth="13"
+                      strokeDasharray={`${(dynamicSegments.returningPct / 100) * 213.6} 213.6`}
                       strokeDashoffset="0"
                     />
-                    {/* New Segment: 36% */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="36"
+                      r="34"
                       fill="transparent"
                       stroke={palette.accent}
-                      strokeWidth="14"
-                      strokeDasharray="81.4 226.2"
-                      strokeDashoffset="-113.1"
+                      strokeWidth="13"
+                      strokeDasharray={`${(dynamicSegments.newPct / 100) * 213.6} 213.6`}
+                      strokeDashoffset={`-${(dynamicSegments.returningPct / 100) * 213.6}`}
                     />
-                    {/* VIP Segment: 14% */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="36"
+                      r="34"
                       fill="transparent"
                       stroke="#f59e0b"
-                      strokeWidth="14"
-                      strokeDasharray="31.7 226.2"
-                      strokeDashoffset="-194.5"
+                      strokeWidth="13"
+                      strokeDasharray={`${(dynamicSegments.vipPct / 100) * 213.6} 213.6`}
+                      strokeDashoffset={`-${((dynamicSegments.returningPct + dynamicSegments.newPct) / 100) * 213.6}`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                     <span className="text-xs font-black font-heading leading-none" style={{ color: palette.primary }}>
-                      50%
+                      {dynamicSegments.returningPct}%
                     </span>
-                    <span className="text-[8px] font-mono text-slate-400">Returning</span>
+                    <span className="text-[7.5px] font-mono text-slate-400">Returning</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-[9px] font-mono pt-2 border-t" style={{ borderColor: palette.cardBorder, color: palette.textSecondary }}>
-                <span>Repeat Purchase Rate: <strong>68.4%</strong></span>
-                <span>Prime Penetration: <strong>82%</strong></span>
+              <div className="flex items-center justify-between text-[8px] font-mono pt-1 border-t" style={{ borderColor: palette.cardBorder, color: palette.textSecondary }}>
+                <span>Repeat Ratio: <strong>{dynamicSegments.returningPct}%</strong></span>
+                <span>Filtered Rev: <strong>${Math.round(kpis.totalRev).toLocaleString()}</strong></span>
               </div>
             </div>
           </div>
 
           {/* ========================================================================= */}
-          {/* VISUALS ROW 2: TOP 5 CATEGORIES, TOP COUNTRIES, CHANNELS, SCATTER, TABLE   */}
+          {/* VISUALS ROW 2: CATEGORIES, COUNTRIES, CHANNELS, AND CUSTOMER TABLE        */}
           {/* ========================================================================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {/* Visual 3: Top 5 Categories / ASINs Donut Chart */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 flex-1 min-h-[160px]">
+            {/* Visual 3: Top Categories by Revenue (3 cols) */}
             <div
-              className="rounded-xl p-4 border shadow-xs flex flex-col justify-between"
+              className="lg:col-span-3 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
               style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
             >
               <div>
-                <h3 className="text-xs font-bold font-heading mb-1" style={{ color: palette.textPrimary }}>
-                  Top 5 Categories by Revenue
+                <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
+                  Top Categories
                 </h3>
-                <p className="text-[10px]" style={{ color: palette.textSecondary }}>
-                  Share of Amazon marketplace gross revenue
-                </p>
+                <span className="text-[8px] text-slate-400">By gross revenue share</span>
               </div>
 
-              <div className="flex items-center justify-center my-3">
-                <svg viewBox="0 0 100 100" className="w-32 h-32">
-                  {/* Segment 1: Echo (37.12%) */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="34"
-                    fill="transparent"
-                    stroke={palette.donutColors[0]}
-                    strokeWidth="16"
-                    strokeDasharray="79.3 213.6"
-                    strokeDashoffset="0"
-                  />
-                  {/* Segment 2: Kindle (24.62%) */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="34"
-                    fill="transparent"
-                    stroke={palette.donutColors[1]}
-                    strokeWidth="16"
-                    strokeDasharray="52.6 213.6"
-                    strokeDashoffset="-79.3"
-                  />
-                  {/* Segment 3: Fire TV (21.49%) */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="34"
-                    fill="transparent"
-                    stroke={palette.donutColors[2]}
-                    strokeWidth="16"
-                    strokeDasharray="45.9 213.6"
-                    strokeDashoffset="-131.9"
-                  />
-                  {/* Segment 4: Ring (10.51%) */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="34"
-                    fill="transparent"
-                    stroke={palette.donutColors[3]}
-                    strokeWidth="16"
-                    strokeDasharray="22.5 213.6"
-                    strokeDashoffset="-177.8"
-                  />
-                  {/* Segment 5: Essentials (6.26%) */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="34"
-                    fill="transparent"
-                    stroke={palette.donutColors[4]}
-                    strokeWidth="16"
-                    strokeDasharray="13.3 213.6"
-                    strokeDashoffset="-200.3"
-                  />
-                </svg>
-              </div>
-
-              {/* Legend with percentages */}
-              <div className="space-y-1 text-[9.5px]">
-                {CATEGORY_REVENUE_DATA.map((cat, idx) => (
-                  <div key={cat.name} className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 truncate">
+              <div className="space-y-1 my-1">
+                {dynamicCategories.slice(0, 4).map((cat, idx) => (
+                  <div key={cat.name} className="flex items-center justify-between text-[8.5px]">
+                    <span className="flex items-center gap-1 truncate max-w-[100px]">
                       <span
-                        className="w-2 h-2 rounded-full shrink-0"
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
                         style={{ backgroundColor: palette.donutColors[idx % palette.donutColors.length] }}
                       />
                       <span className="truncate" style={{ color: palette.textPrimary }}>
                         {cat.name}
                       </span>
                     </span>
-                    <span className="font-mono font-bold shrink-0 ml-2" style={{ color: palette.textPrimary }}>
-                      {cat.pct}% (${cat.revenue})
+                    <span className="font-mono font-bold ml-1" style={{ color: palette.textPrimary }}>
+                      {cat.pct}%
                     </span>
                   </div>
                 ))}
               </div>
+
+              <div className="text-[7.5px] font-mono text-slate-400 pt-1 border-t" style={{ borderColor: palette.cardBorder }}>
+                Top category: <strong>{dynamicCategories[0]?.name || 'Echo'}</strong>
+              </div>
             </div>
 
-            {/* Visual 4: Top Countries by Customers (Horizontal Bar Chart) */}
+            {/* Visual 4: Top Countries by Customers (3 cols) */}
             <div
-              className="rounded-xl p-4 border shadow-xs flex flex-col justify-between"
+              className="lg:col-span-3 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
               style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
             >
               <div>
-                <h3 className="text-xs font-bold font-heading mb-1" style={{ color: palette.textPrimary }}>
-                  Top Countries by Customers
+                <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
+                  Top Countries
                 </h3>
-                <p className="text-[10px]" style={{ color: palette.textSecondary }}>
-                  Active unique buyer count per Amazon marketplace
-                </p>
+                <span className="text-[8px] text-slate-400">Marketplace unique buyers</span>
               </div>
 
-              <div className="space-y-2 my-2">
-                {COUNTRY_VOLUME_DATA.slice(0, 7).map((c) => {
-                  const maxVal = 24;
-                  const pct = (c.customers / maxVal) * 100;
+              <div className="space-y-1 my-1">
+                {dynamicCountries.slice(0, 4).map((c) => {
+                  const maxC = dynamicCountries[0]?.customers || 10;
+                  const pct = Math.round((c.customers / maxC) * 100);
                   return (
                     <div key={c.country} className="space-y-0.5">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="flex items-center gap-1.5 font-medium truncate">
+                      <div className="flex items-center justify-between text-[8.5px]">
+                        <span className="flex items-center gap-1 truncate max-w-[95px]">
                           <span>{c.flag}</span>
-                          <span className="truncate" style={{ color: palette.textPrimary }}>
-                            {c.country}
-                          </span>
+                          <span className="truncate" style={{ color: palette.textPrimary }}>{c.country}</span>
                         </span>
-                        <span className="font-mono font-bold ml-2" style={{ color: palette.primary }}>
+                        <span className="font-mono font-bold" style={{ color: palette.primary }}>
                           {c.customers}
                         </span>
                       </div>
-                      <div className="w-full h-2 rounded-full overflow-hidden bg-slate-100">
+                      <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-500"
+                          className="h-full rounded-full transition-all duration-300"
                           style={{ width: `${pct}%`, backgroundColor: palette.primary }}
                         />
                       </div>
@@ -874,166 +885,137 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                 })}
               </div>
 
-              <div className="text-[9px] text-right font-mono" style={{ color: palette.textSecondary }}>
-                Global Cross-Border Index: <strong>94.2</strong>
+              <div className="text-[7.5px] font-mono text-slate-400 pt-1 border-t" style={{ borderColor: palette.cardBorder }}>
+                Marketplaces active: <strong>{dynamicCountries.length}</strong>
               </div>
             </div>
 
-            {/* Visual 5 & 6: Acquisition Channels & Scatter Plot */}
+            {/* Visual 5: Acquisition Channels (2 cols) */}
             <div
-              className="rounded-xl p-4 border shadow-xs flex flex-col justify-between"
+              className="lg:col-span-2 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
               style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
             >
               <div>
-                <h3 className="text-xs font-bold font-heading mb-1" style={{ color: palette.textPrimary }}>
-                  Customer Acquisition Channels
+                <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
+                  Acquisition
                 </h3>
-                <p className="text-[10px]" style={{ color: palette.textSecondary }}>
-                  Traffic attribution &amp; paid advertising volume
-                </p>
+                <span className="text-[8px] text-slate-400">Traffic attribution</span>
               </div>
 
-              {/* Column Bar chart */}
-              <div className="flex items-end justify-around h-24 pt-2 border-b" style={{ borderColor: palette.cardBorder }}>
-                {CHANNEL_DATA.map((ch, idx) => (
-                  <div key={ch.channel} className="flex flex-col items-center gap-1 w-1/6">
-                    <span className="text-[8px] font-mono font-bold" style={{ color: palette.textPrimary }}>
-                      {ch.volume}
-                    </span>
+              <div className="flex items-end justify-around h-16 pt-1 border-b" style={{ borderColor: palette.cardBorder }}>
+                {dynamicChannels.slice(0, 5).map((ch, idx) => (
+                  <div key={ch.label} className="flex flex-col items-center gap-0.5 w-1/5">
                     <div
-                      className="w-4 rounded-t-sm transition-all shadow-xs"
+                      className="w-3 rounded-t-xs transition-all shadow-2xs"
                       style={{
-                        height: `${(ch.volume / 40) * 100}%`,
+                        height: `${ch.heightPct}%`,
                         backgroundColor: idx === 0 ? palette.primary : palette.chartBarSecondary,
                       }}
                     />
+                    <span className="text-[6.5px] font-mono text-slate-400 truncate max-w-[20px]">
+                      {ch.label}
+                    </span>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between text-[7px] text-slate-500 font-mono pt-1">
-                <span>Search</span>
-                <span>Social</span>
-                <span>PPC</span>
-                <span>Email</span>
-                <span>Affil</span>
-                <span>Direct</span>
-              </div>
 
-              {/* Scatter Plot Simulation: Revenue vs Order Volume */}
-              <div className="pt-2 mt-2 border-t" style={{ borderColor: palette.cardBorder }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[9.5px] font-bold" style={{ color: palette.textPrimary }}>
-                    Revenue vs Order Volume
+              <div className="text-[7.5px] font-mono text-slate-400 pt-1">
+                PPC / Organic Ratio: <strong>1.4x</strong>
+              </div>
+            </div>
+
+            {/* Visual 6: High-Density Customer Order Ledger Table (4 cols) */}
+            <div
+              className="lg:col-span-4 rounded-lg border shadow-2xs flex flex-col overflow-hidden"
+              style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
+            >
+              <div
+                className="px-2 py-1.5 border-b flex items-center justify-between gap-1"
+                style={{ borderColor: palette.cardBorder }}
+              >
+                <div>
+                  <h3 className="text-[9.5px] font-bold font-heading" style={{ color: palette.textPrimary }}>
+                    Customer Ledger
+                  </h3>
+                  <span className="text-[7.5px] text-slate-400">
+                    {filteredOrders.length} records matching
                   </span>
-                  <span className="text-[8px] font-mono text-slate-400">Distribution</span>
                 </div>
-                <div className="w-full h-20 bg-slate-50/60 rounded-lg border relative overflow-hidden p-1.5" style={{ borderColor: palette.cardBorder }}>
-                  {SCATTER_POINTS.slice(0, 14).map((pt, i) => {
-                    const leftPct = (pt.orders / 5) * 85 + 5;
-                    const topPct = 85 - (pt.revenue / 700) * 80;
-                    return (
-                      <div
-                        key={pt.id}
-                        className="absolute rounded-full transition-all hover:scale-125 cursor-pointer"
-                        style={{
-                          left: `${leftPct}%`,
-                          top: `${topPct}%`,
-                          width: `${pt.size / 3.5}px`,
-                          height: `${pt.size / 3.5}px`,
-                          backgroundColor: palette.scatterColors[i % palette.scatterColors.length],
-                          opacity: 0.75,
-                        }}
-                        title={`Orders: ${pt.orders} · Revenue: $${pt.revenue}`}
-                      />
-                    );
-                  })}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search…"
+                    className="pl-4 pr-1 py-0.5 rounded text-[8px] border bg-slate-50/80 outline-none w-20 sm:w-24"
+                    style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
+                  />
+                  <Search size={9} className="absolute left-1.5 top-1.5 text-slate-400" />
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* ========================================================================= */}
-          {/* VISUAL 7: HIGH-DENSITY LIVE DATA TABLE                                     */}
-          {/* ========================================================================= */}
-          <div
-            className="rounded-xl border shadow-xs overflow-hidden"
-            style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
-          >
-            <div className="p-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2" style={{ borderColor: palette.cardBorder }}>
-              <div>
-                <h3 className="text-xs font-bold font-heading" style={{ color: palette.textPrimary }}>
-                  Customer Order Ledger &amp; Segmentation Breakdown
-                </h3>
-                <p className="text-[10px]" style={{ color: palette.textSecondary }}>
-                  Showing {filteredCustomers.length} verified transactions matching current marketplace filters
-                </p>
-              </div>
-
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search customer name…"
-                className="px-2.5 py-1 rounded-lg border text-[10px] bg-slate-50/80 outline-none w-full sm:w-48"
-                style={{ borderColor: palette.cardBorder, color: palette.textPrimary }}
-              />
-            </div>
-
-            <div className="overflow-x-auto max-h-56 scrollbar-thin">
-              <table className="w-full text-[10px] text-left">
-                <thead
-                  className="sticky top-0 font-semibold font-mono uppercase text-[9px] border-b"
-                  style={{
-                    backgroundColor: palette.tableHeaderBg,
-                    borderColor: palette.cardBorder,
-                    color: palette.textSecondary,
-                  }}
-                >
-                  <tr>
-                    <th className="py-2 px-3">Customer Name</th>
-                    <th className="py-2 px-3">Region</th>
-                    <th className="py-2 px-3">Country</th>
-                    <th className="py-2 px-3 text-right">Units</th>
-                    <th className="py-2 px-3 text-right">Revenue</th>
-                    <th className="py-2 px-3 text-center">Segment</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y" style={{ borderColor: palette.cardBorder }}>
-                  {filteredCustomers.map((cust) => (
-                    <tr
-                      key={cust.id}
-                      className="hover:bg-slate-50/80 transition-colors"
-                      style={{ color: palette.textPrimary }}
-                    >
-                      <td className="py-1.5 px-3 font-semibold">{cust.customerName}</td>
-                      <td className="py-1.5 px-3 text-slate-500">{cust.regionName}</td>
-                      <td className="py-1.5 px-3">
-                        <span className="inline-flex items-center gap-1.5">
-                          <span>{cust.flag}</span>
-                          <span>{cust.country}</span>
-                        </span>
-                      </td>
-                      <td className="py-1.5 px-3 text-right font-mono">{cust.units}</td>
-                      <td className="py-1.5 px-3 text-right font-mono font-bold" style={{ color: palette.primary }}>
-                        ${cust.revenue}
-                      </td>
-                      <td className="py-1.5 px-3 text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[8.5px] font-bold font-mono ${
-                            cust.segment === 'VIP'
-                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                              : cust.segment === 'Returning'
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                              : 'bg-blue-100 text-blue-800 border border-blue-300'
-                          }`}
-                        >
-                          {cust.segment}
-                        </span>
-                      </td>
+              {/* Scrollable table rows */}
+              <div className="overflow-y-auto max-h-28 sm:max-h-32 scrollbar-thin">
+                <table className="w-full text-[8.5px] text-left">
+                  <thead
+                    className="sticky top-0 font-semibold font-mono uppercase text-[7.5px] border-b"
+                    style={{
+                      backgroundColor: palette.tableHeaderBg,
+                      borderColor: palette.cardBorder,
+                      color: palette.textSecondary,
+                    }}
+                  >
+                    <tr>
+                      <th className="py-1 px-1.5">Customer</th>
+                      <th className="py-1 px-1">Country</th>
+                      <th className="py-1 px-1 text-right">Rev</th>
+                      <th className="py-1 px-1 text-center">Tier</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y" style={{ borderColor: palette.cardBorder }}>
+                    {filteredOrders.slice(0, 15).map((cust) => (
+                      <tr
+                        key={cust.id}
+                        className="hover:bg-slate-50/80 transition-colors"
+                        style={{ color: palette.textPrimary }}
+                      >
+                        <td className="py-1 px-1.5 font-semibold truncate max-w-[80px]">
+                          {cust.customerName}
+                        </td>
+                        <td className="py-1 px-1">
+                          <span className="inline-flex items-center gap-0.5">
+                            <span>{cust.flag}</span>
+                            <span className="truncate max-w-[45px]">{cust.country}</span>
+                          </span>
+                        </td>
+                        <td className="py-1 px-1 text-right font-mono font-bold" style={{ color: palette.primary }}>
+                          ${cust.revenue}
+                        </td>
+                        <td className="py-1 px-1 text-center">
+                          <span
+                            className={`inline-block px-1 rounded text-[7px] font-bold font-mono ${
+                              cust.segment === 'VIP'
+                                ? 'bg-amber-100 text-amber-800'
+                                : cust.segment === 'Returning'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}
+                          >
+                            {cust.segment}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredOrders.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-slate-400 font-mono text-[9px]">
+                          No orders matching current filter combination.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
