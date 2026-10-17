@@ -15,33 +15,8 @@ export const ReportStyleShowcase: React.FC<ReportStyleShowcaseProps> = ({ onOpen
   const paletteKeys = Object.keys(REPORT_PALETTES);
 
   return (
-    <section id="report-showcase" className="w-full bg-[#090b0e] border border-[#1f242d] rounded-3xl p-6 sm:p-10 shadow-2xl text-white space-y-8 my-4">
-      {/* ========================================================================= */}
-      {/* SECTION HEADER                                                            */}
-      {/* ========================================================================= */}
-      <div className="max-w-4xl space-y-3">
-        <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-[0.22em] text-[#ff6b4a]">
-          <span className="w-2 h-2 rounded-full bg-[#ff6b4a] animate-pulse" />
-          <span>SEE THE PRODUCT BEFORE YOU BUY</span>
-        </div>
-
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.1] font-heading">
-          One report structure.
-          <span className="block italic font-serif font-normal text-[#f97316] text-3xl sm:text-5xl tracking-normal mt-1">
-            Ten visual directions.
-          </span>
-        </h2>
-
-        <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-          Choose a named style below, inspect the real dashboard image, and tap it to zoom. The text stays outside the image so it remains readable on mobile.
-        </p>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* MAIN SHOWCASE CONTAINER (DARK OBSIDIAN CARD)                             */}
-      {/* ========================================================================= */}
-      <div className="bg-[#101318] border border-[#232934] rounded-2xl p-3 sm:p-6 shadow-2xl relative overflow-hidden">
-        {/* Top Control Bar: CHOOSE A REPORT STYLE + 10 Palette Pills */}
+    <section id="report-showcase" className="w-full bg-[#101318] border border-[#232934] rounded-2xl p-3 sm:p-6 shadow-2xl relative overflow-hidden text-white my-6">
+      {/* Top Control Bar: CHOOSE A REPORT STYLE + 10 Palette Pills */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 mb-4 border-b border-[#1e232b]">
           <div className="flex items-center gap-2 text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 shrink-0">
             <span>CHOOSE A REPORT STYLE</span>
@@ -139,7 +114,6 @@ export const ReportStyleShowcase: React.FC<ReportStyleShowcaseProps> = ({ onOpen
             </button>
           </div>
         </div>
-      </div>
 
       {/* ========================================================================= */}
       {/* FULL-SCREEN ZOOM / HIGH RESOLUTION INSPECTION MODAL                       */}

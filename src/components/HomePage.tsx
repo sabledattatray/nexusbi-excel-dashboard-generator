@@ -416,7 +416,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================================= */}
-      {/* REPORT STYLE SHOWCASE: ONE REPORT STRUCTURE, TEN VISUAL DIRECTIONS        */}
+      {/* INTERACTIVE DASHBOARD SHOWCASE                                            */}
       {/* ========================================================================= */}
       <ReportStyleShowcase onOpenLiveReport={onOpenAmazonDashboard || onOpenDashboard} />
 
