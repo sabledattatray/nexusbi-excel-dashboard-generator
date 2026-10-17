@@ -484,7 +484,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="sidebar-signature group"
             title="Visit Datta Sable's portfolio"
           >
-            <span className="workspace-avatar">DS</span>
+            <span className="workspace-avatar overflow-hidden rounded-full border border-emerald-500/50 p-0 shadow-sm">
+              <img
+                src="/dattasable.webp"
+                alt="Datta Sable"
+                width={30}
+                height={30}
+                loading="lazy"
+                className="w-full h-full object-cover object-top rounded-full"
+              />
+            </span>
             <div className="min-w-0 flex-1">
               <strong className="group-hover:text-emerald-300 transition-colors flex items-center gap-1 text-[11.5px]">
                 Datta Sable <ArrowUpRight size={11} className="opacity-50 group-hover:opacity-100 transition-opacity" />

@@ -675,8 +675,15 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* ========================================================================= */}
       <section className="bg-gradient-to-r from-[#172b2a] via-[#1b342e] to-[#142823] text-white rounded-2xl p-5 sm:p-10 border border-[#2e5044] flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-xl sm:text-2xl shrink-0 shadow-sm">
-            DS
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-[#4ade80]/60 ring-2 ring-emerald-500/25 shadow-md shrink-0 bg-slate-900">
+            <img
+              src="/dattasable.webp"
+              alt="Datta Sable — Creator & Business Intelligence Architect"
+              width={64}
+              height={64}
+              loading="lazy"
+              className="w-full h-full object-cover object-top"
+            />
           </div>
           <div>
             <h3 className="text-lg font-bold text-white font-heading">

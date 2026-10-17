@@ -246,8 +246,15 @@ export const SeoOverviewSection: React.FC = () => {
       {/* Author Bio & Portfolio Callout */}
       <div className="p-8 md:p-12 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#172b2a] border-2 border-emerald-500/40 flex items-center justify-center text-emerald-300 font-bold text-xl shrink-0 shadow-sm">
-            DS
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500/60 ring-2 ring-emerald-500/25 shadow-md shrink-0 bg-slate-900">
+            <img
+              src="/dattasable.webp"
+              alt="Datta Sable — Creator & Business Intelligence Architect"
+              width={56}
+              height={56}
+              loading="lazy"
+              className="w-full h-full object-cover object-top"
+            />
           </div>
           <div>
             <h4 className="text-base font-bold text-slate-900 font-heading">
