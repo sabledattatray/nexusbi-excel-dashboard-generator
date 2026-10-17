@@ -35,6 +35,7 @@ import {
   Printer,
   ArrowLeft,
   ChevronDown,
+  ShoppingBag,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -48,7 +49,7 @@ interface NavbarProps {
   onDownloadExcel: () => void;
   isDownloading: boolean;
   onRegenerateData: () => void;
-  activeTab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers';
+  activeTab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales';
   setActiveTab: (tab: NavbarProps['activeTab']) => void;
   isCustomDataActive?: boolean;
   isSidebarVisible: boolean;
@@ -133,6 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       items: [
         { id: 'home', label: 'Home Page', icon: Home },
         { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard, badge: 'Live' },
+        { id: 'amazon-sales', label: 'Amazon Sales Executive', icon: ShoppingBag, badge: 'New', path: '/amazon-sales-dashboard' },
         { id: 'excel-preview', label: 'Live Excel Workbook', icon: FileSpreadsheet, badge: '.XLSX' },
       ],
     },
@@ -177,9 +179,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleItemClick = (item: NavItemDef) => {
     if (item.isLegal && item.legalRoute) {
       onNavigateLegal?.(item.legalRoute);
+    } else if (item.id === 'amazon-sales') {
+      onBackToApp?.();
+      setActiveTab('amazon-sales');
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', '/amazon-sales-dashboard');
+      }
     } else {
       onBackToApp?.();
       setActiveTab(item.id as NavbarProps['activeTab']);
+      if (typeof window !== 'undefined' && item.id === 'home') {
+        window.history.pushState(null, '', '/');
+      }
     }
     setIsMobileMenuOpen(false);
   };

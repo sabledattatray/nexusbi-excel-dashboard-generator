@@ -88,6 +88,26 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
                 </button>
               </li>
               <li>
+                <a
+                  href="/amazon-sales-dashboard"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onSelectTab) {
+                      (onSelectTab as any)('amazon-sales');
+                    }
+                    if (typeof window !== 'undefined') {
+                      window.history.pushState(null, '', '/amazon-sales-dashboard');
+                    }
+                  }}
+                  className="hover:text-emerald-300 transition-colors text-left flex items-center gap-1.5"
+                >
+                  <span>Amazon Sales Executive</span>
+                  <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    New
+                  </span>
+                </a>
+              </li>
+              <li>
                 <button
                   onClick={() => onSelectTab?.('excel-preview')}
                   className="hover:text-white transition-colors text-left cursor-pointer"

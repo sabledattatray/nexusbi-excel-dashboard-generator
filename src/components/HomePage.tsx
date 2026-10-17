@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 import { IndustryType } from '../types/dataset';
+import { ReportStyleShowcase } from './ReportStyleShowcase';
 
 interface HomePageProps {
   onOpenDashboard: () => void;
@@ -40,6 +41,7 @@ interface HomePageProps {
   currentIndustry?: IndustryType;
   isProUnlocked?: boolean;
   onOpenUnlockModal?: () => void;
+  onOpenAmazonDashboard?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -52,6 +54,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   currentIndustry = 'enterprise_tech',
   isProUnlocked = false,
   onOpenUnlockModal,
+  onOpenAmazonDashboard,
 }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -413,6 +416,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* ========================================================================= */}
+      {/* REPORT STYLE SHOWCASE: ONE REPORT STRUCTURE, TEN VISUAL DIRECTIONS        */}
+      {/* ========================================================================= */}
+      <ReportStyleShowcase onOpenLiveReport={onOpenAmazonDashboard || onOpenDashboard} />
+
       {/* ========================================================================= */}
       {/* KEY CAPABILITIES - 6 DISTINCT VALUE PILLARS (Clean Cards)                 */}
       {/* ========================================================================= */}

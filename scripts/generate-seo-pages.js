@@ -40,6 +40,14 @@ const pages = [
     metaHeading: 'Excel Sales Dashboard & Revenue Analytics',
   },
   {
+    slug: 'amazon-sales-dashboard',
+    title: 'Amazon Sales Dashboard & Performance Suite | excel.dattasable.com',
+    description: 'Explore the interactive Amazon Sales Performance dashboard. Track customer retention cohorts, FBA unit velocity, country revenue breakdown, and 10 visual design directions.',
+    canonical: 'https://excel.dattasable.com/amazon-sales-dashboard',
+    h1: 'Amazon Sales Performance & Executive Marketplace Dashboard',
+    metaHeading: 'Amazon Sales Performance Dashboard',
+  },
+  {
     slug: 'hr-dashboard',
     title: 'Excel HR Dashboard Generator | Workforce & Headcount Analytics',
     description: 'Generate interactive Excel HR dashboards for employee retention, headcount growth, attrition rates, and compensation analytics with live formulas.',

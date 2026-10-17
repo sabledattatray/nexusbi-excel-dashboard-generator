@@ -36,6 +36,7 @@ const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModa
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
 const LegalPage = lazy(() => import('./components/LegalPage').then((m) => ({ default: m.LegalPage })));
+const AmazonStandalonePage = lazy(() => import('./components/AmazonStandalonePage').then((m) => ({ default: m.AmazonStandalonePage })));
 import type { LegalRoute } from './components/LegalPage';
 import { trackEvent, trackPageView } from './utils/analytics';
 
@@ -58,7 +59,7 @@ const getInitialRouteState = () => {
   }
   const path = window.location.pathname.toLowerCase();
   let legalRoute: LegalRoute | null = null;
-  let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' = 'home';
+  let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' = 'home';
   let ind: keyof typeof INDUSTRY_PRESETS = 'enterprise_tech';
 
   if (path.includes('disclaimer')) { legalRoute = 'disclaimer'; }
@@ -68,7 +69,9 @@ const getInitialRouteState = () => {
   else if (path.includes('contact')) { legalRoute = 'contact'; }
   else if (path.includes('about')) { legalRoute = 'about'; }
 
-  if (path.includes('sales-dashboard')) {
+  if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
+    tab = 'amazon-sales';
+  } else if (path.includes('sales-dashboard')) {
     tab = 'dashboard';
     ind = 'enterprise_tech';
   } else if (path.includes('hr-dashboard')) {
@@ -106,7 +109,7 @@ export default function App() {
 
   // Active Worksheet View Tab
   const [activeTab, setActiveTab] = useState<
-    'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers'
+    'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales'
   >(initialRoute.tab);
 
   // Randomization Seed offset to allow "Refresh Data"
@@ -143,6 +146,7 @@ export default function App() {
       window.history.pushState(null, '', '/');
     }
     setActiveLegalRoute(null);
+    setActiveTab('home');
     document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
     if (typeof document !== 'undefined') {
       const canonical = document.querySelector('link[rel="canonical"]');
@@ -178,10 +182,14 @@ export default function App() {
       } else {
         setActiveLegalRoute(null);
         document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
-        if (path.includes('sales-dashboard') || path.includes('hr-dashboard') || path.includes('financial-dashboard') || path.includes('kpi-dashboard')) {
+        if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
+          setActiveTab('amazon-sales');
+        } else if (path.includes('sales-dashboard') || path.includes('hr-dashboard') || path.includes('financial-dashboard') || path.includes('kpi-dashboard')) {
           setActiveTab('dashboard');
         } else if (path.includes('mis-report-generator') || path.includes('excel-dashboard-generator')) {
           setActiveTab('excel-preview');
+        } else {
+          setActiveTab('home');
         }
       }
     };
@@ -374,6 +382,13 @@ export default function App() {
               onBackToApp={handleBackToApp}
             />
           </Suspense>
+        ) : activeTab === 'amazon-sales' ? (
+          <Suspense fallback={<WorkspaceLoader />}>
+            <AmazonStandalonePage
+              onBackToHome={handleBackToApp}
+              onDownloadExcel={handleDownloadExcel}
+            />
+          </Suspense>
         ) : activeTab === 'home' ? (
           <HomePage
             onOpenDashboard={() => setActiveTab('dashboard')}
@@ -391,6 +406,13 @@ export default function App() {
               setActiveTab('dashboard');
             }}
             currentIndustry={config.industry}
+            onOpenAmazonDashboard={() => {
+              setActiveTab('amazon-sales');
+              if (typeof window !== 'undefined') {
+                window.history.pushState(null, '', '/amazon-sales-dashboard');
+              }
+              trackPageView('/amazon-sales-dashboard', 'Amazon Sales Dashboard');
+            }}
           />
         ) : (
           <Suspense fallback={<WorkspaceLoader />}>
