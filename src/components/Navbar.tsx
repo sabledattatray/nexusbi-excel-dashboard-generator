@@ -23,6 +23,9 @@ import {
   Cpu,
   Crown,
   Unlock,
+  ShieldCheck,
+  SlidersHorizontal,
+  Database,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -138,13 +141,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         aria-label="Application sidebar"
       >
         {/* Top Header inside Sidebar: Logo & Hide Button */}
-        <div className="flex items-center justify-between w-full mb-3 pb-2 border-b border-[#243e37]">
+        <div className="flex items-center justify-between w-full mb-2 pb-2.5 border-b border-white/[0.08]">
           <button
             onClick={() => handleSelectView('home')}
             className="brand-lockup cursor-pointer text-left flex-1"
             title="excel.dattasable.com — Home"
           >
-            <ExcelLogo size={28} tagline="excel.dattasable.com" />
+            <ExcelLogo size={28} tagline="EXECUTIVE BI STUDIO" />
           </button>
 
           {/* Hide Sidebar button inside sidebar */}
@@ -156,12 +159,55 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onToggleSidebar();
               }
             }}
-            className="p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-[#203a33] active:scale-95 transition-all ml-1 shrink-0"
+            className="sidebar-toggle-btn ml-1 cursor-pointer"
             aria-label="Hide sidebar"
             title="Hide sidebar (Ctrl+B)"
           >
-            <PanelLeftClose size={18} />
+            <PanelLeftClose size={16} />
           </button>
+        </div>
+
+        {/* Active Dataset / Model Context Glass Card */}
+        <div className="sidebar-model-card group">
+          <div className="flex items-center justify-between gap-1.5 mb-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[9.5px] font-bold tracking-wider uppercase text-emerald-400/90 font-mono truncate">
+                {isCustomDataActive ? 'LOCAL DATASET' : 'SAMPLE TEMPLATE'}
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                onOpenCustomizer();
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-[10px] text-slate-400 hover:text-emerald-300 flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-white/[0.06] cursor-pointer"
+              title="Change industry template / configuration"
+            >
+              <SlidersHorizontal size={11} />
+              <span>Change</span>
+            </button>
+          </div>
+
+          <div className="mt-1">
+            <span className="sidebar-model-title" title={config.companyName}>
+              {config.companyName}
+            </span>
+          </div>
+
+          <div className="sidebar-model-meta">
+            <span className="flex items-center gap-1 min-w-0">
+              <Database size={11} className="text-emerald-400 shrink-0" />
+              <span>{config.recordCount ? (config.recordCount >= 1000 ? `${(config.recordCount / 1000).toFixed(0)}k rows` : `${config.recordCount} rows`) : '1,000 rows'}</span>
+            </span>
+            <span className="text-white/20">•</span>
+            <span className="truncate capitalize text-emerald-300">
+              {isCustomDataActive ? 'Local CSV / Excel' : `${config.industry.replace(/_/g, ' ')} Demo`}
+            </span>
+          </div>
         </div>
 
         {/* Navigation Sections */}
@@ -170,21 +216,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             <React.Fragment key={group.title}>
               {groupIdx > 0 && <div className="sidebar-divider" role="separator" />}
               <div className="sidebar-label">
-                <span className="sidebar-label-dot" />
-                <span>{group.title}</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="sidebar-label-dot" />
+                  <span>{group.title}</span>
+                </span>
+                <span className="text-[9px] font-mono text-slate-500 font-normal">
+                  {group.items.length}
+                </span>
               </div>
               {group.items.map(({ id, label, icon: Icon, badge }) => (
                 <button
                   key={id}
                   aria-current={activeTab === id ? 'page' : undefined}
-                  className={activeTab === id ? 'nav-item active' : 'nav-item'}
+                  className={`nav-item group cursor-pointer ${activeTab === id ? 'active' : ''}`}
                   onClick={() => handleSelectView(id)}
                   title={label}
                 >
-                  <Icon size={14.5} />
-                  <span className="truncate">{label}</span>
+                  {activeTab === id && <span className="nav-item-active-bar" />}
+                  <div className="nav-item-icon-box">
+                    <Icon size={14.5} />
+                  </div>
+                  <span className="truncate font-medium">{label}</span>
                   {badge && <span className="nav-badge">{badge}</span>}
-                  {activeTab === id && <span className="nav-active-dot" />}
                 </button>
               ))}
             </React.Fragment>
@@ -192,66 +245,109 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Tools Section */}
           <div className="sidebar-divider" role="separator" />
-          <div className="sidebar-label sidebar-tools-label">
-            <span className="sidebar-label-dot" />
-            <span>Report Tools</span>
+          <div className="sidebar-label">
+            <span className="flex items-center gap-1.5">
+              <span className="sidebar-label-dot" />
+              <span>Studio Tools</span>
+            </span>
+            <span className="text-[9px] font-mono text-slate-500 font-normal">3</span>
           </div>
+
           <button
-            className="nav-item group"
+            className="sidebar-tool-card group cursor-pointer"
             onClick={() => {
               onOpenUploadModal();
               setIsMobileMenuOpen(false);
             }}
             title="Import your CSV or Excel dataset"
           >
-            <Upload size={14.5} />
-            <span className="truncate">Import CSV / Excel</span>
-            <span className="nav-badge">Upload</span>
-            <ArrowUpRight size={11} className="ml-1 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+              <Upload size={14} />
+            </div>
+            <div className="flex flex-col min-w-0 text-left flex-1">
+              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                Import Dataset
+                <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
+              </span>
+              <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
+            </div>
           </button>
+
           <button
-            className="nav-item group"
+            className="sidebar-tool-card group cursor-pointer"
             onClick={() => {
               onOpenCustomizer();
               setIsMobileMenuOpen(false);
             }}
             title="Browse 32 ready-to-use industry dashboard templates"
           >
-            <LayoutTemplate size={14.5} />
-            <span className="truncate">Ready Templates</span>
-            <span className="nav-badge">32 Ready</span>
+            <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+              <LayoutTemplate size={14} />
+            </div>
+            <div className="flex flex-col min-w-0 text-left flex-1">
+              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                32 BI Templates
+                <span className="nav-badge">Ready</span>
+              </span>
+              <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
+            </div>
           </button>
+
           <a
             href="https://fabric.dattasable.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="nav-item group"
+            className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
             title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
           >
-            <Cpu size={14.5} className="text-sky-400 group-hover:text-sky-300" />
-            <span className="truncate">Fabric Master</span>
-            <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/40">Fabric</span>
-            <ArrowUpRight size={11} className="ml-1 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
+              <Cpu size={14} />
+            </div>
+            <div className="flex flex-col min-w-0 text-left flex-1">
+              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                Fabric Master
+                <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
+              </span>
+              <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
+            </div>
           </a>
+
+          {/* Privacy & Air-Gapped Trust Box */}
+          <div className="sidebar-trust-box">
+            <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+            <div className="flex flex-col min-w-0 text-left">
+              <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
+              <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
+            </div>
+          </div>
         </nav>
 
-        {/* Compact Bottom Author Lockup */}
+        {/* Ultra-Premium Profile & Keyboard Shortcut Lockup */}
         <div className="sidebar-bottom">
           <a
             href="https://dattasable.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="sidebar-signature hover:bg-[#1e3630] transition-colors rounded-lg p-1.5 flex items-center gap-2"
+            className="sidebar-signature group"
             title="Visit Datta Sable's portfolio"
           >
-            <span className="workspace-avatar text-emerald-300 font-semibold">DS</span>
+            <span className="workspace-avatar">DS</span>
             <div className="min-w-0 flex-1">
-              <strong>Datta Sable</strong>
-              <small className="flex items-center gap-1 text-[9.5px]">
-                BI Expert &amp; Engineer <ArrowUpRight size={10} className="opacity-70" />
+              <strong className="group-hover:text-emerald-300 transition-colors flex items-center gap-1 text-[11.5px]">
+                Datta Sable <ArrowUpRight size={11} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+              </strong>
+              <small className="text-[9.5px] text-slate-400 block truncate">
+                Principal BI Architect
               </small>
             </div>
           </a>
+
+          <div className="flex items-center justify-between px-1.5 py-0.5 text-[9.5px] text-slate-500 font-mono">
+            <span>Sidebar Toggle</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-black/40 border border-white/10 text-[9px] text-slate-400 shadow-xs">
+              Ctrl + B
+            </kbd>
+          </div>
         </div>
       </aside>
 

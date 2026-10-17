@@ -93,7 +93,7 @@ export default function App() {
   const [config, setConfig] = useState<DatasetConfig>(() => {
     const preset = INDUSTRY_PRESETS[initialRoute.industry];
     return {
-      companyName: preset?.companyDefault || 'Nexdial.io Cloud Technologies Inc.',
+      companyName: preset?.companyDefault || 'Nexus Enterprise Systems Inc.',
       reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
       industry: initialRoute.industry,
       recordCount: 1000,
@@ -270,7 +270,7 @@ export default function App() {
   const handleResetToSample = () => {
     setCustomImportResult(null);
     setConfig({
-      companyName: 'Nexdial.io Cloud Technologies Inc.',
+      companyName: 'Nexus Enterprise Systems Inc.',
       reportTitle: 'FY2024-2025 Global Sales Performance & Executive Dashboard',
       industry: 'enterprise_tech',
       recordCount: 1000,

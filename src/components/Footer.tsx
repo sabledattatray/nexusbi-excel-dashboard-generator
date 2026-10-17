@@ -10,6 +10,7 @@ import {
   Youtube,
   Linkedin,
   Cpu,
+  Mail,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 
@@ -244,55 +245,72 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
           </div>
         </div>
 
-        {/* Bottom Trust & Copyright Row */}
-        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-[#80998f]">
-          <div className="flex items-center gap-2 flex-wrap text-center md:text-left">
-            <span>© {currentYear} Datta Sable</span>
-            <span>·</span>
-            <span className="font-mono text-emerald-300">excel.dattasable.com</span>
-            <span>·</span>
-            <button
-              onClick={() => onOpenLegal?.('about')}
-              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              About Us
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => onOpenLegal?.('privacy')}
-              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              Privacy Policy
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => onOpenLegal?.('terms')}
-              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              Terms
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => onOpenLegal?.('refund')}
-              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              Refunds
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => onOpenLegal?.('contact')}
-              className="hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              Contact Us
-            </button>
+        {/* Bottom Trust, Legal & Copyright Section - Mobile Optimized */}
+        <div className="pt-8 mt-2 flex flex-col lg:flex-row items-center justify-between gap-5 text-[12px] text-[#80998f] border-t border-[#233b35]">
+          {/* Copyright, Domain & Legal Links */}
+          <div className="w-full lg:w-auto flex flex-col md:flex-row items-center gap-3 md:gap-4 text-center md:text-left">
+            <div className="flex items-center justify-center gap-2 flex-wrap text-slate-300 text-xs">
+              <span>© {currentYear} Datta Sable</span>
+              <span className="text-[#3d5c52]">·</span>
+              <span className="font-mono text-emerald-300 font-semibold bg-[#16332a] border border-[#275345] px-2 py-0.5 rounded text-[11px]">
+                excel.dattasable.com
+              </span>
+            </div>
+
+            {/* Legal Links with comfortable touch targets */}
+            <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap text-[11.5px] text-[#95afa5]">
+              <span className="hidden md:inline text-[#3d5c52]">·</span>
+              <button
+                onClick={() => onOpenLegal?.('about')}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                About Us
+              </button>
+              <span className="text-[#3d5c52]">·</span>
+              <button
+                onClick={() => onOpenLegal?.('privacy')}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                Privacy Policy
+              </button>
+              <span className="text-[#3d5c52]">·</span>
+              <button
+                onClick={() => onOpenLegal?.('terms')}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                Terms
+              </button>
+              <span className="text-[#3d5c52]">·</span>
+              <button
+                onClick={() => onOpenLegal?.('refund')}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                Refunds
+              </button>
+              <span className="text-[#3d5c52]">·</span>
+              <button
+                onClick={() => onOpenLegal?.('contact')}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                Contact
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
-            <a href="mailto:support@dattasable.com" className="text-emerald-300 hover:underline">
-              support@dattasable.com
+          {/* Support Email & Verified Payment Badge */}
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center justify-center lg:justify-end gap-3 sm:gap-4 text-[11.5px] text-[#95afa5]">
+            <a
+              href="mailto:support@dattasable.com"
+              className="inline-flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 transition-colors py-1 px-2 rounded hover:bg-white/5"
+            >
+              <Mail size={13} className="text-emerald-400 shrink-0" />
+              <span>support@dattasable.com</span>
             </a>
-            <span>·</span>
-            <span>UPI: 8010803756@upi</span>
+            <span className="hidden sm:inline text-[#3d5c52]">·</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#18362d] border border-[#2d5c4e] text-emerald-200 text-[11px] font-mono shadow-xs">
+              <ShieldCheck size={12} className="text-emerald-400 shrink-0" />
+              <span>UPI: 8010803756@upi</span>
+            </div>
           </div>
         </div>
       </div>
