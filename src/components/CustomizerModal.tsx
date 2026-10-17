@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   RotateCcw,
+  Filter,
+  ChevronDown,
 } from 'lucide-react';
 import { DatasetConfig, IndustryType } from '../types/dataset';
 import { INDUSTRY_PRESETS } from '../utils/dataGenerator';
@@ -374,17 +376,17 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
       <div className="relative w-full max-w-5xl xl:max-w-6xl h-[92vh] sm:h-[86vh] max-h-[760px] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden text-slate-800">
         
         {/* Top Header */}
-        <div className="px-5 py-3 sm:py-3.5 bg-slate-50/95 border-b border-slate-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 shadow-xs">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-slate-50/95 border-b border-slate-200 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 shadow-xs shrink-0">
               <LayoutTemplate className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
                   32 Ready Dashboard Templates
                 </h2>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
                   <Sparkles className="w-3 h-3 text-emerald-600" />
                   32 Models
                 </span>
@@ -395,39 +397,41 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Mobile View Switcher (< 1024px) */}
-            <div className="flex lg:hidden rounded-xl bg-slate-200/70 p-0.5 border border-slate-200">
-              <button
-                type="button"
-                onClick={() => setMobileTab('templates')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  mobileTab === 'templates'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Templates ({filteredKeys.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileTab('settings')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  mobileTab === 'settings'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Settings
-              </button>
-            </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors shrink-0 ml-2"
+            title="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
+        {/* Mobile Full-Width Segmented Tab Switcher (< 1024px) */}
+        <div className="lg:hidden px-3 pt-2.5 pb-2 bg-slate-50/80 border-b border-slate-200 shrink-0">
+          <div className="flex rounded-xl bg-slate-200/70 p-1 border border-slate-200 shadow-inner">
             <button
-              onClick={onClose}
-              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
-              title="Close modal"
+              type="button"
+              onClick={() => setMobileTab('templates')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 ${
+                mobileTab === 'templates'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <X className="w-5 h-5" />
+              <LayoutTemplate className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Browse Templates ({filteredKeys.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('settings')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 ${
+                mobileTab === 'settings'
+                  ? 'bg-white text-emerald-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Workbook Settings</span>
             </button>
           </div>
         </div>
@@ -781,44 +785,78 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           <div className="lg:hidden h-full flex flex-col min-h-0">
             {mobileTab === 'templates' ? (
               <div className="flex-1 min-h-0 flex flex-col">
-                {/* Search Bar in Mobile */}
+                {/* Search & Sector Dropdown Filter in Mobile (Zero Horizontal Scroll!) */}
                 <div className="p-3 bg-white border-b border-slate-200 space-y-2 shrink-0">
+                  {/* Search Input */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search templates..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8.5 pr-8 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                      placeholder="Search 32 templates (e.g. SaaS, FinTech, Retail)..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8.5 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
                     />
                     {searchQuery && (
                       <button
                         type="button"
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
 
-                  {/* Category Filter Pills Mobile */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5 no-scrollbar text-xs">
-                    {CATEGORY_DEFINITIONS.map((cat) => (
+                  {/* Clean Touch-Friendly Category Dropdown (Zero Horizontal Scroll!) */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <div className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-xl px-3 py-1.5 text-xs transition-colors">
+                        <Filter className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                        <span className="text-slate-500 font-medium shrink-0">Sector:</span>
+                        <select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value as TemplateCategory)}
+                          className="bg-transparent font-bold text-slate-800 focus:outline-none flex-1 cursor-pointer appearance-none pr-5 truncate text-xs"
+                        >
+                          {CATEGORY_DEFINITIONS.map((cat) => {
+                            const count =
+                              cat.id === 'all'
+                                ? allIndustryKeys.length
+                                : allIndustryKeys.filter((k) => INDUSTRY_METADATA[k]?.category === cat.id).length;
+                            return (
+                              <option key={cat.id} value={cat.id} className="py-1">
+                                {cat.label} ({count})
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {(selectedCategory !== 'all' || searchQuery) && (
                       <button
-                        key={cat.id}
                         type="button"
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className={`px-2.5 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap ${
-                          selectedCategory === cat.id
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
+                        onClick={() => {
+                          setSelectedCategory('all');
+                          setSearchQuery('');
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-1 shrink-0 border border-slate-200 transition-colors"
+                        title="Reset filters"
                       >
-                        {cat.label}
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset</span>
                       </button>
-                    ))}
+                    )}
+                  </div>
+
+                  {/* Filter Status Note */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                    <span>
+                      Showing <strong className="text-slate-800">{filteredKeys.length}</strong> of 32 models
+                    </span>
+                    <span className="text-[10px] text-slate-400">Scroll down to view</span>
                   </div>
                 </div>
 
