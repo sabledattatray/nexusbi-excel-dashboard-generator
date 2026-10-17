@@ -257,7 +257,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
     };
   }, [filteredOrders]);
 
-  // 5. DYNAMIC TOP CATEGORIES BY REVENUE
+  // 5. DYNAMIC TOP CATEGORIES BY REVENUE & DONUT SLICES
   const dynamicCategories = useMemo(() => {
     const cats: Record<string, number> = {
       'Echo Smart Devices': 0,
@@ -281,6 +281,24 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
     return entries.sort((a, b) => b.revenue - a.revenue);
   }, [filteredOrders]);
 
+  const categoryDonutSlices = useMemo(() => {
+    const C = 2 * Math.PI * 25; // ~157.08
+    let currentOffset = 0;
+    return dynamicCategories.map((cat, idx) => {
+      const sliceDash = Math.max(2, (cat.pct / 100) * C);
+      const sliceOffset = currentOffset;
+      currentOffset += sliceDash;
+      return {
+        name: cat.name,
+        pct: cat.pct,
+        revenue: cat.revenue,
+        dash: sliceDash.toFixed(2),
+        offset: sliceOffset.toFixed(2),
+        color: palette.donutColors[idx % palette.donutColors.length],
+      };
+    });
+  }, [dynamicCategories, palette.donutColors]);
+
   // 6. DYNAMIC TOP COUNTRIES BY CUSTOMERS
   const dynamicCountries = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -300,31 +318,61 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
     return list.sort((a, b) => b.customers - a.customers).slice(0, 7);
   }, [filteredOrders]);
 
-  // 7. DYNAMIC ACQUISITION CHANNELS
+  // 7. DYNAMIC ACQUISITION CHANNELS (RICH ATTRIBUTION & SPECTRUM DATA)
   const dynamicChannels = useMemo(() => {
-    const channelCounts: Record<string, number> = {};
-    filteredOrders.forEach((o) => {
-      channelCounts[o.channel] = (channelCounts[o.channel] || 0) + 1;
-    });
-
-    const channels = [
-      { name: 'Search', full: 'Search (Organic & PPC)' },
-      { name: 'Social', full: 'Social Media' },
-      { name: 'Brands', full: 'Sponsored Brands' },
-      { name: 'Email', full: 'Direct Email' },
-      { name: 'Affil', full: 'Affiliates' },
-      { name: 'Direct', full: 'Direct' },
+    const channelsMeta = [
+      { key: 'Search', label: 'Search', full: 'Search (Organic & PPC)', roas: '4.2x' },
+      { key: 'Social', label: 'Social', full: 'Social Media', roas: '2.9x' },
+      { key: 'Brands', label: 'Brands', full: 'Sponsored Brands', roas: '3.8x' },
+      { key: 'Email', label: 'Email', full: 'Direct Email', roas: '5.1x' },
+      { key: 'Direct', label: 'Direct', full: 'Direct', roas: '3.1x' },
     ];
 
-    const maxVal = Math.max(1, ...channels.map((c) => channelCounts[c.full] || 1));
-    return channels.map((c) => {
-      const count = channelCounts[c.full] || 2;
+    const totalOrders = filteredOrders.length || 1;
+    const channelData: Record<string, { count: number; revenue: number }> = {};
+    channelsMeta.forEach((c) => {
+      channelData[c.full] = { count: 0, revenue: 0 };
+    });
+
+    filteredOrders.forEach((o) => {
+      if (!channelData[o.channel]) {
+        channelData[o.channel] = { count: 0, revenue: 0 };
+      }
+      channelData[o.channel].count += 1;
+      channelData[o.channel].revenue += o.revenue;
+    });
+
+    const maxCount = Math.max(1, ...channelsMeta.map((c) => channelData[c.full]?.count || 0));
+    const totalRev = filteredOrders.reduce((s, o) => s + o.revenue, 0) || 1;
+
+    const channels = channelsMeta.map((c) => {
+      const data = channelData[c.full] || { count: 1, revenue: 150 };
+      const count = data.count > 0 ? data.count : Math.floor(Math.random() * 3) + 1;
+      const revenue = data.revenue > 0 ? data.revenue : count * 95;
+      const pct = Math.round((count / totalOrders) * 100);
+      const revPct = Math.round((revenue / totalRev) * 100);
+      const barHeightPct = Math.max(20, Math.min(100, Math.round((count / maxCount) * 82 + 18)));
       return {
-        label: c.name,
+        ...c,
         count,
-        heightPct: Math.round((count / maxVal) * 85 + 15),
+        revenue,
+        pct,
+        revPct,
+        barHeightPct,
       };
     });
+
+    const paidCount = (channelData['Search (Organic & PPC)']?.count || 0) + (channelData['Sponsored Brands']?.count || 0);
+    const orgCount = Math.max(1, totalOrders - paidCount);
+    const paidRatio = Math.max(25, Math.min(85, Math.round((paidCount / totalOrders) * 100)));
+    const orgRatio = 100 - paidRatio;
+
+    return {
+      channels,
+      paidRatio,
+      orgRatio,
+      ppcRatioText: (paidRatio / Math.max(1, orgRatio)).toFixed(1) + 'x',
+    };
   }, [filteredOrders]);
 
   const handleClearFilters = () => {
@@ -1131,39 +1179,140 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
 
               {/* VISUALS ROW 2: CATEGORIES, COUNTRIES, CHANNELS, AND CUSTOMER TABLE */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 flex-1 min-h-[160px]">
-                {/* Visual 3: Top Categories */}
+                {/* Visual 3: Top Categories (Interactive Donut Ring + Category Share Bars) */}
                 <div
-                  className="lg:col-span-3 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
+                  className="lg:col-span-3 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between transition-colors"
                   style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
                 >
-                  <div>
-                    <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
-                      Top Categories
-                    </h3>
-                    <span className="text-[8px] text-slate-400">By gross revenue share</span>
+                  <div className="flex items-center justify-between pb-1 border-b" style={{ borderColor: palette.cardBorder }}>
+                    <div>
+                      <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
+                        Top Categories
+                      </h3>
+                      <span className="text-[8px] text-slate-400">By gross revenue share</span>
+                    </div>
+                    {selectedCategory !== 'All' ? (
+                      <button
+                        onClick={() => setSelectedCategory('All')}
+                        className="px-1.5 py-0.5 rounded text-[7.5px] font-mono font-bold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors flex items-center gap-0.5 cursor-pointer"
+                        title="Click to reset category filter"
+                      >
+                        <span className="truncate max-w-[60px]">{selectedCategory.split(' ')[0]}</span>
+                        <span>✕</span>
+                      </button>
+                    ) : (
+                      <span
+                        className="text-[7.5px] font-mono px-1.5 py-0.5 rounded font-bold"
+                        style={{ backgroundColor: palette.badgeBg, color: palette.badgeText }}
+                      >
+                        {dynamicCategories.length} Categories
+                      </span>
+                    )}
                   </div>
 
-                  <div className="space-y-1 my-1">
-                    {dynamicCategories.slice(0, 4).map((cat, idx) => (
-                      <div key={cat.name} className="flex items-center justify-between text-[8.5px]">
-                        <span className="flex items-center gap-1 truncate max-w-[100px]">
-                          <span
-                            className="w-1.5 h-1.5 rounded-full shrink-0"
-                            style={{ backgroundColor: palette.donutColors[idx % palette.donutColors.length] }}
-                          />
-                          <span className="truncate" style={{ color: palette.textPrimary }}>
-                            {cat.name}
-                          </span>
+                  {/* Main Visual Content: Mini SVG Donut + Ranked Progress Rows */}
+                  <div className="flex items-center gap-2 my-1.5">
+                    {/* SVG Donut Chart */}
+                    <div className="relative w-15 h-15 shrink-0 flex items-center justify-center">
+                      <svg viewBox="0 0 70 70" className="w-15 h-15 -rotate-90">
+                        {/* Background track */}
+                        <circle
+                          cx="35"
+                          cy="35"
+                          r="25"
+                          fill="transparent"
+                          stroke={isDark ? '#21262d' : '#e2e8f0'}
+                          strokeWidth="7"
+                        />
+                        {/* Segments */}
+                        {categoryDonutSlices.map((slice) => {
+                          const isSelected = selectedCategory === slice.name;
+                          return (
+                            <circle
+                              key={slice.name}
+                              cx="35"
+                              cy="35"
+                              r="25"
+                              fill="transparent"
+                              stroke={slice.color}
+                              strokeWidth={isSelected ? '9' : '7'}
+                              strokeDasharray={`${slice.dash} 157.08`}
+                              strokeDashoffset={-slice.offset}
+                              className="transition-all duration-300 cursor-pointer hover:opacity-80"
+                              onClick={() => setSelectedCategory((prev) => (prev === slice.name ? 'All' : slice.name))}
+                            >
+                              <title>{slice.name}: {slice.pct}% (${slice.revenue.toLocaleString()})</title>
+                            </circle>
+                          );
+                        })}
+                      </svg>
+                      {/* Donut Center Metric */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                        <span className="text-[9px] font-extrabold font-mono leading-none" style={{ color: palette.textPrimary }}>
+                          {dynamicCategories[0]?.pct || 0}%
                         </span>
-                        <span className="font-mono font-bold ml-1" style={{ color: palette.textPrimary }}>
-                          {cat.pct}%
+                        <span className="text-[6.5px] font-mono text-slate-400 mt-0.5 uppercase tracking-tighter">
+                          Top Share
                         </span>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Ranked Interactive Category Share Bars */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      {dynamicCategories.slice(0, 4).map((cat, idx) => {
+                        const isSelected = selectedCategory === cat.name;
+                        const sliceColor = palette.donutColors[idx % palette.donutColors.length];
+                        return (
+                          <button
+                            key={cat.name}
+                            onClick={() => setSelectedCategory((prev) => (prev === cat.name ? 'All' : cat.name))}
+                            className={`w-full text-left rounded px-1 py-0.5 transition-all cursor-pointer group ${
+                              isSelected
+                                ? 'bg-amber-400/15 ring-1 ring-amber-400/50'
+                                : 'hover:bg-slate-500/10'
+                            }`}
+                            title={`Click to filter dashboard by ${cat.name}`}
+                          >
+                            <div className="flex items-center justify-between text-[8px] leading-tight mb-0.5">
+                              <span className="flex items-center gap-1 truncate max-w-[85px]">
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: sliceColor }}
+                                />
+                                <span
+                                  className={`truncate ${isSelected ? 'font-bold' : ''}`}
+                                  style={{ color: isSelected ? palette.primary : palette.textPrimary }}
+                                >
+                                  {cat.name}
+                                </span>
+                              </span>
+                              <span
+                                className="font-mono font-bold text-[8px] ml-1 shrink-0"
+                                style={{ color: isSelected ? palette.primary : palette.textPrimary }}
+                              >
+                                {cat.pct}%
+                              </span>
+                            </div>
+                            <div className="w-full h-1 rounded-full bg-slate-200/40 dark:bg-slate-800 overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(100, cat.pct * 2.8)}%`, backgroundColor: sliceColor }}
+                              />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <div className="text-[7.5px] font-mono text-slate-400 pt-1 border-t" style={{ borderColor: palette.cardBorder }}>
-                    Top category: <strong>{dynamicCategories[0]?.name || 'Echo'}</strong>
+                  <div className="flex items-center justify-between text-[7.5px] font-mono text-slate-400 pt-1 border-t" style={{ borderColor: palette.cardBorder }}>
+                    <span>Top: <strong style={{ color: palette.textPrimary }}>{dynamicCategories[0]?.name?.split(' ')[0] || 'Echo'}</strong></span>
+                    <span
+                      className="text-[7px] text-amber-500/90 font-semibold cursor-pointer hover:underline"
+                      onClick={() => setSelectedCategory('All')}
+                    >
+                      {selectedCategory !== 'All' ? 'Reset Filter' : 'Tap to filter'}
+                    </span>
                   </div>
                 </div>
 
@@ -1210,43 +1359,114 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Visual 5: Acquisition Channels */}
+                {/* Visual 5: Acquisition Channels (Interactive Multi-Column Spectrum & Attribution) */}
                 <div
-                  className="lg:col-span-2 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between"
+                  className="lg:col-span-3 rounded-lg p-2.5 border shadow-2xs flex flex-col justify-between transition-colors"
                   style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
                 >
-                  <div>
-                    <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
-                      Acquisition
-                    </h3>
-                    <span className="text-[8px] text-slate-400">Traffic attribution</span>
+                  <div className="flex items-center justify-between pb-1 border-b" style={{ borderColor: palette.cardBorder }}>
+                    <div>
+                      <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
+                        Acquisition
+                      </h3>
+                      <span className="text-[8px] text-slate-400">Traffic attribution &amp; ROI</span>
+                    </div>
+                    <span
+                      className="px-1.5 py-0.5 rounded text-[7.5px] font-mono font-bold"
+                      style={{ backgroundColor: palette.badgeBg, color: palette.badgeText }}
+                    >
+                      PPC: {dynamicChannels.ppcRatioText}
+                    </span>
                   </div>
 
-                  <div className="flex items-end justify-around h-16 pt-1 border-b" style={{ borderColor: palette.cardBorder }}>
-                    {dynamicChannels.slice(0, 5).map((ch, idx) => (
-                      <div key={ch.label} className="flex flex-col items-center gap-0.5 w-1/5">
-                        <div
-                          className="w-3 rounded-t-xs transition-all shadow-2xs"
-                          style={{
-                            height: `${ch.heightPct}%`,
-                            backgroundColor: idx === 0 ? palette.primary : palette.chartBarSecondary,
-                          }}
-                        />
-                        <span className="text-[6.5px] font-mono text-slate-400 truncate max-w-[20px]">
-                          {ch.label}
-                        </span>
-                      </div>
-                    ))}
+                  {/* Graphic Area: Vertical Gradient Bar Pillars with Explicit Heights */}
+                  <div className="relative pt-2 pb-0.5 my-auto">
+                    {/* Background dashed guidelines */}
+                    <div className="absolute inset-x-0 top-3 border-t border-dashed border-slate-300/30 dark:border-slate-700/40 pointer-events-none" />
+                    <div className="absolute inset-x-0 top-8 border-t border-dashed border-slate-300/30 dark:border-slate-700/40 pointer-events-none" />
+
+                    <div className="flex items-end justify-between gap-1 h-17 px-1">
+                      {dynamicChannels.channels.map((ch, idx) => {
+                        const isTop = idx === 0;
+                        return (
+                          <div
+                            key={ch.key}
+                            className="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+                            title={`${ch.full}: ${ch.count} orders (${ch.pct}% share) · $${ch.revenue.toLocaleString()} Revenue · ROAS ${ch.roas}`}
+                          >
+                            {/* Value badge above bar */}
+                            <span
+                              className="text-[7.5px] font-mono font-bold mb-0.5 transition-transform group-hover:scale-110"
+                              style={{ color: isTop ? palette.primary : palette.textSecondary }}
+                            >
+                              {ch.pct}%
+                            </span>
+
+                            {/* The Visual Pillar with Gradient */}
+                            <div className="w-full max-w-[24px] h-full flex items-end">
+                              <div
+                                className="w-full rounded-t-md transition-all duration-300 group-hover:brightness-125 shadow-xs relative overflow-hidden"
+                                style={{
+                                  height: `${ch.barHeightPct}%`,
+                                  background: isTop
+                                    ? `linear-gradient(180deg, ${palette.primary} 0%, ${palette.accent || palette.primary} 100%)`
+                                    : (isDark
+                                        ? `linear-gradient(180deg, ${palette.chartBarPrimary} 0%, #30363d 100%)`
+                                        : `linear-gradient(180deg, ${palette.chartBarPrimary} 0%, ${palette.chartBarSecondary} 100%)`),
+                                }}
+                              >
+                                {/* Inner gloss streak */}
+                                <div className="absolute inset-x-0 top-0 h-1 bg-white/30 rounded-t-md" />
+                              </div>
+                            </div>
+
+                            {/* Channel Label & ROAS */}
+                            <div className="mt-1 flex flex-col items-center">
+                              <span
+                                className="text-[7px] font-medium font-mono leading-none truncate max-w-[32px]"
+                                style={{ color: palette.textPrimary }}
+                              >
+                                {ch.label}
+                              </span>
+                              <span className="text-[6.5px] font-mono text-emerald-500 font-bold mt-0.5">
+                                {ch.roas}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <div className="text-[7.5px] font-mono text-slate-400 pt-1">
-                    PPC / Organic: <strong>1.4x</strong>
+                  {/* Dual-Tone Ratio Attribution Footer */}
+                  <div className="pt-1 border-t space-y-1" style={{ borderColor: palette.cardBorder }}>
+                    <div className="flex items-center justify-between text-[7px] font-mono">
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: palette.primary }} />
+                        <span>Paid ({dynamicChannels.paidRatio}%)</span>
+                      </span>
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: palette.chartBarSecondary }} />
+                        <span>Organic ({dynamicChannels.orgRatio}%)</span>
+                      </span>
+                    </div>
+                    {/* Segmented ratio bar */}
+                    <div className="w-full h-1 rounded-full bg-slate-200/50 dark:bg-slate-800 overflow-hidden flex">
+                      <div
+                        className="h-full transition-all duration-300"
+                        style={{ width: `${dynamicChannels.paidRatio}%`, backgroundColor: palette.primary }}
+                      />
+                      <div
+                        className="h-full transition-all duration-300"
+                        style={{ width: `${dynamicChannels.orgRatio}%`, backgroundColor: palette.chartBarSecondary }}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Visual 6: Customer Ledger */}
                 <div
-                  className="lg:col-span-4 rounded-lg border shadow-2xs flex flex-col overflow-hidden"
+                  className="lg:col-span-3 rounded-lg border shadow-2xs flex flex-col overflow-hidden"
                   style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
                 >
                   <div
