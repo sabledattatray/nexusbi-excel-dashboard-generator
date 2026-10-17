@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -25,6 +25,9 @@ import {
   Clock,
   Target,
   Sparkles,
+  Maximize2,
+  Minimize2,
+  Tv,
 } from 'lucide-react';
 import { ReportPalette } from '../types/amazonPalettes';
 import {
@@ -32,6 +35,7 @@ import {
   AmazonTransaction,
   COUNTRY_METADATA,
 } from '../data/amazonSalesData';
+import { AmazonOfficialLogo } from './AmazonOfficialLogo';
 
 interface AmazonSalesDashboardProps {
   palette: ReportPalette;
@@ -44,6 +48,35 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
   isCompact = false,
   onOpenLiveReport,
 }) => {
+  // Fullscreen State & Ref
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const dashboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (dashboardRef.current?.requestFullscreen) {
+        dashboardRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen(true);
+        });
+      } else {
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsFullscreen(false);
+    }
+  };
+
   // Filter States
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
   const [activeNav, setActiveNav] = useState<string>('Overview');
@@ -413,12 +446,17 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
 
   return (
     <div
+      ref={dashboardRef}
       className={`w-full font-sans transition-all duration-200 select-none ${
-        isCompact ? 'rounded-xl text-[10.5px]' : 'rounded-2xl text-[11px]'
+        isFullscreen
+          ? 'fixed inset-0 z-[99999] w-screen h-screen overflow-hidden p-2.5 sm:p-4 rounded-none flex flex-col shadow-2xl'
+          : isCompact
+          ? 'rounded-xl text-[10.5px]'
+          : 'rounded-2xl text-[11px]'
       }`}
       style={{ backgroundColor: palette.bg, color: palette.textPrimary }}
     >
-      <div className="flex flex-col lg:flex-row lg:h-[660px] overflow-hidden">
+      <div className={`flex flex-col lg:flex-row overflow-hidden ${isFullscreen ? 'h-full flex-1' : 'lg:h-[660px]'}`}>
         {/* ========================================================================= */}
         {/* SLIM BRAND / NAVIGATION SIDEBAR (Fits neatly on desktop)                 */}
         {/* ========================================================================= */}
@@ -431,20 +469,18 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
           }}
         >
           <div>
-            {/* Logo */}
+            {/* Official Amazon Logo Branding */}
             <div className="flex items-center gap-2 px-1 py-1 mb-3">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs shadow-md shrink-0"
-                style={{ backgroundColor: palette.primary, color: '#ffffff' }}
-              >
-                amz
-              </div>
+              <AmazonOfficialLogo variant="icon" height={32} className="shadow-md shrink-0" />
               <div className="min-w-0">
-                <span className="font-heading font-black text-xs tracking-tight text-white block leading-tight truncate">
-                  Amazon BI
-                </span>
-                <span className="text-[8.5px] uppercase tracking-wider text-slate-400 block font-mono truncate">
-                  Seller Studio
+                <div className="flex items-center gap-1">
+                  <AmazonOfficialLogo variant="full" height={15} textColor="#ffffff" smileColor="#FF9900" />
+                  <span className="font-mono text-[8px] font-bold text-amber-400 bg-amber-400/15 px-1 py-0.2 rounded border border-amber-400/25">
+                    BI
+                  </span>
+                </div>
+                <span className="text-[7.5px] uppercase tracking-wider text-slate-400 block font-mono truncate mt-0.5">
+                  Seller Central Studio
                 </span>
               </div>
             </div>
@@ -483,8 +519,8 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
             </nav>
           </div>
 
-          {/* Sidebar compliance tags */}
-          <div className="pt-2 mt-2 border-t border-white/10 space-y-1">
+          {/* Sidebar compliance tags & TV Fullscreen Toggle */}
+          <div className="pt-2 mt-2 border-t border-white/10 space-y-1.5">
             <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-300 font-mono">
               <Database size={10} className="opacity-70" />
               <span>{filteredOrders.length} Verified Orders</span>
@@ -493,14 +529,32 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
               <Shield size={10} className="opacity-70" />
               <span>Real-Time Model</span>
             </div>
+
+            {/* TV / Fullscreen View Toggle in Sidebar */}
+            <button
+              onClick={toggleFullscreen}
+              className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-[9.5px] font-mono font-semibold transition-all cursor-pointer border shadow-2xs hover:scale-[1.02]"
+              style={{
+                backgroundColor: isFullscreen ? '#f59e0b25' : (isDark ? '#21262d' : 'rgba(255,255,255,0.08)'),
+                borderColor: isFullscreen ? '#f59e0b' : (isDark ? '#38bdf850' : 'rgba(255,255,255,0.18)'),
+                color: isFullscreen ? '#fbbf24' : '#ffffff',
+              }}
+              title={isFullscreen ? 'Exit TV Fullscreen (Esc)' : 'Expand to Full Screen / TV Display'}
+            >
+              <span className="flex items-center gap-1.5">
+                <Tv size={12} className={isFullscreen ? 'text-amber-400' : 'text-slate-300'} />
+                <span>{isFullscreen ? 'Exit TV View' : 'TV / Fullscreen'}</span>
+              </span>
+              {isFullscreen ? <Minimize2 size={11} /> : <Maximize2 size={11} />}
+            </button>
           </div>
         </aside>
 
         {/* ========================================================================= */}
         {/* MAIN DASHBOARD CONTENT AREA                                               */}
         {/* ========================================================================= */}
-        <div className="flex-1 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 lg:overflow-y-auto min-w-0">
-          {/* Header Row: Title & Month Filter Selector */}
+        <div className={`flex-1 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 overflow-y-auto min-w-0 ${isFullscreen ? 'h-full' : ''}`}>
+          {/* Header Row: Title, Live Badge, Month Selector & Fullscreen Toggle */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0">
             <div>
               <div className="flex items-center gap-2">
@@ -516,43 +570,67 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                 <span className="text-[9px] font-mono text-slate-500">
                   ({filteredOrders.length} transactions)
                 </span>
+                {isFullscreen && (
+                  <span className="px-1.5 py-0.5 rounded text-[7.5px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                    4K / TV DISPLAY
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Month Filter Selector Pills */}
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
+            {/* Right: Month Selector + Fullscreen Button */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+              {/* Month Filter Selector Pills */}
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+                <button
+                  onClick={() => setSelectedMonth('All')}
+                  className={`px-2 py-0.5 rounded text-[9.5px] font-semibold transition-all shrink-0 cursor-pointer ${
+                    selectedMonth === 'All' ? 'shadow-xs font-bold' : 'opacity-75 hover:opacity-100'
+                  }`}
+                  style={{
+                    backgroundColor: selectedMonth === 'All' ? palette.primary : (isDark ? '#21262d' : palette.cardBg),
+                    color: selectedMonth === 'All' ? (isDark ? '#000000' : '#ffffff') : (isDark ? '#f0f6fc' : palette.textPrimary),
+                    border: `1px solid ${selectedMonth === 'All' ? palette.primary : (isDark ? '#30363d' : palette.cardBorder)}`,
+                  }}
+                >
+                  All
+                </button>
+                {months.map((m) => {
+                  const isSelected = selectedMonth === m;
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => setSelectedMonth(m)}
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all shrink-0 cursor-pointer ${
+                        isSelected ? 'font-bold shadow-xs' : 'opacity-75 hover:opacity-100'
+                      }`}
+                      style={{
+                        backgroundColor: isSelected ? palette.primary : (isDark ? '#21262d' : palette.cardBg),
+                        color: isSelected ? (isDark ? '#000000' : '#ffffff') : (isDark ? '#f0f6fc' : palette.textPrimary),
+                        border: `1px solid ${isSelected ? palette.primary : (isDark ? '#30363d' : palette.cardBorder)}`,
+                      }}
+                    >
+                      {m}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Fullscreen View Button */}
               <button
-                onClick={() => setSelectedMonth('All')}
-                className={`px-2 py-0.5 rounded text-[9.5px] font-semibold transition-all shrink-0 cursor-pointer ${
-                  selectedMonth === 'All' ? 'shadow-xs font-bold' : 'opacity-75 hover:opacity-100'
-                }`}
+                onClick={toggleFullscreen}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold font-mono transition-all cursor-pointer shrink-0 shadow-2xs hover:scale-105"
                 style={{
-                  backgroundColor: selectedMonth === 'All' ? palette.primary : (isDark ? '#21262d' : palette.cardBg),
-                  color: selectedMonth === 'All' ? (isDark ? '#000000' : '#ffffff') : (isDark ? '#f0f6fc' : palette.textPrimary),
-                  border: `1px solid ${selectedMonth === 'All' ? palette.primary : (isDark ? '#30363d' : palette.cardBorder)}`,
+                  backgroundColor: isFullscreen ? '#f59e0b' : (isDark ? '#21262d' : palette.cardBg),
+                  color: isFullscreen ? '#000000' : (isDark ? '#38bdf8' : palette.primary),
+                  border: `1px solid ${isFullscreen ? '#f59e0b' : (isDark ? '#38bdf8' : palette.cardBorder)}`,
                 }}
+                title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Enter TV / Full Screen View'}
               >
-                All
+                {isFullscreen ? <Minimize2 size={11} /> : <Maximize2 size={11} />}
+                <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+                <Tv size={10} className="opacity-80" />
               </button>
-              {months.map((m) => {
-                const isSelected = selectedMonth === m;
-                return (
-                  <button
-                    key={m}
-                    onClick={() => setSelectedMonth(m)}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all shrink-0 cursor-pointer ${
-                      isSelected ? 'font-bold shadow-xs' : 'opacity-75 hover:opacity-100'
-                    }`}
-                    style={{
-                      backgroundColor: isSelected ? palette.primary : (isDark ? '#21262d' : palette.cardBg),
-                      color: isSelected ? (isDark ? '#000000' : '#ffffff') : (isDark ? '#f0f6fc' : palette.textPrimary),
-                      border: `1px solid ${isSelected ? palette.primary : (isDark ? '#30363d' : palette.cardBorder)}`,
-                    }}
-                  >
-                    {m}
-                  </button>
-                );
-              })}
             </div>
           </div>
 
