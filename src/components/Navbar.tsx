@@ -34,6 +34,7 @@ import {
   RotateCcw,
   Printer,
   ArrowLeft,
+  ChevronDown,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
@@ -79,6 +80,36 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Submenu collapsible state: default open, user can close/open with one click
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    core: false,
+    analytics: false,
+    legal: false,
+    tools: false,
+  });
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // Automatically expand a section when an active item belongs to it
+  React.useEffect(() => {
+    if (activeLegalRoute) {
+      setCollapsedSections((prev) => ({ ...prev, legal: false }));
+    }
+  }, [activeLegalRoute]);
+
+  React.useEffect(() => {
+    if (['home', 'dashboard', 'excel-preview'].includes(activeTab)) {
+      setCollapsedSections((prev) => ({ ...prev, core: false }));
+    } else if (['pivot', 'transactions', 'regions', 'products', 'customers'].includes(activeTab)) {
+      setCollapsedSections((prev) => ({ ...prev, analytics: false }));
+    }
+  }, [activeTab]);
+
   // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,12 +137,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   }
 
   interface NavGroupDef {
+    id: string;
     title: string;
     items: NavItemDef[];
   }
 
   const navGroups: NavGroupDef[] = [
     {
+      id: 'core',
       title: 'Core Dashboards',
       items: [
         { id: 'home', label: 'Home Page', icon: Home },
@@ -120,6 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       ],
     },
     {
+      id: 'analytics',
       title: 'Analytics & Records',
       items: [
         { id: 'pivot', label: 'Grouped Pivot Analysis', icon: Layers3, badge: 'Pivot' },
@@ -135,6 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       ],
     },
     {
+      id: 'legal',
       title: 'Legal & Compliance',
       items: [
         { id: 'privacy', label: 'Privacy Policy', icon: Lock, badge: 'Zero Cloud', isLegal: true, legalRoute: 'privacy', path: '/privacy' },
@@ -253,120 +288,170 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Navigation Sections */}
         <nav aria-label="Workspace views" className="sidebar-nav">
-          {navGroups.map((group, groupIdx) => (
-            <React.Fragment key={group.title}>
-              {groupIdx > 0 && <div className="sidebar-divider" role="separator" />}
-              <div className="sidebar-label">
-                <span className="flex items-center gap-1.5">
-                  <span className="sidebar-label-dot" />
-                  <span>{group.title}</span>
-                </span>
-                <span className="text-[9px] font-mono text-slate-500 font-normal">
-                  {group.items.length}
-                </span>
-              </div>
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = item.isLegal
-                  ? activeLegalRoute === item.legalRoute
-                  : (!activeLegalRoute && activeTab === item.id);
-                return (
-                  <button
-                    key={item.id}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`nav-item group cursor-pointer ${isActive ? 'active' : ''}`}
-                    onClick={() => handleItemClick(item)}
-                    title={item.label}
-                  >
-                    {isActive && <span className="nav-item-active-bar" />}
-                    <div className="nav-item-icon-box">
-                      <Icon size={14.5} />
-                    </div>
-                    <span className="truncate font-medium">{item.label}</span>
-                    {item.badge && <span className="nav-badge">{item.badge}</span>}
-                  </button>
-                );
-              })}
-            </React.Fragment>
-          ))}
+          {navGroups.map((group, groupIdx) => {
+            const isCollapsed = collapsedSections[group.id] ?? false;
+            const hasActiveInside = group.items.some((item) =>
+              item.isLegal
+                ? activeLegalRoute === item.legalRoute
+                : (!activeLegalRoute && activeTab === item.id)
+            );
+            return (
+              <React.Fragment key={group.id}>
+                {groupIdx > 0 && <div className="sidebar-divider" role="separator" />}
+                <button
+                  type="button"
+                  onClick={() => toggleSection(group.id)}
+                  className="sidebar-label-btn group cursor-pointer"
+                  aria-expanded={!isCollapsed}
+                  title={`${isCollapsed ? 'Expand' : 'Collapse'} ${group.title}`}
+                >
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <span className="sidebar-label-dot" />
+                    <span className="truncate">{group.title}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 shrink-0">
+                    {hasActiveInside && isCollapsed && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Active page inside" />
+                    )}
+                    <span className="text-[9px] font-mono text-slate-500 font-normal px-1 py-0.5 rounded bg-white/[0.04] group-hover:text-emerald-300 transition-colors">
+                      {group.items.length}
+                    </span>
+                    <ChevronDown
+                      size={12}
+                      className={`text-slate-500 group-hover:text-emerald-400 transition-transform duration-200 ${
+                        isCollapsed ? '-rotate-90' : 'rotate-0'
+                      }`}
+                    />
+                  </span>
+                </button>
+
+                {!isCollapsed && (
+                  <div className="flex flex-col gap-[2.5px] animate-in fade-in duration-150">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = item.isLegal
+                        ? activeLegalRoute === item.legalRoute
+                        : (!activeLegalRoute && activeTab === item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={`nav-item group cursor-pointer ${isActive ? 'active' : ''}`}
+                          onClick={() => handleItemClick(item)}
+                          title={item.label}
+                        >
+                          {isActive && <span className="nav-item-active-bar" />}
+                          <div className="nav-item-icon-box">
+                            <Icon size={14.5} />
+                          </div>
+                          <span className="truncate font-medium">{item.label}</span>
+                          {item.badge && <span className="nav-badge">{item.badge}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
 
           {/* Tools Section */}
           <div className="sidebar-divider" role="separator" />
-          <div className="sidebar-label">
-            <span className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => toggleSection('tools')}
+            className="sidebar-label-btn group cursor-pointer"
+            aria-expanded={!collapsedSections.tools}
+            title={`${collapsedSections.tools ? 'Expand' : 'Collapse'} Studio Tools`}
+          >
+            <span className="flex items-center gap-1.5 min-w-0">
               <span className="sidebar-label-dot" />
-              <span>Studio Tools</span>
+              <span className="truncate">Studio Tools</span>
             </span>
-            <span className="text-[9px] font-mono text-slate-500 font-normal">3</span>
-          </div>
-
-          <button
-            className="sidebar-tool-card group cursor-pointer"
-            onClick={() => {
-              onOpenUploadModal();
-              setIsMobileMenuOpen(false);
-            }}
-            title="Import your CSV or Excel dataset"
-          >
-            <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-              <Upload size={14} />
-            </div>
-            <div className="flex flex-col min-w-0 text-left flex-1">
-              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                Import Dataset
-                <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[9px] font-mono text-slate-500 font-normal px-1 py-0.5 rounded bg-white/[0.04] group-hover:text-emerald-300 transition-colors">
+                3
               </span>
-              <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
-            </div>
+              <ChevronDown
+                size={12}
+                className={`text-slate-500 group-hover:text-emerald-400 transition-transform duration-200 ${
+                  collapsedSections.tools ? '-rotate-90' : 'rotate-0'
+                }`}
+              />
+            </span>
           </button>
 
-          <button
-            className="sidebar-tool-card group cursor-pointer"
-            onClick={() => {
-              onOpenCustomizer();
-              setIsMobileMenuOpen(false);
-            }}
-            title="Browse 32 ready-to-use industry dashboard templates"
-          >
-            <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-              <LayoutTemplate size={14} />
-            </div>
-            <div className="flex flex-col min-w-0 text-left flex-1">
-              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                32 BI Templates
-                <span className="nav-badge">Ready</span>
-              </span>
-              <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
-            </div>
-          </button>
+          {!collapsedSections.tools && (
+            <div className="flex flex-col gap-[2.5px] animate-in fade-in duration-150">
+              <button
+                className="sidebar-tool-card group cursor-pointer"
+                onClick={() => {
+                  onOpenUploadModal();
+                  setIsMobileMenuOpen(false);
+                }}
+                title="Import your CSV or Excel dataset"
+              >
+                <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+                  <Upload size={14} />
+                </div>
+                <div className="flex flex-col min-w-0 text-left flex-1">
+                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                    Import Dataset
+                    <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
+                  </span>
+                  <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
+                </div>
+              </button>
 
-          <a
-            href="https://fabric.dattasable.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
-            title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
-          >
-            <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
-              <Cpu size={14} />
-            </div>
-            <div className="flex flex-col min-w-0 text-left flex-1">
-              <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                Fabric Master
-                <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
-              </span>
-              <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
-            </div>
-          </a>
+              <button
+                className="sidebar-tool-card group cursor-pointer"
+                onClick={() => {
+                  onOpenCustomizer();
+                  setIsMobileMenuOpen(false);
+                }}
+                title="Browse 32 ready-to-use industry dashboard templates"
+              >
+                <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+                  <LayoutTemplate size={14} />
+                </div>
+                <div className="flex flex-col min-w-0 text-left flex-1">
+                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                    32 BI Templates
+                    <span className="nav-badge">Ready</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
+                </div>
+              </button>
 
-          {/* Privacy & Air-Gapped Trust Box */}
-          <div className="sidebar-trust-box">
-            <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
-            <div className="flex flex-col min-w-0 text-left">
-              <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
-              <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
+              <a
+                href="https://fabric.dattasable.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
+                title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
+              >
+                <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
+                  <Cpu size={14} />
+                </div>
+                <div className="flex flex-col min-w-0 text-left flex-1">
+                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                    Fabric Master
+                    <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
+                  </span>
+                  <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
+                </div>
+              </a>
+
+              {/* Privacy & Air-Gapped Trust Box */}
+              <div className="sidebar-trust-box">
+                <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+                <div className="flex flex-col min-w-0 text-left">
+                  <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
+                  <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </nav>
 
         {/* Ultra-Premium Profile & Keyboard Shortcut Lockup */}

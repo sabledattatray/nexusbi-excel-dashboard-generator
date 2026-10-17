@@ -151,7 +151,7 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
   flex-shrink: 0;
 }
 
-/* Section Labels */
+/* Section Labels & Collapsible Buttons */
 .sidebar-label {
   font-size: 9px;
   font-weight: 700;
@@ -164,6 +164,34 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
   justify-content: space-between;
   text-transform: uppercase;
   user-select: none;
+}
+.sidebar-label-btn {
+  width: 100%;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: #688e80;
+  padding: 5px 8px;
+  margin: 5px 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-transform: uppercase;
+  user-select: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.sidebar-label-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #a7d9c9;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.sidebar-label-btn:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: -1px;
 }
 .sidebar-label-dot {
   width: 4px;
