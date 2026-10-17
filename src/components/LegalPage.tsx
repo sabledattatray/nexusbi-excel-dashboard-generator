@@ -89,129 +89,71 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7f5] text-slate-800 flex flex-col font-sans selection:bg-emerald-200 selection:text-emerald-900">
-      {/* Top Executive Header */}
-      <header className="sticky top-0 z-40 bg-[#142824] border-b border-[#23453b] text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-4">
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                onBackToApp();
-              }}
-              className="inline-flex items-center gap-2 group cursor-pointer"
-              title="Return to Excel Dashboard Generator"
-            >
-              <ExcelLogo size={28} tagline="excel.dattasable.com" />
-            </a>
-            <div className="hidden md:flex items-center gap-2 text-xs text-[#8da69d] border-l border-[#294a40] pl-4">
-              <span>Legal &amp; Trust Center</span>
-            </div>
+    <div className="space-y-6 max-w-5xl">
+      {/* Sub-Navigation Tabs */}
+      <div className="bg-[#10221e] border border-[#23453b] rounded-xl px-3 py-2 shadow-xs">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 text-xs font-medium">
+          {(
+            [
+              { id: 'privacy', label: 'Privacy Policy', icon: Lock, path: '/privacy' },
+              { id: 'terms', label: 'Terms of Service', icon: FileText, path: '/terms' },
+              { id: 'disclaimer', label: 'Disclaimer & Liability', icon: AlertTriangle, path: '/disclaimer' },
+              { id: 'about', label: 'About Us & Creator', icon: User, path: '/about' },
+              { id: 'contact', label: 'Contact & Grievance', icon: Mail, path: '/contact' },
+              { id: 'refund', label: 'Refund Policy', icon: RotateCcw, path: '/refund-policy' },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentRoute === tab.id;
+            return (
+              <a
+                key={tab.id}
+                href={tab.path}
+                onClick={(e) => handleTabClick(e, tab.id)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                  isActive
+                    ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                    : 'text-[#8daaa1] hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Icon size={13} className={isActive ? 'text-emerald-200' : 'opacity-70'} />
+                <span>{tab.label}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Header Info Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center shrink-0 shadow-xs">
+            <CurrentIcon size={24} />
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => window.print()}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#2e5448] bg-[#1a332d] hover:bg-[#23453c] text-[#a7c5bc] hover:text-white text-xs font-medium transition-colors"
-              title="Print this official document"
-            >
-              <Printer size={13} />
-              <span>Print Page</span>
-            </button>
-
-            <button
-              onClick={onBackToApp}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
-            >
-              <ArrowLeft size={14} />
-              <span>Back to Generator</span>
-            </button>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Official Compliance
+              </span>
+              <span className="text-xs text-slate-500">excel.dattasable.com</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">
+              {currentMeta.title}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              {currentMeta.subtitle}
+            </p>
           </div>
         </div>
 
-        {/* Sub-Navigation Tabs */}
-        <div className="bg-[#0f1f1c] border-t border-[#1c362f] px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto no-scrollbar py-2 text-xs font-medium">
-            {(
-              [
-                { id: 'privacy', label: 'Privacy Policy', icon: Lock, path: '/privacy' },
-                { id: 'terms', label: 'Terms of Service', icon: FileText, path: '/terms' },
-                { id: 'disclaimer', label: 'Disclaimer & Liability', icon: AlertTriangle, path: '/disclaimer' },
-                { id: 'about', label: 'About Us', icon: User, path: '/about' },
-                { id: 'contact', label: 'Contact & Grievance', icon: Mail, path: '/contact' },
-                { id: 'refund', label: 'Refund Policy', icon: RotateCcw, path: '/refund-policy' },
-              ] as const
-            ).map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentRoute === tab.id;
-              return (
-                <a
-                  key={tab.id}
-                  href={tab.path}
-                  onClick={(e) => handleTabClick(e, tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg whitespace-nowrap transition-all ${
-                    isActive
-                      ? 'bg-emerald-700/80 text-white font-semibold shadow-xs border border-emerald-500/40'
-                      : 'text-[#96b2a8] hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Icon size={13} className={isActive ? 'text-emerald-300' : 'opacity-70'} />
-                  <span>{tab.label}</span>
-                </a>
-              );
-            })}
-          </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-mono text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+          <Clock size={13} className="text-emerald-700" />
+          <span>Effective: 2024–2025</span>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Breadcrumb & Hero */}
-        <div className="mb-8">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 mb-3 font-medium">
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                onBackToApp();
-              }}
-              className="hover:text-emerald-800 transition-colors"
-            >
-              Home
-            </a>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-600">Legal &amp; Compliance</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-emerald-800 font-semibold">{currentMeta.title}</span>
-          </nav>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
-            <div className="flex items-start gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center justify-center shrink-0 shadow-xs">
-                <CurrentIcon size={24} />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight">
-                  {currentMeta.title}
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  {currentMeta.subtitle}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto text-[11px] font-mono text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs">
-              <Clock size={12} className="text-emerald-700" />
-              <span>Effective: 2024–2025</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Page Views */}
-        <article className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sm:p-10 space-y-8 text-slate-700 text-sm leading-relaxed">
+      {/* Dynamic Page Views */}
+      <article className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sm:p-10 space-y-8 text-slate-700 text-sm leading-relaxed">
           {/* ==================== PRIVACY POLICY ==================== */}
           {currentRoute === 'privacy' && (
             <div className="space-y-8">
@@ -754,7 +696,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
         </article>
 
         {/* Bottom Back Button & Navigation Bar */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
           <button
             onClick={onBackToApp}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
@@ -767,36 +709,6 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
             <span>Official Policy Center · excel.dattasable.com</span>
           </div>
         </div>
-      </main>
-
-      {/* Dedicated Legal Footer */}
-      <footer className="bg-[#122420] text-[#a1bcb2] border-t border-[#1e3b33] py-8 px-4 sm:px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-emerald-400 font-bold">excel.dattasable.com</span>
-            <span className="text-[#3b5e53]">|</span>
-            <span>Created by Datta Sable Analytics</span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-[#8caaa1]">
-            <a href="/privacy" onClick={(e) => handleTabClick(e, 'privacy')} className="hover:text-white transition-colors">Privacy</a>
-            <span className="text-[#3b5e53]">·</span>
-            <a href="/terms" onClick={(e) => handleTabClick(e, 'terms')} className="hover:text-white transition-colors">Terms</a>
-            <span className="text-[#3b5e53]">·</span>
-            <a href="/disclaimer" onClick={(e) => handleTabClick(e, 'disclaimer')} className="hover:text-white transition-colors">Disclaimer</a>
-            <span className="text-[#3b5e53]">·</span>
-            <a href="/about" onClick={(e) => handleTabClick(e, 'about')} className="hover:text-white transition-colors">About Us</a>
-            <span className="text-[#3b5e53]">·</span>
-            <a href="/contact" onClick={(e) => handleTabClick(e, 'contact')} className="hover:text-white transition-colors">Contact</a>
-            <span className="text-[#3b5e53]">·</span>
-            <a href="/refund-policy" onClick={(e) => handleTabClick(e, 'refund')} className="hover:text-white transition-colors">Refunds</a>
-          </div>
-
-          <div className="text-[11px] text-[#6d8a81]">
-            © {new Date().getFullYear()} Datta Sable. All rights reserved.
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+      </div>
+    );
+  };

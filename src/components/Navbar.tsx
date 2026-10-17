@@ -26,9 +26,19 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Database,
+  Lock,
+  FileText,
+  AlertTriangle,
+  User,
+  Mail,
+  RotateCcw,
+  Printer,
+  ArrowLeft,
 } from 'lucide-react';
 import { DatasetConfig } from '../types/dataset';
 import { ExcelLogo } from './ExcelLogo';
+
+export type LegalRoute = 'about' | 'privacy' | 'terms' | 'disclaimer' | 'refund' | 'contact';
 
 interface NavbarProps {
   config: DatasetConfig;
@@ -44,6 +54,9 @@ interface NavbarProps {
   onToggleSidebar: () => void;
   isProUnlocked?: boolean;
   onOpenUnlockModal?: () => void;
+  activeLegalRoute?: LegalRoute | null;
+  onNavigateLegal?: (route: LegalRoute) => void;
+  onBackToApp?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -60,6 +73,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleSidebar,
   isProUnlocked = false,
   onOpenUnlockModal,
+  activeLegalRoute,
+  onNavigateLegal,
+  onBackToApp,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -80,10 +96,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [onToggleSidebar]);
 
   interface NavItemDef {
-    id: NavbarProps['activeTab'];
+    id: NavbarProps['activeTab'] | string;
     label: string;
-    icon: typeof LayoutDashboard;
+    icon: React.ElementType;
     badge?: string;
+    isLegal?: boolean;
+    legalRoute?: LegalRoute;
+    path?: string;
   }
 
   interface NavGroupDef {
@@ -115,11 +134,33 @@ export const Navbar: React.FC<NavbarProps> = ({
         { id: 'customers', label: 'Data Verification', icon: CircleCheck, badge: 'Audit' },
       ],
     },
+    {
+      title: 'Legal & Compliance',
+      items: [
+        { id: 'privacy', label: 'Privacy Policy', icon: Lock, badge: 'Zero Cloud', isLegal: true, legalRoute: 'privacy', path: '/privacy' },
+        { id: 'terms', label: 'Terms of Service', icon: FileText, isLegal: true, legalRoute: 'terms', path: '/terms' },
+        { id: 'disclaimer', label: 'Disclaimer & Liability', icon: AlertTriangle, badge: 'Audit', isLegal: true, legalRoute: 'disclaimer', path: '/disclaimer' },
+        { id: 'about', label: 'About Us & Creator', icon: User, isLegal: true, legalRoute: 'about', path: '/about' },
+        { id: 'contact', label: 'Contact & Grievance', icon: Mail, isLegal: true, legalRoute: 'contact', path: '/contact' },
+        { id: 'refund', label: 'Refund Policy', icon: RotateCcw, isLegal: true, legalRoute: 'refund', path: '/refund-policy' },
+      ],
+    },
   ];
 
   const views = navGroups.flatMap((group) => group.items);
 
+  const handleItemClick = (item: NavItemDef) => {
+    if (item.isLegal && item.legalRoute) {
+      onNavigateLegal?.(item.legalRoute);
+    } else {
+      onBackToApp?.();
+      setActiveTab(item.id as NavbarProps['activeTab']);
+    }
+    setIsMobileMenuOpen(false);
+  };
+
   const handleSelectView = (id: NavbarProps['activeTab']) => {
+    onBackToApp?.();
     setActiveTab(id);
     setIsMobileMenuOpen(false);
   };
@@ -224,22 +265,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {group.items.length}
                 </span>
               </div>
-              {group.items.map(({ id, label, icon: Icon, badge }) => (
-                <button
-                  key={id}
-                  aria-current={activeTab === id ? 'page' : undefined}
-                  className={`nav-item group cursor-pointer ${activeTab === id ? 'active' : ''}`}
-                  onClick={() => handleSelectView(id)}
-                  title={label}
-                >
-                  {activeTab === id && <span className="nav-item-active-bar" />}
-                  <div className="nav-item-icon-box">
-                    <Icon size={14.5} />
-                  </div>
-                  <span className="truncate font-medium">{label}</span>
-                  {badge && <span className="nav-badge">{badge}</span>}
-                </button>
-              ))}
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.isLegal
+                  ? activeLegalRoute === item.legalRoute
+                  : (!activeLegalRoute && activeTab === item.id);
+                return (
+                  <button
+                    key={item.id}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`nav-item group cursor-pointer ${isActive ? 'active' : ''}`}
+                    onClick={() => handleItemClick(item)}
+                    title={item.label}
+                  >
+                    {isActive && <span className="nav-item-active-bar" />}
+                    <div className="nav-item-icon-box">
+                      <Icon size={14.5} />
+                    </div>
+                    <span className="truncate font-medium">{item.label}</span>
+                    {item.badge && <span className="nav-badge">{item.badge}</span>}
+                  </button>
+                );
+              })}
             </React.Fragment>
           ))}
 
@@ -372,15 +419,48 @@ export const Navbar: React.FC<NavbarProps> = ({
             <PanelLeftOpen size={17} className="text-emerald-700 font-semibold" />
           </button>
 
-          <button
-            onClick={() => handleSelectView('home')}
-            className="text-slate-800 hover:text-emerald-700 transition-colors font-mono font-semibold text-left truncate max-w-[120px] sm:max-w-none"
-            aria-label="excel.dattasable.com Home"
-          >
-            excel.dattasable.com
-          </button>
-          <ChevronRight size={13} className="shrink-0 text-slate-500" />
-          <strong className="truncate text-slate-900 font-semibold">{views.find((v) => v.id === activeTab)?.label}</strong>
+          {activeLegalRoute ? (
+            <>
+              <button
+                onClick={() => {
+                  onBackToApp?.();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-slate-800 hover:text-emerald-700 transition-colors font-mono font-semibold text-left truncate max-w-[120px] sm:max-w-none"
+                aria-label="excel.dattasable.com Home"
+              >
+                excel.dattasable.com
+              </button>
+              <ChevronRight size={13} className="shrink-0 text-slate-500" />
+              <span className="text-slate-500 hidden sm:inline">Legal &amp; Trust</span>
+              <ChevronRight size={13} className="shrink-0 text-slate-500 hidden sm:inline" />
+              <strong className="truncate text-slate-900 font-semibold">
+                {activeLegalRoute === 'privacy'
+                  ? 'Privacy Policy'
+                  : activeLegalRoute === 'terms'
+                  ? 'Terms of Service'
+                  : activeLegalRoute === 'disclaimer'
+                  ? 'Disclaimer & Liability'
+                  : activeLegalRoute === 'about'
+                  ? 'About Us & Creator'
+                  : activeLegalRoute === 'contact'
+                  ? 'Contact & Grievance'
+                  : 'Refund Policy'}
+              </strong>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleSelectView('home')}
+                className="text-slate-800 hover:text-emerald-700 transition-colors font-mono font-semibold text-left truncate max-w-[120px] sm:max-w-none"
+                aria-label="excel.dattasable.com Home"
+              >
+                excel.dattasable.com
+              </button>
+              <ChevronRight size={13} className="shrink-0 text-slate-500" />
+              <strong className="truncate text-slate-900 font-semibold">{views.find((v) => v.id === activeTab)?.label}</strong>
+            </>
+          )}
         </div>
 
         <div className="topbar-actions shrink-0">
@@ -430,56 +510,106 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Action Toolbar */}
       <div className="workspace-toolbar">
-        <div className="dataset-breadcrumb min-w-0 flex-1">
-          <FileSpreadsheet size={16} className="text-emerald-700 shrink-0" />
-          <span className="font-semibold text-slate-800 truncate">{config.companyName}</span>
-          <span className="dataset-mode hidden sm:inline-block">
-            {isCustomDataActive ? 'Imported Dataset' : 'Automated Model'}
-          </span>
-        </div>
+        {activeLegalRoute ? (
+          <>
+            <div className="dataset-breadcrumb min-w-0 flex-1">
+              <ShieldCheck size={16} className="text-emerald-700 shrink-0" />
+              <span className="font-semibold text-slate-800 truncate">
+                Legal &amp; Trust Center ·{' '}
+                {activeLegalRoute === 'privacy'
+                  ? 'Privacy Policy'
+                  : activeLegalRoute === 'terms'
+                  ? 'Terms of Service'
+                  : activeLegalRoute === 'disclaimer'
+                  ? 'Disclaimer & Liability'
+                  : activeLegalRoute === 'about'
+                  ? 'About Us & Creator'
+                  : activeLegalRoute === 'contact'
+                  ? 'Contact & Grievance'
+                  : 'Refund Policy'}
+              </span>
+              <span className="dataset-mode hidden sm:inline-block">
+                Official Compliance Document
+              </span>
+            </div>
 
-        <div className="toolbar-actions flex-wrap">
-          {activeTab !== 'home' && (
-            <button
-              className="text-button"
-              onClick={() => handleSelectView('home')}
-              title="Return to Landing Page"
-            >
-              <Home size={14} />
-              <span className="hidden xs:inline">Home Guide</span>
-            </button>
-          )}
+            <div className="toolbar-actions flex-wrap">
+              <button
+                className="text-button"
+                onClick={() => window.print()}
+                title="Print this official document"
+              >
+                <Printer size={14} />
+                <span className="hidden xs:inline">Print Document</span>
+              </button>
 
-          {!isCustomDataActive && (
-            <button
-              className="text-button hidden sm:inline-flex"
-              onClick={onRegenerateData}
-              title="Generate new seed random transactions"
-            >
-              <RefreshCw size={14} />
-              <span>Refresh</span>
-            </button>
-          )}
-          <button className="secondary-button" onClick={onOpenUploadModal} title="Import CSV or Excel files">
-            <Upload size={14} />
-            <span>Import</span>
-          </button>
+              <button
+                className="primary-button"
+                onClick={() => {
+                  onBackToApp?.();
+                  setIsMobileMenuOpen(false);
+                }}
+                title="Return to Executive Dashboard Generator"
+              >
+                <ArrowLeft size={14} />
+                <span>Return to Dashboards</span>
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="dataset-breadcrumb min-w-0 flex-1">
+              <FileSpreadsheet size={16} className="text-emerald-700 shrink-0" />
+              <span className="font-semibold text-slate-800 truncate">{config.companyName}</span>
+              <span className="dataset-mode hidden sm:inline-block">
+                {isCustomDataActive ? 'Imported Dataset' : 'Automated Model'}
+              </span>
+            </div>
 
-          <button
-            className="primary-button"
-            onClick={onDownloadExcel}
-            disabled={isDownloading}
-            title="Download Executive Excel Dashboard (.xlsx)"
-          >
-            <Download size={14} />
-            <span className="hidden sm:inline">
-              {isDownloading ? 'Compiling Dashboard…' : 'Download Excel Dashboard'}
-            </span>
-            <span className="sm:hidden">
-              {isDownloading ? 'Compiling…' : 'Download Excel'}
-            </span>
-          </button>
-        </div>
+            <div className="toolbar-actions flex-wrap">
+              {activeTab !== 'home' && (
+                <button
+                  className="text-button"
+                  onClick={() => handleSelectView('home')}
+                  title="Return to Landing Page"
+                >
+                  <Home size={14} />
+                  <span className="hidden xs:inline">Home Guide</span>
+                </button>
+              )}
+
+              {!isCustomDataActive && (
+                <button
+                  className="text-button hidden sm:inline-flex"
+                  onClick={onRegenerateData}
+                  title="Generate new seed random transactions"
+                >
+                  <RefreshCw size={14} />
+                  <span>Refresh</span>
+                </button>
+              )}
+              <button className="secondary-button" onClick={onOpenUploadModal} title="Import CSV or Excel files">
+                <Upload size={14} />
+                <span>Import</span>
+              </button>
+
+              <button
+                className="primary-button"
+                onClick={onDownloadExcel}
+                disabled={isDownloading}
+                title="Download Executive Excel Dashboard (.xlsx)"
+              >
+                <Download size={14} />
+                <span className="hidden sm:inline">
+                  {isDownloading ? 'Compiling Dashboard…' : 'Download Excel Dashboard'}
+                </span>
+                <span className="sm:hidden">
+                  {isDownloading ? 'Compiling…' : 'Download Excel'}
+                </span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

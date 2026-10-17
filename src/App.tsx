@@ -330,16 +330,6 @@ export default function App() {
     });
   };
 
-  if (activeLegalRoute) {
-    return (
-      <LegalPage
-        currentRoute={activeLegalRoute}
-        onNavigate={handleNavigateToLegal}
-        onBackToApp={handleBackToApp}
-      />
-    );
-  }
-
   return (
     <div className={`premium-workspace min-h-screen flex flex-col font-sans ${isSidebarVisible ? '' : 'sidebar-hidden'}`}>
       {/* Top Navigation */}
@@ -355,11 +345,20 @@ export default function App() {
         isCustomDataActive={!!customImportResult}
         isSidebarVisible={isSidebarVisible}
         onToggleSidebar={() => setIsSidebarVisible((prev) => !prev)}
+        activeLegalRoute={activeLegalRoute}
+        onNavigateLegal={handleNavigateToLegal}
+        onBackToApp={handleBackToApp}
       />
 
       {/* Main Content Area */}
       <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
-        {activeTab === 'home' ? (
+        {activeLegalRoute ? (
+          <LegalPage
+            currentRoute={activeLegalRoute}
+            onNavigate={handleNavigateToLegal}
+            onBackToApp={handleBackToApp}
+          />
+        ) : activeTab === 'home' ? (
           <HomePage
             onOpenDashboard={() => setActiveTab('dashboard')}
             onOpenExcelView={() => setActiveTab('excel-preview')}
