@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import { generateRealisticDataset } from './dataGenerator';
 import { DatasetConfig } from '../types/dataset';
 import { injectNativeExcelCharts } from './nativeExcelChartInjector';
-import { getIndustryTheme, getAdaptedKpiLabels } from './industryTheme';
+import { getIndustryTheme, getAdaptedKpiLabels, getDimensionAllLabel } from './industryTheme';
 
 // Standard Master Password to Lock & Protect Excel Workbooks & Worksheets
 export const WORKBOOK_PROTECTION_PASSWORD = 'Datta@1511';
@@ -31,15 +31,8 @@ const COLORS = {
   amberDark: 'FFB45309',     // Amber 700
 };
 
-export function getDimensionAllLabel(label: string): string {
-  if (!label) return 'All Records';
-  const clean = label.split(/[/—]/)[0].trim();
-  const lower = clean.toLowerCase();
-  if (lower.startsWith('all ')) return clean;
-  if (lower.endsWith('s')) return `All ${clean}`;
-  if (lower.endsWith('y') && !lower.endsWith('ey')) return `All ${clean.slice(0, -1)}ies`;
-  return `All ${clean}s`;
-}
+export { getDimensionAllLabel };
+
 
 export function buildExcelValidationList(allLabel: string, items: string[], maxLen = 245): string {
   const sanitized = [allLabel];

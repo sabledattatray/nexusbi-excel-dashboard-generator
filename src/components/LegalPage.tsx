@@ -78,11 +78,21 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
   const currentMeta = PAGE_METADATA[currentRoute] || PAGE_METADATA.about;
   const CurrentIcon = currentMeta.icon;
 
-  // Scroll to top when route changes
+  // Scroll to top and synchronize dynamic SEO metadata when route changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.title = `${currentMeta.title} | excel.dattasable.com`;
-  }, [currentRoute, currentMeta.title]);
+    if (typeof document !== 'undefined') {
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) {
+        canonical.setAttribute('href', `https://excel.dattasable.com${currentMeta.path}`);
+      }
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute('content', currentMeta.subtitle);
+      }
+    }
+  }, [currentRoute, currentMeta]);
 
   return (
     <div className="legal-page-wrapper space-y-8 w-full pb-12">
@@ -371,8 +381,11 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                         <img
                           src="/dattasable.com_about.webp"
                           alt="Datta Sable — Founder & Principal Business Intelligence Architect"
+                          width={1024}
+                          height={1536}
                           className="w-full h-auto object-cover object-top aspect-[3/4] transition-transform duration-500 group-hover:scale-[1.02]"
                           loading="eager"
+                          fetchPriority="high"
                         />
                         {/* Glassmorphic Gradient Overlay at bottom */}
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-12 flex flex-col gap-1">

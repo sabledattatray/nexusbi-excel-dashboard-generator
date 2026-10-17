@@ -1403,3 +1403,14 @@ export function getAdaptedKpiLabels(
     entityLabel: schema.entityColumn || base.entityLabel,
   };
 }
+
+export function getDimensionAllLabel(label: string): string {
+  if (!label) return 'All Records';
+  const clean = label.split(/[/—]/)[0].trim();
+  const lower = clean.toLowerCase();
+  if (lower.startsWith('all ')) return clean;
+  if (lower.endsWith('s')) return `All ${clean}`;
+  if (lower.endsWith('y') && !lower.endsWith('ey')) return `All ${clean.slice(0, -1)}ies`;
+  return `All ${clean}s`;
+}
+

@@ -27,8 +27,10 @@ export async function getDattaSableImageBuffer(): Promise<Uint8Array | null> {
   // 2. Node.js Environment (Test scripts & SSR)
   if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     try {
-      const fs = await import('fs');
-      const path = await import('path');
+      const fsModuleName = 'fs';
+      const pathModuleName = 'path';
+      const fs = await import(/* @vite-ignore */ fsModuleName);
+      const path = await import(/* @vite-ignore */ pathModuleName);
       const candidatePaths = [
         path.resolve(process.cwd(), 'public/dattasable.com.png'),
         path.resolve('public/dattasable.com.png'),

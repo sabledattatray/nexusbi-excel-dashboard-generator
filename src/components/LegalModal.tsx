@@ -164,6 +164,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                     <img
                       src="/dattasable.com_about.webp"
                       alt="Datta Sable"
+                      width={1024}
+                      height={1536}
+                      loading="lazy"
                       className="w-full h-full object-cover object-top"
                     />
                   </div>

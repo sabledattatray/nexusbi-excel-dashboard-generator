@@ -20,6 +20,7 @@
 - [Excel Dashboard Examples & Templates](https://excel.dattasable.com/excel-dashboard-examples): 32 industry-specific dashboard examples and models.
 - [Privacy Policy](https://excel.dattasable.com/privacy): Details on 100% in-browser client-side privacy architecture.
 - [Terms of Service](https://excel.dattasable.com/terms): Commercial licensing and usage terms.
+- [Disclaimer & Liability](https://excel.dattasable.com/disclaimer): Official legal disclaimer, limitation of liability, and analytical calculation warranty terms.
 - [Refund & Cancellation Policy](https://excel.dattasable.com/refund-policy): Product support and license policy.
 - [About Datta Sable](https://excel.dattasable.com/about): Background on Business Intelligence Architect Datta Sable.
 - [Contact & Support](https://excel.dattasable.com/contact): Developer contact, email support, and grievance details.

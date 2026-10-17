@@ -35,7 +35,8 @@ const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((
 const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
-import { LegalPage, LegalRoute } from './components/LegalPage';
+const LegalPage = lazy(() => import('./components/LegalPage').then((m) => ({ default: m.LegalPage })));
+import type { LegalRoute } from './components/LegalPage';
 import { trackEvent, trackPageView } from './utils/analytics';
 
 const WorkspaceLoader = () => (
@@ -143,6 +144,19 @@ export default function App() {
     }
     setActiveLegalRoute(null);
     document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
+    if (typeof document !== 'undefined') {
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) {
+        canonical.setAttribute('href', 'https://excel.dattasable.com/');
+      }
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute(
+          'content',
+          'Create professional Excel dashboards with automated KPI reports, interactive charts and business analytics. Turn your spreadsheet data into actionable insights.'
+        );
+      }
+    }
     trackPageView('/', 'Home / Generator');
   }, []);
 
@@ -353,11 +367,13 @@ export default function App() {
       {/* Main Content Area */}
       <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
         {activeLegalRoute ? (
-          <LegalPage
-            currentRoute={activeLegalRoute}
-            onNavigate={handleNavigateToLegal}
-            onBackToApp={handleBackToApp}
-          />
+          <Suspense fallback={<WorkspaceLoader />}>
+            <LegalPage
+              currentRoute={activeLegalRoute}
+              onNavigate={handleNavigateToLegal}
+              onBackToApp={handleBackToApp}
+            />
+          </Suspense>
         ) : activeTab === 'home' ? (
           <HomePage
             onOpenDashboard={() => setActiveTab('dashboard')}

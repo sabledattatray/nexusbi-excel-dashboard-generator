@@ -6,7 +6,7 @@ import { AppDataset } from '../types/dataset';
 
 import { getProfessionalSpec } from '../utils/professionalPresentation';
 import { DomainChart, DomainSpec, Row, groupRows, metricValue, formatMetric } from '../utils/domainDatasets';
-import { getDimensionAllLabel } from '../utils/excelExporter';
+import { getDimensionAllLabel } from '../utils/industryTheme';
 
 export function IndustryDashboard({data,onRecords}:{data:AppDataset;onRecords:()=>void}) {
 
