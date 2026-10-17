@@ -535,45 +535,35 @@ export const HomePage: React.FC<HomePageProps> = ({
             return (
               <div
                 key={ind.id}
-                className={`p-5 rounded-xl border transition-all ${
-                  isSelected
-                    ? 'bg-emerald-50/60 border-emerald-500 shadow-sm ring-1 ring-emerald-500/30'
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs'
-                }`}
+                className="p-5 rounded-xl border border-emerald-500 bg-emerald-50/60 shadow-xs hover:border-emerald-600 hover:shadow-md transition-all flex flex-col justify-between group"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                      isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <Icon size={18} />
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-emerald-700 text-white shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                      <Icon size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 font-heading">{ind.name}</h3>
+                      <span className="text-[10.5px] font-mono text-emerald-800 font-semibold">
+                        {ind.metric}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 font-heading">{ind.name}</h3>
-                    <span className="text-[10px] font-mono text-emerald-700 font-medium">
-                      {ind.metric}
-                    </span>
-                  </div>
-                </div>
 
-                <p className="text-xs text-slate-600 mb-4 line-clamp-2 leading-relaxed">
-                  {ind.tagline}
-                </p>
+                  <p className="text-xs text-slate-600 mb-4 line-clamp-2 leading-relaxed">
+                    {ind.tagline}
+                  </p>
+                </div>
 
                 <button
                   onClick={() => {
                     onSelectIndustry(ind.id);
                     onOpenDashboard();
                   }}
-                  className={`w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-                    isSelected
-                      ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                  }`}
+                  className="w-full py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white shadow-xs cursor-pointer"
                 >
                   <span>Launch {ind.name.split(' ')[0]} Model</span>
-                  <ArrowRight size={12} />
+                  <ArrowRight size={13} />
                 </button>
               </div>
             );
