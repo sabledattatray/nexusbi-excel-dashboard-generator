@@ -35,7 +35,7 @@ const CustomizerModal = lazy(() => import('./components/CustomizerModal').then((
 const DownloadSuccessModal = lazy(() => import('./components/DownloadSuccessModal').then((m) => ({ default: m.DownloadSuccessModal })));
 const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((m) => ({ default: m.DataUploadModal })));
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
-import { LegalTab } from './components/LegalModal';
+import { LegalPage, LegalRoute } from './components/LegalPage';
 import { trackEvent, trackPageView } from './utils/analytics';
 
 const WorkspaceLoader = () => (
@@ -52,21 +52,20 @@ const getInitialRouteState = () => {
     return {
       tab: 'home' as const,
       industry: 'enterprise_tech' as keyof typeof INDUSTRY_PRESETS,
-      isLegalOpen: false,
-      legalTab: 'privacy' as LegalTab,
+      legalRoute: null as LegalRoute | null,
     };
   }
   const path = window.location.pathname.toLowerCase();
-  let isLegal = false;
-  let lTab: LegalTab = 'privacy';
+  let legalRoute: LegalRoute | null = null;
   let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' = 'home';
   let ind: keyof typeof INDUSTRY_PRESETS = 'enterprise_tech';
 
-  if (path.includes('about')) { isLegal = true; lTab = 'about'; }
-  else if (path.includes('privacy')) { isLegal = true; lTab = 'privacy'; }
-  else if (path.includes('terms')) { isLegal = true; lTab = 'terms'; }
-  else if (path.includes('refund')) { isLegal = true; lTab = 'refund'; }
-  else if (path.includes('contact')) { isLegal = true; lTab = 'contact'; }
+  if (path.includes('disclaimer')) { legalRoute = 'disclaimer'; }
+  else if (path.includes('privacy')) { legalRoute = 'privacy'; }
+  else if (path.includes('terms')) { legalRoute = 'terms'; }
+  else if (path.includes('refund')) { legalRoute = 'refund'; }
+  else if (path.includes('contact')) { legalRoute = 'contact'; }
+  else if (path.includes('about')) { legalRoute = 'about'; }
 
   if (path.includes('sales-dashboard')) {
     tab = 'dashboard';
@@ -83,7 +82,7 @@ const getInitialRouteState = () => {
     tab = 'excel-preview';
   }
 
-  return { tab, industry: ind, isLegalOpen: isLegal, legalTab: lTab };
+  return { tab, industry: ind, legalRoute };
 };
 
 export default function App() {
@@ -116,15 +115,65 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
-  const [isLegalOpen, setIsLegalOpen] = useState(initialRoute.isLegalOpen);
-  const [legalTab, setLegalTab] = useState<LegalTab>(initialRoute.legalTab);
+  const [activeLegalRoute, setActiveLegalRoute] = useState<LegalRoute | null>(initialRoute.legalRoute);
   const [isProUser, setIsProUser] = useState<boolean>(false);
   const [lastDownloadedFilename, setLastDownloadedFilename] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleOpenLegal = useCallback((tab: LegalTab) => {
-    setLegalTab(tab);
-    setIsLegalOpen(true);
+  const handleNavigateToLegal = useCallback((route: LegalRoute) => {
+    const pathMap: Record<LegalRoute, string> = {
+      privacy: '/privacy',
+      terms: '/terms',
+      disclaimer: '/disclaimer',
+      about: '/about',
+      contact: '/contact',
+      refund: '/refund-policy',
+    };
+    const targetPath = pathMap[route] || `/${route}`;
+    if (typeof window !== 'undefined' && window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+    setActiveLegalRoute(route);
+    trackPageView(targetPath, `Legal: ${route}`);
+  }, []);
+
+  const handleBackToApp = useCallback(() => {
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+      window.history.pushState(null, '', '/');
+    }
+    setActiveLegalRoute(null);
+    document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
+    trackPageView('/', 'Home / Generator');
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('disclaimer')) {
+        setActiveLegalRoute('disclaimer');
+      } else if (path.includes('privacy')) {
+        setActiveLegalRoute('privacy');
+      } else if (path.includes('terms')) {
+        setActiveLegalRoute('terms');
+      } else if (path.includes('refund')) {
+        setActiveLegalRoute('refund');
+      } else if (path.includes('contact')) {
+        setActiveLegalRoute('contact');
+      } else if (path.includes('about')) {
+        setActiveLegalRoute('about');
+      } else {
+        setActiveLegalRoute(null);
+        document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
+        if (path.includes('sales-dashboard') || path.includes('hr-dashboard') || path.includes('financial-dashboard') || path.includes('kpi-dashboard')) {
+          setActiveTab('dashboard');
+        } else if (path.includes('mis-report-generator') || path.includes('excel-dashboard-generator')) {
+          setActiveTab('excel-preview');
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   useEffect(() => {
@@ -281,6 +330,16 @@ export default function App() {
     });
   };
 
+  if (activeLegalRoute) {
+    return (
+      <LegalPage
+        currentRoute={activeLegalRoute}
+        onNavigate={handleNavigateToLegal}
+        onBackToApp={handleBackToApp}
+      />
+    );
+  }
+
   return (
     <div className={`premium-workspace min-h-screen flex flex-col font-sans ${isSidebarVisible ? '' : 'sidebar-hidden'}`}>
       {/* Top Navigation */}
@@ -392,7 +451,8 @@ export default function App() {
       <Footer
         onSelectTab={setActiveTab}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
-        onOpenLegal={handleOpenLegal}
+        onNavigateLegal={handleNavigateToLegal}
+        onOpenLegal={handleNavigateToLegal}
       />
 
       {/* Lazy-Loaded Modals */}
@@ -425,14 +485,6 @@ export default function App() {
             onReDownload={handleDownloadExcel}
             sourceBased={!!customImportResult}
             isProUnlocked={true}
-          />
-        )}
-
-        {isLegalOpen && (
-          <LegalModal
-            isOpen={isLegalOpen}
-            onClose={() => setIsLegalOpen(false)}
-            defaultTab={legalTab}
           />
         )}
       </Suspense>

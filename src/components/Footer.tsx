@@ -17,11 +17,20 @@ import { ExcelLogo } from './ExcelLogo';
 interface FooterProps {
   onSelectTab?: (tab: 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers') => void;
   onOpenUploadModal?: () => void;
-  onOpenLegal?: (tab: 'about' | 'privacy' | 'terms' | 'refund' | 'contact') => void;
+  onOpenLegal?: (tab: 'about' | 'privacy' | 'terms' | 'disclaimer' | 'refund' | 'contact') => void;
+  onNavigateLegal?: (route: 'about' | 'privacy' | 'terms' | 'disclaimer' | 'refund' | 'contact') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, onOpenLegal }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, onOpenLegal, onNavigateLegal }) => {
   const currentYear = new Date().getFullYear();
+
+  const handleLegalNavigation = (route: 'about' | 'privacy' | 'terms' | 'disclaimer' | 'refund' | 'contact') => {
+    if (onNavigateLegal) {
+      onNavigateLegal(route);
+    } else if (onOpenLegal) {
+      onOpenLegal(route);
+    }
+  };
 
   return (
     <footer className="workspace-footer-custom bg-[#172b2a] text-[#b6c7c2] border-t border-[#29423b] pt-10 pb-8 px-4 sm:px-8 md:px-12 transition-all">
@@ -129,74 +138,86 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
             </ul>
           </div>
 
-          {/* Column 3: Legal & Trust Center */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-emerald-400">
-              About &amp; Legal
-            </h4>
-            <ul className="space-y-2 text-xs text-[#9bb0a7]">
-              <li>
-                <a
-                  href="/about"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenLegal?.('about');
-                  }}
-                  className="hover:text-white transition-colors block text-left"
-                >
-                  About Us &amp; Mission
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/privacy"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenLegal?.('privacy');
-                  }}
-                  className="hover:text-white transition-colors block text-left"
-                >
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/terms"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenLegal?.('terms');
-                  }}
-                  className="hover:text-white transition-colors block text-left"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/refund-policy"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenLegal?.('refund');
-                  }}
-                  className="hover:text-white transition-colors block text-left"
-                >
-                  Refund &amp; Cancellation
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/contact"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenLegal?.('contact');
-                  }}
-                  className="hover:text-white transition-colors block text-left"
-                >
-                  Contact &amp; Grievance
-                </a>
-              </li>
-            </ul>
-          </div>
+            {/* Column 3: Legal & Trust Center */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-semibold tracking-wider uppercase text-emerald-400">
+                About &amp; Legal
+              </h4>
+              <ul className="space-y-2 text-xs text-[#9bb0a7]">
+                <li>
+                  <a
+                    href="/about"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('about');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    About Us &amp; Mission
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/privacy"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('privacy');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/terms"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('terms');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/disclaimer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('disclaimer');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    Disclaimer &amp; Liability
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/refund-policy"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('refund');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    Refund &amp; Cancellation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/contact"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLegalNavigation('contact');
+                    }}
+                    className="hover:text-white transition-colors block text-left"
+                  >
+                    Contact &amp; Grievance
+                  </a>
+                </li>
+              </ul>
+            </div>
 
           {/* Column 4: Creator & Network */}
           <div className="space-y-3">
@@ -260,40 +281,71 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
             {/* Legal Links with comfortable touch targets */}
             <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-wrap text-[11.5px] text-[#95afa5]">
               <span className="hidden md:inline text-[#3d5c52]">·</span>
-              <button
-                onClick={() => onOpenLegal?.('about')}
+              <a
+                href="/about"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('about');
+                }}
                 className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
               >
                 About Us
-              </button>
+              </a>
               <span className="text-[#3d5c52]">·</span>
-              <button
-                onClick={() => onOpenLegal?.('privacy')}
+              <a
+                href="/privacy"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('privacy');
+                }}
                 className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
               >
                 Privacy Policy
-              </button>
+              </a>
               <span className="text-[#3d5c52]">·</span>
-              <button
-                onClick={() => onOpenLegal?.('terms')}
+              <a
+                href="/terms"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('terms');
+                }}
                 className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
               >
                 Terms
-              </button>
+              </a>
               <span className="text-[#3d5c52]">·</span>
-              <button
-                onClick={() => onOpenLegal?.('refund')}
+              <a
+                href="/disclaimer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('disclaimer');
+                }}
+                className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
+              >
+                Disclaimer
+              </a>
+              <span className="text-[#3d5c52]">·</span>
+              <a
+                href="/refund-policy"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('refund');
+                }}
                 className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
               >
                 Refunds
-              </button>
+              </a>
               <span className="text-[#3d5c52]">·</span>
-              <button
-                onClick={() => onOpenLegal?.('contact')}
+              <a
+                href="/contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLegalNavigation('contact');
+                }}
                 className="py-1 px-2 rounded hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer"
               >
                 Contact
-              </button>
+              </a>
             </div>
           </div>
 

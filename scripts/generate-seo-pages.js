@@ -88,6 +88,14 @@ const pages = [
     metaHeading: 'Terms of Service',
   },
   {
+    slug: 'disclaimer',
+    title: 'Disclaimer & Liability Terms | excel.dattasable.com',
+    description: 'Official legal disclaimer, limitation of liability, and analytical calculation warranty terms for excel.dattasable.com.',
+    canonical: 'https://excel.dattasable.com/disclaimer',
+    h1: 'Disclaimer & Analytical Limitation of Liability – excel.dattasable.com',
+    metaHeading: 'Legal & Financial Disclaimer',
+  },
+  {
     slug: 'refund-policy',
     title: 'Refund & Cancellation Policy | excel.dattasable.com',
     description: 'Official refund and cancellation policy for digital Excel downloads and user assistance at excel.dattasable.com.',
