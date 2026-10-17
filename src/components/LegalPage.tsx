@@ -469,51 +469,62 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                       </div>
                     </div>
 
-                    {/* Portfolio & Ecosystem CTA Buttons */}
-                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {/* Portfolio & Ecosystem CTA Buttons - Uniform Size & Responsive Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full pt-2">
                       <a
                         href="https://dattasable.com/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-950/40 hover:scale-[1.02]"
+                        className="w-full h-11 px-3.5 sm:px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-950/40 hover:scale-[1.01] flex items-center justify-between group"
+                        title="Visit Datta Sable's Official Website & Portfolio"
                       >
-                        <Globe size={13} />
-                        <span>dattasable.com</span>
-                        <ExternalLink size={12} />
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Globe size={14} className="shrink-0" />
+                          <span className="truncate">dattasable.com</span>
+                        </div>
+                        <ExternalLink size={12} className="opacity-75 group-hover:opacity-100 transition-opacity shrink-0 ml-1.5" />
                       </a>
 
                       <a
                         href="https://fabric.dattasable.com/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-950/80 hover:bg-sky-900/90 text-sky-200 text-xs font-bold border border-sky-400/40 transition-all shadow-sm hover:scale-[1.02]"
+                        className="w-full h-11 px-3.5 sm:px-4 rounded-xl bg-sky-950/80 hover:bg-sky-900/90 text-sky-200 text-xs font-bold border border-sky-400/40 transition-all shadow-sm hover:scale-[1.01] flex items-center justify-between group"
+                        title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
                       >
-                        <Cpu size={13} className="text-sky-400" />
-                        <span>Fabric Master (FinOps)</span>
-                        <ExternalLink size={12} />
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Cpu size={14} className="text-sky-400 shrink-0" />
+                          <span className="truncate">Fabric Master (FinOps)</span>
+                        </div>
+                        <ExternalLink size={12} className="opacity-75 group-hover:opacity-100 transition-opacity shrink-0 ml-1.5" />
                       </a>
 
                       <a
                         href="https://www.youtube.com/@sabledatttatray"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 hover:text-white text-xs font-semibold border border-white/[0.12] transition-all"
+                        className="w-full h-11 px-3.5 sm:px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white text-xs font-semibold border border-white/[0.12] transition-all shadow-sm hover:scale-[1.01] flex items-center justify-between group"
+                        title="Watch Business Intelligence & Analytics Tutorials on YouTube"
                       >
-                        <Youtube size={14} className="text-red-400" />
-                        <span>YouTube Tutorials</span>
-                        <ExternalLink size={11} />
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Youtube size={14} className="text-red-400 shrink-0" />
+                          <span className="truncate">YouTube Tutorials</span>
+                        </div>
+                        <ExternalLink size={12} className="opacity-75 group-hover:opacity-100 transition-opacity shrink-0 ml-1.5" />
                       </a>
 
                       <a
                         href="https://github.com/sabledattatray"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white text-xs font-semibold border border-white/15 transition-all shadow-sm hover:scale-[1.02]"
+                        className="w-full h-11 px-3.5 sm:px-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white text-xs font-semibold border border-white/15 transition-all shadow-sm hover:scale-[1.01] flex items-center justify-between group"
                         title="Explore Datta Sable's Code Repositories on GitHub"
                       >
-                        <Github size={14} className="text-white" />
-                        <span>GitHub (@sabledattatray)</span>
-                        <ExternalLink size={11} />
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Github size={14} className="text-white shrink-0" />
+                          <span className="truncate">GitHub (@sabledattatray)</span>
+                        </div>
+                        <ExternalLink size={12} className="opacity-75 group-hover:opacity-100 transition-opacity shrink-0 ml-1.5" />
                       </a>
                     </div>
                   </div>
@@ -584,44 +595,50 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                 <p>
                   Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Thane, Maharashtra. His engineering footprint spans enterprise cloud architectures, Microsoft Fabric, Azure Data Factory, Power BI DAX modeling, and automated spreadsheet reporting engines.
                 </p>
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 w-full">
                   <a
                     href="https://dattasable.com/dashboards"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-medium transition-colors"
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-medium transition-colors flex items-center justify-between group"
                   >
-                    <Globe size={13} />
-                    <span>BI Dashboards Showcase</span>
-                    <ExternalLink size={11} />
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Globe size={13} className="shrink-0" />
+                      <span className="truncate">BI Dashboards</span>
+                    </div>
+                    <ExternalLink size={11} className="opacity-70 shrink-0 ml-1" />
                   </a>
                   <a
                     href="https://www.youtube.com/@sabledatttatray"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-red-400 hover:bg-red-50 text-slate-700 hover:text-red-700 text-xs font-medium transition-colors"
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 hover:border-red-400 hover:bg-red-50 text-slate-700 hover:text-red-700 text-xs font-medium transition-colors flex items-center justify-between group"
                   >
-                    <Youtube size={13} className="text-red-500" />
-                    <span>YouTube Tutorials (@sabledatttatray)</span>
-                    <ExternalLink size={11} />
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Youtube size={13} className="text-red-500 shrink-0" />
+                      <span className="truncate">YouTube</span>
+                    </div>
+                    <ExternalLink size={11} className="opacity-70 shrink-0 ml-1" />
                   </a>
                   <a
                     href="https://github.com/sabledattatray"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-100 text-slate-800 text-xs font-medium transition-colors"
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-100 text-slate-800 text-xs font-medium transition-colors flex items-center justify-between group"
                     title="View GitHub Profile & Open-Source Projects"
                   >
-                    <Github size={13} className="text-slate-900" />
-                    <span>GitHub (@sabledattatray)</span>
-                    <ExternalLink size={11} />
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Github size={13} className="text-slate-900 shrink-0" />
+                      <span className="truncate">GitHub</span>
+                    </div>
+                    <ExternalLink size={11} className="opacity-70 shrink-0 ml-1" />
                   </a>
                   <a
                     href="mailto:support@dattasable.com"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors"
+                    className="w-full h-10 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <Mail size={13} />
-                    <span>support@dattasable.com</span>
+                    <Mail size={13} className="shrink-0" />
+                    <span className="truncate">support@dattasable.com</span>
                   </a>
                 </div>
               </section>
