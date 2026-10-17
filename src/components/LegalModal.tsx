@@ -20,6 +20,7 @@ import {
   Award,
   Layers,
   Zap,
+  Github,
 } from 'lucide-react';
 
 export type LegalTab = 'about' | 'privacy' | 'terms' | 'refund' | 'contact';
@@ -159,8 +160,12 @@ export const LegalModal: React.FC<LegalModalProps> = ({
               {/* Profile Card Header */}
               <div className="bg-gradient-to-r from-[#172b2a] via-[#1c3830] to-[#142823] text-white rounded-2xl p-6 sm:p-7 border border-[#2d5246] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-2xl shrink-0 shadow-md">
-                    DS
+                  <div className="w-16 h-20 rounded-2xl overflow-hidden border-2 border-[#4ade80]/50 shadow-md shrink-0 bg-slate-900">
+                    <img
+                      src="/dattasable.com_about.webp"
+                      alt="Datta Sable"
+                      className="w-full h-full object-cover object-top"
+                    />
                   </div>
                   <div>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#1e4238] border border-[#3b7563] text-[#86efac] text-[10px] font-mono font-medium mb-1.5">
@@ -176,12 +181,12 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   <a
                     href="https://dattasable.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-sm"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-sm"
                   >
                     <span>dattasable.com</span>
                     <ExternalLink size={12} />
@@ -190,10 +195,20 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                     href="https://fabric.dattasable.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#193742] hover:bg-[#204957] text-sky-200 text-xs font-bold border border-sky-400/40 transition-all"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#193742] hover:bg-[#204957] text-sky-200 text-xs font-bold border border-sky-400/40 transition-all"
                   >
                     <Cpu size={12} className="text-sky-400" />
                     <span>Fabric Master</span>
+                  </a>
+                  <a
+                    href="https://github.com/sabledattatray"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-100 text-xs font-bold border border-white/20 transition-all"
+                  >
+                    <Github size={12} className="text-white" />
+                    <span>GitHub</span>
+                    <ExternalLink size={11} />
                   </a>
                 </div>
               </div>

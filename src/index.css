@@ -165,42 +165,152 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
   text-transform: uppercase;
   user-select: none;
 }
-.sidebar-label-btn {
+/* Premium Sidebar Accordion Submenu Buttons */
+.sidebar-accordion-btn {
   width: 100%;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  color: #688e80;
-  padding: 5px 8px;
-  margin: 5px 0 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  text-transform: uppercase;
+  padding: 7px 10px;
+  margin: 2.5px 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+  text-align: left;
 }
-.sidebar-label-btn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #a7d9c9;
-  border-color: rgba(255, 255, 255, 0.06);
+
+.sidebar-accordion-btn:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(52, 211, 153, 0.28);
+  transform: translateY(-0.5px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
-.sidebar-label-btn:focus-visible {
+
+.sidebar-accordion-btn.open {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.28) 0%, rgba(15, 23, 42, 0.45) 100%);
+  border-color: rgba(52, 211, 153, 0.38);
+  box-shadow: 0 4px 12px rgba(6, 78, 59, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-accordion-btn.has-active:not(.open) {
+  border-color: rgba(52, 211, 153, 0.28);
+  background: rgba(6, 78, 59, 0.12);
+}
+
+.sidebar-accordion-btn:focus-visible {
   outline: 2px solid #34d399;
-  outline-offset: -1px;
+  outline-offset: 1px;
 }
-.sidebar-label-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #34d399;
-  opacity: .8;
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+
+.accordion-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.accordion-icon-box.emerald {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.accordion-icon-box.sky {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  color: #38bdf8;
+}
+
+.accordion-icon-box.violet {
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: #a78bfa;
+}
+
+.accordion-icon-box.amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.sidebar-accordion-btn.open .accordion-icon-box {
+  transform: scale(1.05);
+}
+
+.accordion-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.25;
+  transition: color 0.15s ease;
+}
+
+.sidebar-accordion-btn:hover .accordion-title,
+.sidebar-accordion-btn.open .accordion-title {
+  color: #ffffff;
+}
+
+.accordion-subtitle {
+  font-size: 10px;
+  color: #7b9c90;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+  transition: color 0.15s ease;
+}
+
+.sidebar-accordion-btn:hover .accordion-subtitle {
+  color: #9ab3a9;
+}
+
+.sidebar-accordion-btn.open .accordion-subtitle {
+  color: #a7d9c9;
+}
+
+.accordion-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 3px 6.5px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  transition: all 0.18s ease;
+}
+
+.sidebar-accordion-btn:hover .accordion-pill-badge {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.25);
+  color: #cbd5e1;
+}
+
+.sidebar-accordion-btn.open .accordion-pill-badge {
+  background: rgba(6, 78, 59, 0.5);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #34d399;
+}
+
+.sidebar-submenu-wrapper {
+  margin-left: 12px;
+  padding-left: 10px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  border-left: 2px solid rgba(52, 211, 153, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 /* Navigation List & Items */

@@ -11,6 +11,7 @@ import {
   Linkedin,
   Cpu,
   Mail,
+  Github,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 
@@ -259,6 +260,18 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenUploadModal, 
                 >
                   <Youtube size={13} className="text-red-400 shrink-0" />
                   <span>YouTube Tutorials</span>
+                  <ExternalLink size={11} className="opacity-70" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/sabledattatray"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-1.5 transition-colors"
+                >
+                  <Github size={13} className="text-slate-300 shrink-0" />
+                  <span>GitHub (@sabledattatray)</span>
                   <ExternalLink size={11} className="opacity-70" />
                 </a>
               </li>

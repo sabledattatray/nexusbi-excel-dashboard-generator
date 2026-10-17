@@ -80,35 +80,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Submenu collapsible state: default open, user can close/open with one click
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    core: false,
-    analytics: false,
-    legal: false,
-    tools: false,
-  });
+  // Single active accordion: null by default (closed at initial load & refresh)
+  // At most ONE submenu can be open at any time; opening any submenu closes all others.
+  const [openSectionId, setOpenSectionId] = useState<string | null>(null);
 
   const toggleSection = (id: string) => {
-    setCollapsedSections((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setOpenSectionId((prev) => (prev === id ? null : id));
   };
-
-  // Automatically expand a section when an active item belongs to it
-  React.useEffect(() => {
-    if (activeLegalRoute) {
-      setCollapsedSections((prev) => ({ ...prev, legal: false }));
-    }
-  }, [activeLegalRoute]);
-
-  React.useEffect(() => {
-    if (['home', 'dashboard', 'excel-preview'].includes(activeTab)) {
-      setCollapsedSections((prev) => ({ ...prev, core: false }));
-    } else if (['pivot', 'transactions', 'regions', 'products', 'customers'].includes(activeTab)) {
-      setCollapsedSections((prev) => ({ ...prev, analytics: false }));
-    }
-  }, [activeTab]);
 
   // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
   React.useEffect(() => {
@@ -139,6 +117,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   interface NavGroupDef {
     id: string;
     title: string;
+    subtitle: string;
+    icon: React.ElementType;
+    colorTheme: 'emerald' | 'sky' | 'violet' | 'amber';
     items: NavItemDef[];
   }
 
@@ -146,6 +127,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     {
       id: 'core',
       title: 'Core Dashboards',
+      subtitle: 'Executive & Live Workbooks',
+      icon: LayoutDashboard,
+      colorTheme: 'emerald',
       items: [
         { id: 'home', label: 'Home Page', icon: Home },
         { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard, badge: 'Live' },
@@ -155,6 +139,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     {
       id: 'analytics',
       title: 'Analytics & Records',
+      subtitle: 'Pivots, Trends & Verification',
+      icon: BarChart3,
+      colorTheme: 'sky',
       items: [
         { id: 'pivot', label: 'Grouped Pivot Analysis', icon: Layers3, badge: 'Pivot' },
         {
@@ -171,6 +158,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     {
       id: 'legal',
       title: 'Legal & Compliance',
+      subtitle: 'Privacy, Terms & Grievance',
+      icon: ShieldCheck,
+      colorTheme: 'violet',
       items: [
         { id: 'privacy', label: 'Privacy Policy', icon: Lock, badge: 'Zero Cloud', isLegal: true, legalRoute: 'privacy', path: '/privacy' },
         { id: 'terms', label: 'Terms of Service', icon: FileText, isLegal: true, legalRoute: 'terms', path: '/terms' },
@@ -289,7 +279,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Navigation Sections */}
         <nav aria-label="Workspace views" className="sidebar-nav">
           {navGroups.map((group, groupIdx) => {
-            const isCollapsed = collapsedSections[group.id] ?? false;
+            const isOpen = openSectionId === group.id;
+            const GroupIcon = group.icon;
             const hasActiveInside = group.items.some((item) =>
               item.isLegal
                 ? activeLegalRoute === item.legalRoute
@@ -301,32 +292,46 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={() => toggleSection(group.id)}
-                  className="sidebar-label-btn group cursor-pointer"
-                  aria-expanded={!isCollapsed}
-                  title={`${isCollapsed ? 'Expand' : 'Collapse'} ${group.title}`}
+                  className={`sidebar-accordion-btn group cursor-pointer ${
+                    isOpen ? 'open' : ''
+                  } ${hasActiveInside && !isOpen ? 'has-active' : ''}`}
+                  aria-expanded={isOpen}
+                  title={`${isOpen ? 'Collapse' : 'Expand'} ${group.title} Submenu (${group.items.length} items)`}
                 >
-                  <span className="flex items-center gap-1.5 min-w-0">
-                    <span className="sidebar-label-dot" />
-                    <span className="truncate">{group.title}</span>
-                  </span>
-                  <span className="flex items-center gap-1.5 shrink-0">
-                    {hasActiveInside && isCollapsed && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Active page inside" />
-                    )}
-                    <span className="text-[9px] font-mono text-slate-500 font-normal px-1 py-0.5 rounded bg-white/[0.04] group-hover:text-emerald-300 transition-colors">
-                      {group.items.length}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`accordion-icon-box ${group.colorTheme}`}>
+                      <GroupIcon size={14} />
+                    </div>
+                    <div className="flex flex-col min-w-0 text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="accordion-title">{group.title}</span>
+                        {hasActiveInside && !isOpen && (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"
+                            title="Active page inside this submenu"
+                          />
+                        )}
+                      </div>
+                      <span className="accordion-subtitle">{group.subtitle}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    <span className="accordion-pill-badge">
+                      <span className="font-semibold text-emerald-400">{group.items.length}</span>
+                      <span>Submenu</span>
+                      <ChevronDown
+                        size={11}
+                        className={`transition-transform duration-200 ${
+                          isOpen ? 'rotate-180 text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'
+                        }`}
+                      />
                     </span>
-                    <ChevronDown
-                      size={12}
-                      className={`text-slate-500 group-hover:text-emerald-400 transition-transform duration-200 ${
-                        isCollapsed ? '-rotate-90' : 'rotate-0'
-                      }`}
-                    />
-                  </span>
+                  </div>
                 </button>
 
-                {!isCollapsed && (
-                  <div className="flex flex-col gap-[2.5px] animate-in fade-in duration-150">
+                {isOpen && (
+                  <div className="sidebar-submenu-wrapper animate-in fade-in slide-in-from-top-1 duration-200">
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isActive = item.isLegal
@@ -357,101 +362,117 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Tools Section */}
           <div className="sidebar-divider" role="separator" />
-          <button
-            type="button"
-            onClick={() => toggleSection('tools')}
-            className="sidebar-label-btn group cursor-pointer"
-            aria-expanded={!collapsedSections.tools}
-            title={`${collapsedSections.tools ? 'Expand' : 'Collapse'} Studio Tools`}
-          >
-            <span className="flex items-center gap-1.5 min-w-0">
-              <span className="sidebar-label-dot" />
-              <span className="truncate">Studio Tools</span>
-            </span>
-            <span className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[9px] font-mono text-slate-500 font-normal px-1 py-0.5 rounded bg-white/[0.04] group-hover:text-emerald-300 transition-colors">
-                3
-              </span>
-              <ChevronDown
-                size={12}
-                className={`text-slate-500 group-hover:text-emerald-400 transition-transform duration-200 ${
-                  collapsedSections.tools ? '-rotate-90' : 'rotate-0'
-                }`}
-              />
-            </span>
-          </button>
+          {(() => {
+            const isToolsOpen = openSectionId === 'tools';
+            return (
+              <>
+                <button
+                  type="button"
+                  onClick={() => toggleSection('tools')}
+                  className={`sidebar-accordion-btn group cursor-pointer ${
+                    isToolsOpen ? 'open' : ''
+                  }`}
+                  aria-expanded={isToolsOpen}
+                  title={`${isToolsOpen ? 'Collapse' : 'Expand'} Studio Tools Submenu (3 tools)`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="accordion-icon-box amber">
+                      <SlidersHorizontal size={14} />
+                    </div>
+                    <div className="flex flex-col min-w-0 text-left">
+                      <span className="accordion-title">Studio Tools</span>
+                      <span className="accordion-subtitle">Import, Templates &amp; Fabric</span>
+                    </div>
+                  </div>
 
-          {!collapsedSections.tools && (
-            <div className="flex flex-col gap-[2.5px] animate-in fade-in duration-150">
-              <button
-                className="sidebar-tool-card group cursor-pointer"
-                onClick={() => {
-                  onOpenUploadModal();
-                  setIsMobileMenuOpen(false);
-                }}
-                title="Import your CSV or Excel dataset"
-              >
-                <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-                  <Upload size={14} />
-                </div>
-                <div className="flex flex-col min-w-0 text-left flex-1">
-                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                    Import Dataset
-                    <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
-                  </span>
-                  <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
-                </div>
-              </button>
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    <span className="accordion-pill-badge">
+                      <span className="font-semibold text-emerald-400">3</span>
+                      <span>Submenu</span>
+                      <ChevronDown
+                        size={11}
+                        className={`transition-transform duration-200 ${
+                          isToolsOpen ? 'rotate-180 text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'
+                        }`}
+                      />
+                    </span>
+                  </div>
+                </button>
 
-              <button
-                className="sidebar-tool-card group cursor-pointer"
-                onClick={() => {
-                  onOpenCustomizer();
-                  setIsMobileMenuOpen(false);
-                }}
-                title="Browse 32 ready-to-use industry dashboard templates"
-              >
-                <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-                  <LayoutTemplate size={14} />
-                </div>
-                <div className="flex flex-col min-w-0 text-left flex-1">
-                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                    32 BI Templates
-                    <span className="nav-badge">Ready</span>
-                  </span>
-                  <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
-                </div>
-              </button>
+                {isToolsOpen && (
+                  <div className="sidebar-submenu-wrapper animate-in fade-in slide-in-from-top-1 duration-200">
+                    <button
+                      className="sidebar-tool-card group cursor-pointer"
+                      onClick={() => {
+                        onOpenUploadModal();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      title="Import your CSV or Excel dataset"
+                    >
+                      <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+                        <Upload size={14} />
+                      </div>
+                      <div className="flex flex-col min-w-0 text-left flex-1">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                          Import Dataset
+                          <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
+                        </span>
+                        <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
+                      </div>
+                    </button>
 
-              <a
-                href="https://fabric.dattasable.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
-                title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
-              >
-                <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
-                  <Cpu size={14} />
-                </div>
-                <div className="flex flex-col min-w-0 text-left flex-1">
-                  <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
-                    Fabric Master
-                    <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
-                  </span>
-                  <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
-                </div>
-              </a>
+                    <button
+                      className="sidebar-tool-card group cursor-pointer"
+                      onClick={() => {
+                        onOpenCustomizer();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      title="Browse 32 ready-to-use industry dashboard templates"
+                    >
+                      <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
+                        <LayoutTemplate size={14} />
+                      </div>
+                      <div className="flex flex-col min-w-0 text-left flex-1">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                          32 BI Templates
+                          <span className="nav-badge">Ready</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
+                      </div>
+                    </button>
 
-              {/* Privacy & Air-Gapped Trust Box */}
-              <div className="sidebar-trust-box">
-                <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
-                <div className="flex flex-col min-w-0 text-left">
-                  <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
-                  <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
-                </div>
-              </div>
-            </div>
-          )}
+                    <a
+                      href="https://fabric.dattasable.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
+                      title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
+                    >
+                      <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
+                        <Cpu size={14} />
+                      </div>
+                      <div className="flex flex-col min-w-0 text-left flex-1">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                          Fabric Master
+                          <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
+                        </span>
+                        <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
+                      </div>
+                    </a>
+
+                    {/* Privacy & Air-Gapped Trust Box */}
+                    <div className="sidebar-trust-box">
+                      <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+                      <div className="flex flex-col min-w-0 text-left">
+                        <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
+                        <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </nav>
 
         {/* Ultra-Premium Profile & Keyboard Shortcut Lockup */}

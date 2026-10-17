@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Scale,
+  Github,
 } from 'lucide-react';
 import { ExcelLogo } from './ExcelLogo';
 
@@ -391,45 +392,131 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
           {/* ==================== ABOUT US ==================== */}
           {currentRoute === 'about' && (
             <div className="space-y-8">
-              {/* Profile Card Header */}
-              <div className="bg-gradient-to-r from-[#172b2a] via-[#1c3830] to-[#142823] text-white rounded-2xl p-6 sm:p-8 border border-[#2d5246] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm">
-                <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 rounded-2xl bg-[#23433a] border-2 border-[#4ade80]/40 flex items-center justify-center text-[#86efac] font-bold text-3xl shrink-0 shadow-md">
-                    DS
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#1e4238] border border-[#3b7563] text-[#86efac] text-xs font-mono font-medium mb-1.5">
-                      <Sparkles size={12} />
-                      <span>FOUNDER &amp; LEAD DEVELOPER</span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-white font-heading">
-                      Datta Sable
-                    </h2>
-                    <p className="text-xs sm:text-sm text-[#a9c4b9]">
-                      Business Intelligence Architect, Data Engineer &amp; Analytics Consultant
-                    </p>
-                  </div>
-                </div>
+              {/* Executive Founder Spotlight Hero */}
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1f1a] via-[#132c25] to-[#0a1814] border border-[#2d5246] p-6 sm:p-8 lg:p-10 shadow-xl text-white">
+                {/* Decorative background glow accents */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-                  <a
-                    href="https://dattasable.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 text-xs font-bold transition-all shadow-sm"
-                  >
-                    <span>dattasable.com</span>
-                    <ExternalLink size={12} />
-                  </a>
-                  <a
-                    href="https://fabric.dattasable.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#193742] hover:bg-[#204957] text-sky-200 text-xs font-bold border border-sky-400/40 transition-all"
-                  >
-                    <Cpu size={12} className="text-sky-400" />
-                    <span>Fabric Master</span>
-                  </a>
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  {/* Photo Column with Executive Frame */}
+                  <div className="lg:col-span-5 flex justify-center">
+                    <div className="relative group max-w-sm w-full">
+                      {/* Ambient Glow */}
+                      <div className="absolute -inset-1 bg-gradient-to-tr from-emerald-500/40 via-sky-500/30 to-emerald-400/20 rounded-3xl blur-md opacity-75 group-hover:opacity-100 transition duration-300" />
+                      
+                      {/* Image Container Card */}
+                      <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/40 bg-slate-950 shadow-2xl">
+                        <img
+                          src="/dattasable.com_about.webp"
+                          alt="Datta Sable — Founder & Principal Business Intelligence Architect"
+                          className="w-full h-auto object-cover object-top aspect-[3/4] transition-transform duration-500 group-hover:scale-[1.02]"
+                          loading="eager"
+                        />
+                        {/* Glassmorphic Gradient Overlay at bottom */}
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-4 pt-12 flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[11px] font-mono font-semibold">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>Live Executive Analytics</span>
+                            </span>
+                            <span className="text-[10.5px] font-mono text-slate-300">Power BI &amp; Excel</span>
+                          </div>
+                          <p className="text-white font-semibold text-sm">Datta Sable</p>
+                          <p className="text-[11px] text-emerald-200/90 leading-tight">Principal BI Architect · Thane, India</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio & Credentials Column */}
+                  <div className="lg:col-span-7 space-y-5">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold">
+                      <Sparkles size={13} className="text-emerald-400" />
+                      <span>FOUNDER, ARCHITECT &amp; LEAD DEVELOPER</span>
+                    </div>
+
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white font-heading tracking-tight">
+                        Datta Sable
+                      </h2>
+                      <p className="text-sm sm:text-base text-emerald-300/90 font-medium mt-1">
+                        Business Intelligence Architect, Data Engineer &amp; Spreadsheet Automation Specialist
+                      </p>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      With over a decade of hands-on architectural experience bridging enterprise cloud ecosystems 
+                      (Microsoft Fabric, Azure Synapse, Power BI) and real-world executive operations, Datta built 
+                      <strong className="text-white"> excel.dattasable.com</strong> to liberate analysts, finance leaders, and founders 
+                      from repetitive spreadsheet formatting. His vision delivers boardroom-ready, multi-sheet Excel workbooks with live editable formulas in seconds — with 
+                      <strong className="text-emerald-300"> 100% in-browser client-side privacy</strong>.
+                    </p>
+
+                    {/* Stats & Capability Highlights */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+                      <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xs">
+                        <div className="text-lg font-bold text-emerald-300 font-mono">10+ Yrs</div>
+                        <div className="text-[11px] text-slate-400 leading-tight">BI Architecture &amp; Data Engineering</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xs">
+                        <div className="text-lg font-bold text-emerald-300 font-mono">32+ Ready</div>
+                        <div className="text-[11px] text-slate-400 leading-tight">Industry MIS Templates</div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xs col-span-2 sm:col-span-1">
+                        <div className="text-lg font-bold text-sky-300 font-mono">100% Private</div>
+                        <div className="text-[11px] text-slate-400 leading-tight">Zero-Cloud Sandboxed Heap</div>
+                      </div>
+                    </div>
+
+                    {/* Portfolio & Ecosystem CTA Buttons */}
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                      <a
+                        href="https://dattasable.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-950/40 hover:scale-[1.02]"
+                      >
+                        <Globe size={13} />
+                        <span>dattasable.com</span>
+                        <ExternalLink size={12} />
+                      </a>
+
+                      <a
+                        href="https://fabric.dattasable.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-950/80 hover:bg-sky-900/90 text-sky-200 text-xs font-bold border border-sky-400/40 transition-all shadow-sm hover:scale-[1.02]"
+                      >
+                        <Cpu size={13} className="text-sky-400" />
+                        <span>Fabric Master (FinOps)</span>
+                        <ExternalLink size={12} />
+                      </a>
+
+                      <a
+                        href="https://www.youtube.com/@sabledatttatray"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 hover:text-white text-xs font-semibold border border-white/[0.12] transition-all"
+                      >
+                        <Youtube size={14} className="text-red-400" />
+                        <span>YouTube Tutorials</span>
+                        <ExternalLink size={11} />
+                      </a>
+
+                      <a
+                        href="https://github.com/sabledattatray"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white text-xs font-semibold border border-white/15 transition-all shadow-sm hover:scale-[1.02]"
+                        title="Explore Datta Sable's Code Repositories on GitHub"
+                      >
+                        <Github size={14} className="text-white" />
+                        <span>GitHub (@sabledattatray)</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -516,6 +603,17 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                   >
                     <Youtube size={13} className="text-red-500" />
                     <span>YouTube Tutorials (@sabledatttatray)</span>
+                    <ExternalLink size={11} />
+                  </a>
+                  <a
+                    href="https://github.com/sabledattatray"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-400 hover:bg-slate-100 text-slate-800 text-xs font-medium transition-colors"
+                    title="View GitHub Profile & Open-Source Projects"
+                  >
+                    <Github size={13} className="text-slate-900" />
+                    <span>GitHub (@sabledattatray)</span>
                     <ExternalLink size={11} />
                   </a>
                   <a
