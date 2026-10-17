@@ -370,13 +370,13 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
   const ActiveIcon = activeMeta?.icon || LayoutTemplate;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 lg:p-6 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl xl:max-w-6xl max-h-[92vh] flex flex-col rounded-2xl bg-white border border-slate-200/90 shadow-2xl overflow-hidden text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/65 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-5xl xl:max-w-6xl h-[92vh] sm:h-[86vh] max-h-[760px] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden text-slate-800">
         
         {/* Top Header */}
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div className="px-5 py-3 sm:py-3.5 bg-slate-50/95 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 shadow-sm">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 shadow-xs">
               <LayoutTemplate className="w-5 h-5" />
             </div>
             <div>
@@ -384,59 +384,26 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                   32 Ready Dashboard Templates
                 </h2>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
                   <Sparkles className="w-3 h-3 text-emerald-600" />
                   32 Models
                 </span>
               </div>
               <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
-                Pick an industry model with live formulas, or customize dataset parameters and company branding.
+                Pick a pre-configured industry model, or tailor company branding, dataset volume, and formula engines.
               </p>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
-            title="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Search & Category Filter Bar */}
-        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-b border-slate-200/80 shrink-0 space-y-2.5">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search templates (e.g. SaaS, FinTech, Healthcare, Logistics)..."
-                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl pl-9 pr-9 py-1.5 sm:py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  title="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
+          <div className="flex items-center gap-2">
             {/* Mobile View Switcher (< 1024px) */}
-            <div className="flex lg:hidden rounded-xl bg-slate-100 p-1 border border-slate-200 shrink-0">
+            <div className="flex lg:hidden rounded-xl bg-slate-200/70 p-0.5 border border-slate-200">
               <button
                 type="button"
                 onClick={() => setMobileTab('templates')}
-                className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   mobileTab === 'templates'
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -445,61 +412,95 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
               <button
                 type="button"
                 onClick={() => setMobileTab('settings')}
-                className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   mobileTab === 'settings'
-                    ? 'bg-white text-emerald-800 shadow-sm'
+                    ? 'bg-white text-emerald-800 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Workbook Settings
+                Settings
               </button>
             </div>
-          </div>
 
-          {/* Category Filter Pills (Always on Desktop, only on Templates tab on Mobile) */}
-          <div className={`items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs ${mobileTab === 'settings' ? 'hidden lg:flex' : 'flex'}`}>
-            {CATEGORY_DEFINITIONS.map((cat) => {
-              const Icon = cat.icon;
-              const isSelected = selectedCategory === cat.id;
-              const count =
-                cat.id === 'all'
-                  ? allIndustryKeys.length
-                  : allIndustryKeys.filter((k) => INDUSTRY_METADATA[k]?.category === cat.id).length;
-
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium whitespace-nowrap text-xs transition-all ${
-                    isSelected
-                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
-                      : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{cat.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+            <button
+              onClick={onClose}
+              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {/* Desktop Two-Panel Layout */}
-          <div className="hidden lg:grid lg:grid-cols-12 h-full min-h-0">
-            {/* Left Column: 2-Column Template Grid (60% width) */}
-            <div className="lg:col-span-7 xl:col-span-7 flex flex-col border-r border-slate-200 min-h-0 h-full">
-              {/* Template Count Header */}
-              <div className="px-5 py-2.5 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0">
+          <div className="hidden lg:grid lg:grid-cols-12 flex-1 min-h-0 h-full">
+            
+            {/* Left Column: 2-Column Template Grid with dedicated Search Toolbar (60% width) */}
+            <div className="lg:col-span-7 flex flex-col min-h-0 h-full border-r border-slate-200">
+              {/* Search & Category Filter Toolbar */}
+              <div className="p-3 bg-white border-b border-slate-200/80 space-y-2 shrink-0">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search templates (e.g. SaaS, FinTech, Healthcare, Logistics)..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8.5 pr-8 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar text-xs">
+                  {CATEGORY_DEFINITIONS.map((cat) => {
+                    const Icon = cat.icon;
+                    const isSelected = selectedCategory === cat.id;
+                    const count =
+                      cat.id === 'all'
+                        ? allIndustryKeys.length
+                        : allIndustryKeys.filter((k) => INDUSTRY_METADATA[k]?.category === cat.id).length;
+
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium whitespace-nowrap text-xs transition-all ${
+                          isSelected
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <Icon className="w-3 h-3" />
+                        <span>{cat.label}</span>
+                        <span
+                          className={`text-[10px] px-1 rounded-full font-mono ${
+                            isSelected ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sub-header Count */}
+              <div className="px-4 py-1.5 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0">
                 <span>
                   Showing <strong className="text-slate-800">{filteredKeys.length}</strong> of 32 industry models
                 </span>
@@ -512,7 +513,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                     className="text-emerald-700 hover:text-emerald-800 font-medium text-[11px] flex items-center gap-1 hover:underline"
                   >
                     <RotateCcw className="w-3 h-3" />
-                    Reset filters
+                    Reset
                   </button>
                 ) : (
                   <span className="text-[11px] text-slate-400">Click any card to select</span>
@@ -520,13 +521,13 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
               </div>
 
               {/* Scrollable Templates Grid */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 custom-scrollbar pb-6">
                 {filteredKeys.length === 0 ? (
                   <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-slate-400">
                     <Search className="w-8 h-8 mb-2 opacity-50" />
                     <p className="text-sm font-semibold text-slate-600">No matching templates found</p>
                     <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                      Try searching for different keywords or select "All Models" to browse the full catalog.
+                      Try searching for different keywords or select "All Models".
                     </p>
                     <button
                       onClick={() => {
@@ -539,7 +540,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {filteredKeys.map((indKey) => {
                       const item = INDUSTRY_PRESETS[indKey];
                       const meta = INDUSTRY_METADATA[indKey];
@@ -550,17 +551,17 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                         <div
                           key={indKey}
                           onClick={() => handleIndustryChange(indKey)}
-                          className={`group relative p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                          className={`group relative p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
                             isSelected
-                              ? 'bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm'
-                              : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/70 hover:shadow-sm'
+                              ? 'bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
+                              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70 hover:shadow-xs'
                           }`}
                         >
                           <div>
                             {/* Card Top: Sector Badge & Selection Pill */}
-                            <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <div className="flex items-center justify-between gap-1 mb-1">
                               <span
-                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border flex items-center gap-1 ${
+                                className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-md border flex items-center gap-1 ${
                                   meta?.bgClass || 'bg-slate-100 text-slate-600 border-slate-200'
                                 } ${meta?.colorClass || 'text-slate-700'}`}
                               >
@@ -569,12 +570,12 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                               </span>
 
                               {isSelected ? (
-                                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                                  <Check className="w-3 h-3 stroke-[3]" />
+                                <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-800 bg-emerald-500/20 px-1.5 py-0.2 rounded-full">
+                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                                   ACTIVE
                                 </span>
                               ) : (
-                                <span className="w-4 h-4 rounded-full border border-slate-300 group-hover:border-slate-400 group-hover:bg-slate-100/60 transition-colors shrink-0" />
+                                <span className="w-3.5 h-3.5 rounded-full border border-slate-300 group-hover:border-slate-400 group-hover:bg-slate-100/60 transition-colors shrink-0" />
                               )}
                             </div>
 
@@ -588,13 +589,13 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                             </h3>
 
                             {/* Description clamp */}
-                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                            <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
                               {item.description}
                             </p>
                           </div>
 
                           {/* Default company preview */}
-                          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[10px] text-slate-400">
+                          <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1.5 text-[10px] text-slate-400">
                             <Building2 className="w-3 h-3 shrink-0" />
                             <span className="truncate">{item.companyDefault}</span>
                           </div>
@@ -607,182 +608,171 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
             </div>
 
             {/* Right Column: Workbook Configuration & Customization (40% width) */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col bg-slate-50/70 p-4 xl:p-5 overflow-y-auto custom-scrollbar space-y-3">
-              {/* Active Selection Hero Banner */}
-              <div className="p-4 rounded-xl bg-white border border-emerald-500/30 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
-                
-                <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 border border-emerald-500/20 shrink-0">
-                    <ActiveIcon className="w-5 h-5" />
+            <div className="lg:col-span-5 flex flex-col min-h-0 h-full bg-slate-50/70 overflow-hidden">
+              {/* Header with Selected Model Badge */}
+              <div className="px-3.5 py-2.5 bg-slate-100/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 shrink-0">
+                    <ActiveIcon className="w-4 h-4" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded">
-                        Selected Model
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-1.5 py-0.2 rounded">
+                        {activeMeta?.sector || 'Model'}
                       </span>
-                      <span className="text-[11px] font-medium text-slate-500">
-                        {activeMeta?.sector}
-                      </span>
+                      <span className="text-[10px] font-semibold text-slate-500">Active Preset</span>
                     </div>
-                    <h4 className="text-sm font-bold text-slate-900 mt-1 leading-snug">
+                    <h4 className="text-xs font-bold text-slate-900 truncate leading-snug mt-0.5">
                       {activePreset?.name}
                     </h4>
-                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                      {activePreset?.description}
-                    </p>
                   </div>
                 </div>
+                <span className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0 ml-2">
+                  Ready
+                </span>
               </div>
 
-              {/* Organization / Company Branding Input */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    Organization / Company Name
-                  </label>
-                  {companyName !== activePreset?.companyDefault && (
-                    <button
-                      type="button"
-                      onClick={() => setCompanyName(activePreset?.companyDefault || '')}
-                      className="text-[10px] text-emerald-700 hover:text-emerald-800 font-semibold hover:underline flex items-center gap-1"
-                      title="Reset to template default"
-                    >
-                      <RotateCcw className="w-2.5 h-2.5" />
-                      Reset to default
-                    </button>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="e.g. Nexus Enterprise Systems Inc."
-                    className="w-full bg-slate-50/70 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white font-medium transition-all"
-                  />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Will appear on the Excel workbook cover, worksheet title banners, and generated headers.
-                </p>
-              </div>
-
-              {/* Record Volume Selector */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                    Dataset Volume (Source Rows)
-                  </label>
-                  <span className="text-[11px] font-mono font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
-                    {recordCount.toLocaleString()} rows
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {[250, 500, 1000, 2500].map((count) => {
-                    const isSel = recordCount === count;
-                    return (
+              {/* Scrollable Settings Panel */}
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 sm:p-3.5 space-y-2.5 pb-6">
+                {/* Organization / Company Branding Input */}
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                      Organization / Company Name
+                    </label>
+                    {companyName !== activePreset?.companyDefault && (
                       <button
-                        key={count}
                         type="button"
-                        onClick={() => setRecordCount(count)}
-                        className={`py-2 px-1 rounded-lg border text-xs font-bold font-mono transition-all text-center ${
-                          isSel
-                            ? 'bg-sky-500/15 border-sky-500 text-sky-900 shadow-sm ring-1 ring-sky-500/20'
-                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900'
+                        onClick={() => setCompanyName(activePreset?.companyDefault || '')}
+                        className="text-[10px] text-emerald-700 hover:text-emerald-800 font-semibold hover:underline flex items-center gap-1"
+                        title="Reset to template default"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        Reset
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <Building2 className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="e.g. Nexus Enterprise Systems Inc."
+                      className="w-full bg-slate-50/70 border border-slate-200 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white font-medium transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Record Volume Selector */}
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                      Dataset Volume (Source Rows)
+                    </label>
+                    <span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.2 rounded">
+                      {recordCount.toLocaleString()} rows
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[250, 500, 1000, 2500].map((count) => {
+                      const isSel = recordCount === count;
+                      return (
+                        <button
+                          key={count}
+                          type="button"
+                          onClick={() => setRecordCount(count)}
+                          className={`py-1.5 px-1 rounded-lg border text-xs font-bold font-mono transition-all text-center ${
+                            isSel
+                              ? 'bg-sky-500/15 border-sky-500 text-sky-900 shadow-xs ring-1 ring-sky-500/20'
+                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          {count.toLocaleString()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Excel Specific Options */}
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                    Excel Engine Configuration
+                  </label>
+
+                  {/* Visual Charts Toggle */}
+                  <div
+                    onClick={() => setIncludeCharts(!includeCharts)}
+                    className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
+                      includeCharts
+                        ? 'bg-emerald-50/50 border-emerald-500/40 text-slate-900'
+                        : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`p-1 rounded-md ${
+                          includeCharts ? 'bg-emerald-500/15 text-emerald-700' : 'bg-slate-200/60 text-slate-500'
                         }`}
                       >
-                        {count.toLocaleString()}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Larger datasets provide richer statistical sample depth for KPI trends and charts.
-                </p>
-              </div>
-
-              {/* Excel Specific Options */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm space-y-2.5">
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                  Excel Engine Configuration
-                </label>
-
-                {/* Visual Charts Toggle */}
-                <div
-                  onClick={() => setIncludeCharts(!includeCharts)}
-                  className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                    includeCharts
-                      ? 'bg-emerald-50/50 border-emerald-500/40 text-slate-900'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-lg ${
-                        includeCharts ? 'bg-emerald-500/15 text-emerald-700' : 'bg-slate-200/60 text-slate-500'
-                      }`}
-                    >
-                      <BarChart3 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-xs text-slate-900">Embed Visual Charts in Excel Sheet</div>
-                      <div className="text-[11px] text-slate-500">
-                        Interactive native charts for summary groups. Full raw rows preserved.
+                        <BarChart3 className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="leading-tight">
+                        <div className="font-semibold text-xs text-slate-900">Embed Visual Charts</div>
+                        <div className="text-[10px] text-slate-500">Summary graphs on sheets</div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
-                      includeCharts ? 'bg-emerald-600 text-white' : 'border border-slate-300 bg-white'
-                    }`}
-                  >
-                    {includeCharts && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </div>
-                </div>
-
-                {/* Live Formulas Toggle */}
-                <div
-                  onClick={() => setUseFormulas(!useFormulas)}
-                  className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                    useFormulas
-                      ? 'bg-sky-50/50 border-sky-500/40 text-slate-900'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
                     <div
-                      className={`p-2 rounded-lg ${
-                        useFormulas ? 'bg-sky-500/15 text-sky-700' : 'bg-slate-200/60 text-slate-500'
+                      className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ml-2 ${
+                        includeCharts ? 'bg-emerald-600 text-white' : 'border border-slate-300 bg-white'
                       }`}
                     >
-                      <FileSpreadsheet className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-xs text-slate-900">Use Live Excel Mathematical Formulas</div>
-                      <div className="text-[11px] text-slate-500">
-                        KPI metrics dynamically calculate from source rows via SUM, AVERAGE & COUNT formulas.
-                      </div>
+                      {includeCharts && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
                   </div>
+
+                  {/* Live Formulas Toggle */}
                   <div
-                    className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
-                      useFormulas ? 'bg-sky-600 text-white' : 'border border-slate-300 bg-white'
+                    onClick={() => setUseFormulas(!useFormulas)}
+                    className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
+                      useFormulas
+                        ? 'bg-sky-50/50 border-sky-500/40 text-slate-900'
+                        : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100/60'
                     }`}
                   >
-                    {useFormulas && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`p-1 rounded-md ${
+                          useFormulas ? 'bg-sky-500/15 text-sky-700' : 'bg-slate-200/60 text-slate-500'
+                        }`}
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="leading-tight">
+                        <div className="font-semibold text-xs text-slate-900">Live Excel Formulas</div>
+                        <div className="text-[10px] text-slate-500">Dynamic SUM & AVERAGE</div>
+                      </div>
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ml-2 ${
+                        useFormulas ? 'bg-sky-600 text-white' : 'border border-slate-300 bg-white'
+                      }`}
+                    >
+                      {useFormulas && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Privacy Trust Card */}
-              <div className="p-3 rounded-xl bg-slate-100/80 border border-slate-200/80 flex items-center gap-2.5 text-slate-600">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <p className="text-[11px] leading-tight">
-                  <strong className="text-slate-800">100% In-Browser Privacy:</strong> All data is generated client-side. Zero telemetry or server transmission.
-                </p>
+                {/* Privacy Trust Card */}
+                <div className="p-2 rounded-xl bg-slate-100/80 border border-slate-200/80 flex items-center gap-2 text-slate-600">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <p className="text-[10px] leading-tight">
+                    <strong className="text-slate-800">100% In-Browser Privacy:</strong> All data is generated client-side. Zero server transmission.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -790,119 +780,151 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           {/* Mobile View (< 1024px) */}
           <div className="lg:hidden h-full flex flex-col min-h-0">
             {mobileTab === 'templates' ? (
-              <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                  <span>
-                    Showing <strong className="text-slate-800">{filteredKeys.length}</strong> templates
-                  </span>
-                  <button
-                    onClick={() => setMobileTab('settings')}
-                    className="text-emerald-700 font-semibold flex items-center gap-1 hover:underline"
-                  >
-                    Configure Settings →
-                  </button>
-                </div>
+              <div className="flex-1 min-h-0 flex flex-col">
+                {/* Search Bar in Mobile */}
+                <div className="p-3 bg-white border-b border-slate-200 space-y-2 shrink-0">
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search templates..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8.5 pr-8 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {filteredKeys.map((indKey) => {
-                    const item = INDUSTRY_PRESETS[indKey];
-                    const meta = INDUSTRY_METADATA[indKey];
-                    const isSelected = industry === indKey;
-                    const Icon = meta?.icon || LayoutTemplate;
-
-                    return (
-                      <div
-                        key={indKey}
-                        onClick={() => handleIndustryChange(indKey)}
-                        className={`p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
-                          isSelected
-                            ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm'
-                            : 'bg-white border-slate-200 hover:border-slate-300'
+                  {/* Category Filter Pills Mobile */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5 no-scrollbar text-xs">
+                    {CATEGORY_DEFINITIONS.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`px-2.5 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap ${
+                          selectedCategory === cat.id
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 text-slate-600'
                         }`}
                       >
-                        <div>
-                          <div className="flex items-center justify-between gap-1 mb-1">
-                            <span
-                              className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border flex items-center gap-1 ${
-                                meta?.bgClass || 'bg-slate-100 text-slate-600 border-slate-200'
-                              } ${meta?.colorClass || 'text-slate-700'}`}
-                            >
-                              <Icon className="w-3 h-3" />
-                              <span>{meta?.sector || 'Industry'}</span>
-                            </span>
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                            {isSelected && (
-                              <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                ACTIVE
+                {/* Templates Scrollable List */}
+                <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 custom-scrollbar pb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {filteredKeys.map((indKey) => {
+                      const item = INDUSTRY_PRESETS[indKey];
+                      const meta = INDUSTRY_METADATA[indKey];
+                      const isSelected = industry === indKey;
+                      const Icon = meta?.icon || LayoutTemplate;
+
+                      return (
+                        <div
+                          key={indKey}
+                          onClick={() => handleIndustryChange(indKey)}
+                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                            isSelected
+                              ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <span
+                                className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-md border flex items-center gap-1 ${
+                                  meta?.bgClass || 'bg-slate-100 text-slate-600 border-slate-200'
+                                } ${meta?.colorClass || 'text-slate-700'}`}
+                              >
+                                <Icon className="w-3 h-3" />
+                                <span>{meta?.sector || 'Industry'}</span>
                               </span>
-                            )}
+
+                              {isSelected && (
+                                <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-800 bg-emerald-500/20 px-1.5 py-0.2 rounded-full">
+                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                  ACTIVE
+                                </span>
+                              )}
+                            </div>
+
+                            <h3 className="text-xs font-bold text-slate-900 leading-tight">
+                              {item.name}
+                            </h3>
+                            <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
+                              {item.description}
+                            </p>
                           </div>
 
-                          <h3 className="text-xs font-bold text-slate-900 leading-tight">
-                            {item.name}
-                          </h3>
-                          <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                            {item.description}
-                          </p>
+                          <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                            <span className="truncate flex items-center gap-1">
+                              <Building2 className="w-3 h-3 shrink-0" />
+                              {item.companyDefault}
+                            </span>
+                          </div>
                         </div>
-
-                        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                          <span className="truncate flex items-center gap-1">
-                            <Building2 className="w-3 h-3 shrink-0" />
-                            {item.companyDefault}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-50/60">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3 custom-scrollbar bg-slate-50/60 pb-8">
                 {/* Active Selection Hero Banner */}
-                <div className="p-3.5 rounded-xl bg-white border border-emerald-500/30 shadow-sm">
+                <div className="p-3 rounded-xl bg-white border border-emerald-500/30 shadow-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-1.5 py-0.2 rounded">
                       Selected Model
                     </span>
-                    <span className="text-[11px] font-medium text-slate-500">
+                    <span className="text-[10px] font-medium text-slate-500">
                       {activeMeta?.sector}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 mt-1">{activePreset?.name}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">{activePreset?.description}</p>
+                  <h4 className="text-xs font-bold text-slate-900 mt-1">{activePreset?.name}</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{activePreset?.description}</p>
                 </div>
 
                 {/* Company Name */}
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                     Organization / Company Name
                   </label>
                   <div className="relative">
-                    <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Building2 className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder="e.g. Nexus Enterprise Systems Inc."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
 
                 {/* Record Volume */}
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                     Dataset Volume (Source Rows)
                   </label>
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-4 gap-1">
                     {[250, 500, 1000, 2500].map((count) => (
                       <button
                         key={count}
                         type="button"
                         onClick={() => setRecordCount(count)}
-                        className={`py-2 px-1 rounded-lg border text-xs font-bold font-mono transition-all text-center ${
+                        className={`py-1.5 px-1 rounded-lg border text-xs font-bold font-mono transition-all text-center ${
                           recordCount === count
                             ? 'bg-sky-500/15 border-sky-500 text-sky-900'
                             : 'bg-slate-50 border-slate-200 text-slate-600'
@@ -915,43 +937,51 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
                 </div>
 
                 {/* Engine Options */}
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                     Excel Engine Configuration
                   </label>
                   <div
                     onClick={() => setIncludeCharts(!includeCharts)}
-                    className="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer"
+                    className="p-2 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4 text-emerald-700" />
+                      <BarChart3 className="w-3.5 h-3.5 text-emerald-700" />
                       <span className="text-xs font-semibold text-slate-800">Embed Visual Charts</span>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded flex items-center justify-center ${
+                      className={`w-3.5 h-3.5 rounded flex items-center justify-center ${
                         includeCharts ? 'bg-emerald-600 text-white' : 'border border-slate-300'
                       }`}
                     >
-                      {includeCharts && <Check className="w-3 h-3 stroke-[3]" />}
+                      {includeCharts && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                     </div>
                   </div>
 
                   <div
                     onClick={() => setUseFormulas(!useFormulas)}
-                    className="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer"
+                    className="p-2 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <FileSpreadsheet className="w-4 h-4 text-sky-700" />
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-sky-700" />
                       <span className="text-xs font-semibold text-slate-800">Use Live Formulas</span>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded flex items-center justify-center ${
+                      className={`w-3.5 h-3.5 rounded flex items-center justify-center ${
                         useFormulas ? 'bg-sky-600 text-white' : 'border border-slate-300'
                       }`}
                     >
-                      {useFormulas && <Check className="w-3 h-3 stroke-[3]" />}
+                      {useFormulas && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                     </div>
                   </div>
+                </div>
+
+                {/* Privacy Badge */}
+                <div className="p-2.5 rounded-xl bg-slate-100/80 border border-slate-200/80 flex items-center gap-2 text-slate-600">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <p className="text-[10px] leading-tight">
+                    <strong className="text-slate-800">100% In-Browser Privacy:</strong> All data generated client-side.
+                  </p>
                 </div>
               </div>
             )}
@@ -959,7 +989,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
           {/* Active selection snippet */}
           <div className="flex items-center gap-2 text-xs text-slate-600 truncate w-full sm:w-auto">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
@@ -970,16 +1000,16 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center justify-end gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center justify-end gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleApply}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 transition-all flex items-center gap-1.5"
+              className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 transition-all flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Apply & Regenerate Dataset</span>
