@@ -92,44 +92,33 @@ export const AmazonStandalonePage: React.FC<AmazonStandalonePageProps> = ({
           </p>
         </div>
 
-        {/* 10 Theme Palette Quick Switcher Card */}
-        <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-700/80 shrink-0 w-full md:w-auto">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
-            <span>SWITCH VISUAL PALETTE</span>
-            <span className="text-amber-400 font-bold">{activePalette.name}</span>
+        {/* Model Specs Strip */}
+        <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0">
+          <div className="bg-slate-900/80 px-4 py-2.5 rounded-xl border border-slate-700/80 text-xs font-mono flex items-center gap-2.5">
+            <Sparkles size={14} className="text-amber-400 shrink-0" />
+            <div>
+              <span className="text-slate-400 block text-[9px] uppercase tracking-wider">Theme System</span>
+              <span className="text-white font-bold text-xs">10 Visual Directions</span>
+            </div>
           </div>
-          <div className="grid grid-cols-5 gap-1.5">
-            {paletteKeys.map((key) => {
-              const pal = REPORT_PALETTES[key];
-              const isActive = activePaletteKey === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setActivePaletteKey(key)}
-                  className={`p-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-slate-950 font-bold shadow-md scale-105'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
-                  title={pal.name}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: pal.dotColor,
-                      border: key === 'black' ? '1px solid #71717a' : undefined,
-                    }}
-                  />
-                </button>
-              );
-            })}
+          <div className="bg-slate-900/80 px-4 py-2.5 rounded-xl border border-slate-700/80 text-xs font-mono flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <div>
+              <span className="text-slate-400 block text-[9px] uppercase tracking-wider">Full Screen</span>
+              <span className="text-white font-bold text-xs">1-Click Responsive View</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* The Full Interactive Amazon Dashboard */}
       <div className="shadow-lg border border-slate-200/80 rounded-2xl overflow-hidden">
-        <AmazonSalesDashboard palette={activePalette} isCompact={false} />
+        <AmazonSalesDashboard
+          palette={activePalette}
+          activePaletteKey={activePaletteKey}
+          onPaletteChange={(key) => setActivePaletteKey(key)}
+          isCompact={false}
+        />
       </div>
 
       {/* Explanatory Features Strip for Amazon BI */}

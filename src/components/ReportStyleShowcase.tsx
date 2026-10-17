@@ -86,7 +86,13 @@ export const ReportStyleShowcase: React.FC<ReportStyleShowcaseProps> = ({ onOpen
           className="relative group cursor-pointer rounded-xl overflow-hidden border border-[#262c36] shadow-inner transition-transform duration-200"
           title="Click to inspect full resolution dashboard"
         >
-          <AmazonSalesDashboard palette={activePalette} isCompact={true} onOpenLiveReport={onOpenLiveReport} />
+          <AmazonSalesDashboard
+            palette={activePalette}
+            activePaletteKey={activePaletteKey}
+            onPaletteChange={(key) => setActivePaletteKey(key)}
+            isCompact={true}
+            onOpenLiveReport={onOpenLiveReport}
+          />
 
           {/* Subtle Hover Overlay to encourage inspecting */}
           <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
@@ -182,7 +188,13 @@ export const ReportStyleShowcase: React.FC<ReportStyleShowcaseProps> = ({ onOpen
 
             {/* Modal Body: Full resolution scrollable dashboard */}
             <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(92vh-70px)] bg-[#090b0e]">
-              <AmazonSalesDashboard palette={activePalette} isCompact={false} onOpenLiveReport={onOpenLiveReport} />
+              <AmazonSalesDashboard
+                palette={activePalette}
+                activePaletteKey={activePaletteKey}
+                onPaletteChange={(key) => setActivePaletteKey(key)}
+                isCompact={false}
+                onOpenLiveReport={onOpenLiveReport}
+              />
             </div>
           </div>
         </div>

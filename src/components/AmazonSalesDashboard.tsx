@@ -27,9 +27,8 @@ import {
   Sparkles,
   Maximize2,
   Minimize2,
-  Tv,
 } from 'lucide-react';
-import { ReportPalette } from '../types/amazonPalettes';
+import { ReportPalette, REPORT_PALETTES } from '../types/amazonPalettes';
 import {
   ALL_AMAZON_ORDERS,
   AmazonTransaction,
@@ -38,16 +37,58 @@ import {
 import { AmazonOfficialLogo } from './AmazonOfficialLogo';
 
 interface AmazonSalesDashboardProps {
-  palette: ReportPalette;
+  palette?: ReportPalette;
+  activePaletteKey?: string;
+  onPaletteChange?: (key: string) => void;
   isCompact?: boolean;
   onOpenLiveReport?: () => void;
 }
 
 export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
-  palette,
+  palette: propPalette,
+  activePaletteKey: propActivePaletteKey,
+  onPaletteChange,
   isCompact = false,
   onOpenLiveReport,
 }) => {
+  // Internal Palette State with 2-way sync
+  const [internalPaletteKey, setInternalPaletteKey] = useState<string>(() => {
+    if (propActivePaletteKey && REPORT_PALETTES[propActivePaletteKey]) return propActivePaletteKey;
+    if (propPalette?.id) {
+      const match = Object.keys(REPORT_PALETTES).find(
+        (k) => REPORT_PALETTES[k].id === propPalette.id
+      );
+      if (match) return match;
+    }
+    return 'blue';
+  });
+
+  useEffect(() => {
+    if (propActivePaletteKey && REPORT_PALETTES[propActivePaletteKey]) {
+      setInternalPaletteKey(propActivePaletteKey);
+    }
+  }, [propActivePaletteKey]);
+
+  useEffect(() => {
+    if (propPalette?.id) {
+      const match = Object.keys(REPORT_PALETTES).find(
+        (k) => REPORT_PALETTES[k].id === propPalette.id
+      );
+      if (match && match !== internalPaletteKey) {
+        setInternalPaletteKey(match);
+      }
+    }
+  }, [propPalette?.id, internalPaletteKey]);
+
+  const handleSelectPalette = (key: string) => {
+    setInternalPaletteKey(key);
+    onPaletteChange?.(key);
+  };
+
+  // Derived active palette and keys
+  const palette: ReportPalette = REPORT_PALETTES[internalPaletteKey] || propPalette || REPORT_PALETTES.blue;
+  const paletteKeys = useMemo(() => Object.keys(REPORT_PALETTES), []);
+
   // Fullscreen State & Ref
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -519,7 +560,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
             </nav>
           </div>
 
-          {/* Sidebar compliance tags & TV Fullscreen Toggle */}
+          {/* Sidebar compliance tags & Full Screen Toggle */}
           <div className="pt-2 mt-2 border-t border-white/10 space-y-1.5">
             <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-300 font-mono">
               <Database size={10} className="opacity-70" />
@@ -530,7 +571,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
               <span>Real-Time Model</span>
             </div>
 
-            {/* TV / Fullscreen View Toggle in Sidebar */}
+            {/* Full Screen View Toggle in Sidebar */}
             <button
               onClick={toggleFullscreen}
               className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-[9.5px] font-mono font-semibold transition-all cursor-pointer border shadow-2xs hover:scale-[1.02]"
@@ -539,11 +580,11 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                 borderColor: isFullscreen ? '#f59e0b' : (isDark ? '#38bdf850' : 'rgba(255,255,255,0.18)'),
                 color: isFullscreen ? '#fbbf24' : '#ffffff',
               }}
-              title={isFullscreen ? 'Exit TV Fullscreen (Esc)' : 'Expand to Full Screen / TV Display'}
+              title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Expand to Full Screen'}
             >
               <span className="flex items-center gap-1.5">
-                <Tv size={12} className={isFullscreen ? 'text-amber-400' : 'text-slate-300'} />
-                <span>{isFullscreen ? 'Exit TV View' : 'TV / Fullscreen'}</span>
+                {isFullscreen ? <Minimize2 size={12} className="text-amber-400" /> : <Maximize2 size={12} className="text-slate-300" />}
+                <span>{isFullscreen ? 'Exit Full Screen' : 'Full Screen'}</span>
               </span>
               {isFullscreen ? <Minimize2 size={11} /> : <Maximize2 size={11} />}
             </button>
@@ -571,15 +612,64 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   ({filteredOrders.length} transactions)
                 </span>
                 {isFullscreen && (
-                  <span className="px-1.5 py-0.5 rounded text-[7.5px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
-                    4K / TV DISPLAY
+                  <span className="px-1.5 py-0.5 rounded text-[7.5px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    FULL SCREEN
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Right: Month Selector + Fullscreen Button */}
+            {/* Right: 10 Palettes Picker + Month Selector + Full Screen Button */}
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+              {/* The Unified 10 Color Palettes Switcher (Works in Regular & Full Screen) */}
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-2xs shrink-0 backdrop-blur-xs transition-colors"
+                style={{
+                  backgroundColor: isDark ? '#21262d' : (palette.cardBg === '#ffffff' ? '#ffffff' : palette.cardBg),
+                  borderColor: isDark ? '#30363d' : palette.cardBorder,
+                }}
+                title={`Active Theme: ${palette.name} (${palette.label})`}
+              >
+                <div className="flex items-center gap-1 text-[8.5px] font-mono font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                  <Sparkles size={10} className="text-amber-400 shrink-0" />
+                  <span className="hidden md:inline">Palettes:</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {paletteKeys.map((key) => {
+                    const pal = REPORT_PALETTES[key];
+                    const isActive = internalPaletteKey === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleSelectPalette(key)}
+                        className={`w-4 h-4 rounded-full transition-all cursor-pointer relative shrink-0 ${
+                          isActive
+                            ? 'ring-2 ring-offset-1 ring-amber-400 scale-125 z-10 shadow-xs'
+                            : 'opacity-70 hover:opacity-100 hover:scale-115'
+                        }`}
+                        style={{
+                          backgroundColor: pal.dotColor,
+                          border: key === 'black' ? '1.5px solid #a1a1aa' : '1px solid rgba(0,0,0,0.2)',
+                          boxShadow: isActive ? `0 0 8px ${pal.dotColor}bb` : undefined,
+                        }}
+                        title={`${pal.name} (${pal.label})`}
+                        aria-label={`Switch to ${pal.name} palette`}
+                      >
+                        {isActive && (
+                          <span className="absolute inset-0 m-auto w-1 h-1 rounded-full bg-white shadow-xs" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span
+                  className="hidden xl:inline text-[8.5px] font-mono font-bold px-1.5 py-0.5 rounded text-amber-500 bg-amber-400/10 truncate max-w-[95px]"
+                  title={palette.name}
+                >
+                  {palette.label}
+                </span>
+              </div>
+
               {/* Month Filter Selector Pills */}
               <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
                 <button
@@ -625,11 +715,10 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   color: isFullscreen ? '#000000' : (isDark ? '#38bdf8' : palette.primary),
                   border: `1px solid ${isFullscreen ? '#f59e0b' : (isDark ? '#38bdf8' : palette.cardBorder)}`,
                 }}
-                title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Enter TV / Full Screen View'}
+                title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Full Screen'}
               >
                 {isFullscreen ? <Minimize2 size={11} /> : <Maximize2 size={11} />}
-                <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
-                <Tv size={10} className="opacity-80" />
+                <span className="hidden sm:inline">{isFullscreen ? 'Exit Full Screen' : 'Full Screen'}</span>
               </button>
             </div>
           </div>
