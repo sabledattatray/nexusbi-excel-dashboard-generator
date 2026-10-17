@@ -1464,17 +1464,18 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Visual 6: Customer Ledger */}
+                {/* Visual 6: Customer Ledger (Full-Height Interactive Data Grid) */}
                 <div
-                  className="lg:col-span-3 rounded-lg border shadow-2xs flex flex-col overflow-hidden"
+                  className="lg:col-span-3 rounded-lg border shadow-2xs flex flex-col overflow-hidden transition-colors"
                   style={{ backgroundColor: palette.cardBg, borderColor: palette.cardBorder }}
                 >
+                  {/* Card Header with Search Input */}
                   <div
-                    className="px-2 py-1.5 border-b flex items-center justify-between gap-1"
+                    className="px-2 py-1.5 border-b flex items-center justify-between gap-1 shrink-0"
                     style={{ borderColor: palette.cardBorder }}
                   >
                     <div>
-                      <h3 className="text-[9.5px] font-bold font-heading" style={{ color: palette.textPrimary }}>
+                      <h3 className="text-[10px] font-bold font-heading leading-tight" style={{ color: palette.textPrimary }}>
                         Customer Ledger
                       </h3>
                       <span className="text-[7.5px] text-slate-400">
@@ -1487,7 +1488,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search…"
-                        className="pl-4 pr-1 py-0.5 rounded text-[8px] border outline-none w-20 sm:w-24"
+                        className="pl-4 pr-1 py-0.5 rounded text-[8px] border outline-none w-20 sm:w-24 transition-colors"
                         style={{
                           backgroundColor: isDark ? '#21262d' : '#f8fafc',
                           borderColor: isDark ? '#38bdf8' : palette.cardBorder,
@@ -1495,47 +1496,48 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                           colorScheme: isDark ? 'dark' : 'light',
                         }}
                       />
-                      <Search size={9} className="absolute left-1.5 top-1.5" style={{ color: isDark ? '#38bdf8' : '#94a3b8' }} />
+                      <Search size={9} className="absolute left-1.5 top-1.5 pointer-events-none" style={{ color: isDark ? '#38bdf8' : '#94a3b8' }} />
                     </div>
                   </div>
 
-                  <div className="overflow-y-auto max-h-28 sm:max-h-32 scrollbar-thin">
-                    <table className="w-full text-[8.5px] text-left">
+                  {/* Vertically Full Scrollable Table Area (No empty space, no horizontal scrollbar) */}
+                  <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
+                    <table className="w-full table-fixed text-[8.5px] text-left">
                       <thead
-                        className="sticky top-0 font-semibold font-mono uppercase text-[7.5px] border-b"
+                        className="sticky top-0 font-semibold font-mono uppercase text-[7px] border-b z-10"
                         style={{
-                          backgroundColor: palette.tableHeaderBg,
+                          backgroundColor: isDark ? '#161b22' : palette.tableHeaderBg,
                           borderColor: palette.cardBorder,
                           color: palette.textSecondary,
                         }}
                       >
                         <tr>
-                          <th className="py-1 px-1.5">Customer</th>
-                          <th className="py-1 px-1">Country</th>
-                          <th className="py-1 px-1 text-right">Rev</th>
-                          <th className="py-1 px-1 text-center">Tier</th>
+                          <th className="py-1 px-1.5 w-[38%]">Customer</th>
+                          <th className="py-1 px-1 w-[26%]">Country</th>
+                          <th className="py-1 px-1 text-right w-[18%]">Rev</th>
+                          <th className="py-1 px-1 text-center w-[18%]">Tier</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y" style={{ borderColor: palette.cardBorder }}>
-                        {filteredOrders.slice(0, 15).map((cust) => (
+                        {filteredOrders.slice(0, 30).map((cust) => (
                           <tr
                             key={cust.id}
                             className={`transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50/80'}`}
                             style={{ color: palette.textPrimary }}
                           >
-                            <td className="py-1 px-1.5 font-semibold truncate max-w-[80px]">
+                            <td className="py-1.5 px-1.5 font-semibold truncate" title={cust.customerName}>
                               {cust.customerName}
                             </td>
-                            <td className="py-1 px-1">
-                              <span className="inline-flex items-center gap-0.5">
-                                <span>{cust.flag}</span>
-                                <span className="truncate max-w-[45px]">{cust.country}</span>
+                            <td className="py-1.5 px-1 truncate">
+                              <span className="inline-flex items-center gap-0.5 truncate max-w-full">
+                                <span className="shrink-0">{cust.flag}</span>
+                                <span className="truncate">{cust.country}</span>
                               </span>
                             </td>
-                            <td className="py-1 px-1 text-right font-mono font-bold" style={{ color: palette.primary }}>
+                            <td className="py-1.5 px-1 text-right font-mono font-bold shrink-0" style={{ color: palette.primary }}>
                               ${cust.revenue}
                             </td>
-                            <td className="py-1 px-1 text-center">
+                            <td className="py-1.5 px-1 text-center shrink-0">
                               <span className={`inline-block px-1 rounded text-[7px] font-bold font-mono ${getSegmentBadgeClass(cust.segment)}`}>
                                 {cust.segment}
                               </span>
@@ -1544,13 +1546,24 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                         ))}
                         {filteredOrders.length === 0 && (
                           <tr>
-                            <td colSpan={4} className="py-4 text-center text-slate-400 font-mono text-[9px]">
+                            <td colSpan={4} className="py-6 text-center text-slate-400 font-mono text-[8.5px]">
                               No orders matching current filter combination.
                             </td>
                           </tr>
                         )}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Card Bottom Status Strip to anchor full height */}
+                  <div
+                    className="px-2 py-1 border-t flex items-center justify-between text-[7px] font-mono text-slate-400 shrink-0"
+                    style={{ borderColor: palette.cardBorder, backgroundColor: isDark ? '#161b2250' : 'rgba(0,0,0,0.01)' }}
+                  >
+                    <span>Showing top {Math.min(filteredOrders.length, 30)} of {filteredOrders.length}</span>
+                    <span className="font-semibold" style={{ color: palette.primary }}>
+                      Avg Order: ${Math.round(kpis.revPerCust)}
+                    </span>
                   </div>
                 </div>
               </div>
