@@ -84,47 +84,8 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
     document.title = `${currentMeta.title} | excel.dattasable.com`;
   }, [currentRoute, currentMeta.title]);
 
-  const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, route: LegalRoute) => {
-    e.preventDefault();
-    onNavigate(route);
-  };
-
   return (
     <div className="legal-page-wrapper space-y-8 w-full pb-12">
-      {/* Sub-Navigation Tabs */}
-      <div className="bg-[#10221e] border border-[#23453b] rounded-xl px-3 py-2 shadow-xs">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 text-xs font-medium">
-          {(
-            [
-              { id: 'privacy', label: 'Privacy Policy', icon: Lock, path: '/privacy' },
-              { id: 'terms', label: 'Terms of Service', icon: FileText, path: '/terms' },
-              { id: 'disclaimer', label: 'Disclaimer & Liability', icon: AlertTriangle, path: '/disclaimer' },
-              { id: 'about', label: 'About Us & Creator', icon: User, path: '/about' },
-              { id: 'contact', label: 'Contact & Grievance', icon: Mail, path: '/contact' },
-              { id: 'refund', label: 'Refund Policy', icon: RotateCcw, path: '/refund-policy' },
-            ] as const
-          ).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = currentRoute === tab.id;
-            return (
-              <a
-                key={tab.id}
-                href={tab.path}
-                onClick={(e) => handleTabClick(e, tab.id)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-emerald-600 text-white font-semibold shadow-xs'
-                    : 'text-[#8daaa1] hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Icon size={13} className={isActive ? 'text-emerald-200' : 'opacity-70'} />
-                <span>{tab.label}</span>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Header Info Banner */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3.5">
