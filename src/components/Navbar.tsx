@@ -349,7 +349,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           <div className="nav-item-icon-box">
                             <Icon size={14.5} />
                           </div>
-                          <span className="truncate font-medium">{item.label}</span>
+                          <span className="truncate font-medium flex-1 min-w-0 text-left">{item.label}</span>
                           {item.badge && <span className="nav-badge">{item.badge}</span>}
                         </button>
                       );

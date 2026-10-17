@@ -90,7 +90,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="legal-page-wrapper space-y-8 w-full pb-12">
       {/* Sub-Navigation Tabs */}
       <div className="bg-[#10221e] border border-[#23453b] rounded-xl px-3 py-2 shadow-xs">
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 text-xs font-medium">
@@ -400,7 +400,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
 
                 <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   {/* Photo Column with Executive Frame */}
-                  <div className="lg:col-span-5 flex justify-center">
+                  <div className="lg:col-span-5 xl:col-span-4 flex justify-center">
                     <div className="relative group max-w-sm w-full">
                       {/* Ambient Glow */}
                       <div className="absolute -inset-1 bg-gradient-to-tr from-emerald-500/40 via-sky-500/30 to-emerald-400/20 rounded-3xl blur-md opacity-75 group-hover:opacity-100 transition duration-300" />
@@ -430,7 +430,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                   </div>
 
                   {/* Bio & Credentials Column */}
-                  <div className="lg:col-span-7 space-y-5">
+                  <div className="lg:col-span-7 xl:col-span-8 space-y-5">
                     <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold">
                       <Sparkles size={13} className="text-emerald-400" />
                       <span>FOUNDER, ARCHITECT &amp; LEAD DEVELOPER</span>
@@ -545,7 +545,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
               </section>
 
               {/* 4 Architectural Pillars */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs font-mono">
                     <ShieldCheck size={16} />
@@ -664,7 +664,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
               </div>
 
               {/* Contact Details List */}
-              <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
                 <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80">
                   <Mail size={18} className="text-emerald-700 shrink-0 mt-0.5" />
                   <div>
