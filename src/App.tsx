@@ -23,6 +23,7 @@ import { DatasetConfig } from './types/dataset';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
 import { Footer } from './components/Footer';
+import { BackToTop } from './components/BackToTop';
 import { INDUSTRY_PRESETS } from './utils/dataGenerator';
 import { ImportResult, parseUploadedFile, inferColumnMapping, buildDatasetFromUpload } from './utils/dataImporter';
 import { isProUnlocked, consumeDownloadCredit, resetProLicense, PRO_LICENSE_EVENT } from './utils/proLicenseManager';
@@ -525,6 +526,9 @@ export default function App() {
           />
         )}
       </Suspense>
+
+      {/* Floating Back to Top Button */}
+      <BackToTop />
     </div>
   );
 }
