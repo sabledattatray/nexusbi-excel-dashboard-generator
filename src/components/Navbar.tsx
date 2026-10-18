@@ -524,7 +524,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </aside>
 
-      {/* Workspace Sticky Topbar Header */}
+      {/* Sticky Top Bar for All Devices */}
+      <div className="top-announcement-banner" role="region" aria-label="Announcement">
+        <span>✨ <strong>Free Excel &amp; CSV Dashboard Generator</strong> — Instant Automated KPI Reports</span>
+        <span className="banner-dot">•</span>
+        <span className="banner-tag">100% In-Browser &amp; Private</span>
+      </div>
+
+      {/* Workspace Topbar Header */}
       <header className="workspace-topbar" role="banner">
         <div className="breadcrumb min-w-0 flex-1 flex items-center gap-2 sm:gap-2.5">
           {/* Show Sidebar Button (only visible when sidebar is collapsed on desktop, or on mobile) */}
