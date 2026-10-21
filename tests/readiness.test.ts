@@ -10,3 +10,5 @@ test('all sitemap pages contain real route content before JavaScript runs',()=>{
 test('the privacy page describes hosting and support boundaries without zero-risk claims',()=>{
  const html=fs.readFileSync('dist/privacy/index.html','utf8');assert.match(html,/Hosting providers receive ordinary request information/);assert.doesNotMatch(html,/zero risk of server data breaches|engineered in compliance with global data protection/);
 });
+
+ test("static pages do not require Suspense replacement scripts to reveal content",()=>{for(const route of ["privacy","terms","amazon-sales-dashboard"]){const html=fs.readFileSync("dist/"+route+"/index.html","utf8");assert.doesNotMatch(html,/<div hidden|id="S:|Preparing interactive charts and datasets/);}});
