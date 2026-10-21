@@ -88,7 +88,7 @@ export const AmazonStandalonePage: React.FC<AmazonStandalonePageProps> = ({
             Amazon Sales Performance &amp; Customer Retention Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
-            Multi-currency marketplace reporting tracking repeat buyer cohorts, customer lifetime value, FBA vs FBM unit velocity, and advertising ROI across 10 specialized design directions.
+            Independent demonstration using simulated marketplace data. Not affiliated with or endorsed by Amazon. Explore repeat buyer cohorts, customer lifetime value, fulfillment patterns, and advertising ROI.
           </p>
         </div>
 
