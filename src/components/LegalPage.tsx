@@ -120,7 +120,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
 
         <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-mono text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
           <Clock size={13} className="text-emerald-700" />
-          <span>Effective: 2024–2025</span>
+          <span>Reviewed: 21 October 2026</span>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                     Spreadsheet processing in your browser
                   </strong>
                   <p className="text-emerald-800 leading-relaxed">
-                    When you upload, paste, or process CSV, XLSX, or financial spreadsheets on <strong>excel.dattasable.com</strong>, all data parsing, statistical aggregation, formula compilation, and file generation take place entirely inside your web browser sandbox (memory). <strong>No rows, customer names, or transaction figures are ever transmitted to or stored on any external server or cloud database.</strong>
+                    When you upload, paste, or process CSV, XLSX, or financial spreadsheets on <strong>excel.dattasable.com</strong>, all data parsing, statistical aggregation, formula compilation, and file generation take place entirely inside your web browser sandbox (memory). <strong>The import and export flow does not upload spreadsheet records to our servers. If you choose to send a file or details through email, WhatsApp, or another external service, that service receives what you send.</strong>
                   </p>
                 </div>
               </div>
@@ -567,7 +567,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                   About Datta Sable
                 </h2>
                 <p>
-                  Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Thane, Maharashtra. His engineering footprint spans enterprise cloud architectures, Microsoft Fabric, Azure Data Factory, Power BI DAX modeling, and automated spreadsheet reporting engines.
+                  Datta Sable is a Business Intelligence consultant, Data Engineer, and analytics consultant based in Thane, Maharashtra. His engineering footprint spans enterprise cloud architectures, Microsoft Fabric, Azure Data Factory, Power BI DAX modeling, and automated spreadsheet reporting engines.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 w-full">
                   <a

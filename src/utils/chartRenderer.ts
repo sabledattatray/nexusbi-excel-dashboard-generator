@@ -201,7 +201,7 @@ export function generateDonutChartImage(categories: CategorySummary[]): string {
 
   ctx.fillStyle = '#10B981';
   ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
-  ctx.fillText('100% Certified', centerX, centerY + 38);
+  ctx.fillText('Review source totals', centerX, centerY + 38);
 
   // Legend & Metrics on right side
   const startX = 560;

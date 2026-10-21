@@ -34,7 +34,7 @@ import {
   AmazonTransaction,
   COUNTRY_METADATA,
 } from '../data/amazonSalesData';
-import { AmazonOfficialLogo } from './AmazonOfficialLogo';
+
 
 interface AmazonSalesDashboardProps {
   palette?: ReportPalette;
@@ -560,10 +560,10 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
           <div>
             {/* Official Amazon Logo Branding */}
             <div className="flex items-center gap-2 px-1 py-1 mb-3">
-              <AmazonOfficialLogo variant="icon" height={32} className="shadow-md shrink-0" />
+              <span className="font-bold text-white" aria-hidden="true">BI</span>
               <div className="min-w-0">
                 <div className="flex items-center gap-1">
-                  <AmazonOfficialLogo variant="full" height={15} textColor="#ffffff" smileColor="#FF9900" />
+                  <span className="text-white font-semibold text-xs">Marketplace demo</span>
                   <span className="font-mono text-[8px] font-bold text-amber-400 bg-amber-400/15 px-1 py-0.2 rounded border border-amber-400/25">
                     BI
                   </span>

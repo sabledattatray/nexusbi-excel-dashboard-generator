@@ -278,7 +278,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   About the Developer — Datta Sable
                 </h3>
                 <p>
-                  Datta Sable is a certified Business Intelligence Specialist, Data Engineer, and analytics consultant based in Thane, Maharashtra. With extensive expertise spanning Microsoft Fabric, Power BI, SQL, Azure, and automated financial modeling, Datta builds modern tools that transform raw enterprise records into high-impact visual intelligence.
+                  Datta Sable is a Business Intelligence consultant, Data Engineer, and analytics consultant based in Thane, Maharashtra. With extensive expertise spanning Microsoft Fabric, Power BI, SQL, Azure, and automated financial modeling, Datta builds modern tools that transform raw enterprise records into high-impact visual intelligence.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
