@@ -147,7 +147,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     {
       icon: TrendingUp,
       title: 'Universal Cross-Platform Spreadsheets',
-      desc: 'Generated .xlsx files open flawlessly across Microsoft Office 365, Excel Desktop, Google Sheets, Apple Numbers, and LibreOffice.',
+      desc: 'Exported .xlsx workbooks are designed for Excel. Check formulas, charts, and formatting when importing into another spreadsheet application.',
       tag: 'Universal .XLSX',
     },
   ];
@@ -503,7 +503,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="text-[#86efac] font-mono text-xs font-semibold mb-2">03 · ZERO CODE &amp; ZERO MACROS</div>
             <h3 className="text-base font-bold text-white mb-2 font-heading">Universal Compatibility</h3>
             <p className="text-xs text-[#a9c4b9] leading-relaxed">
-              No VBA macros, no security warnings, and no plugins needed. Workbooks open smoothly in Microsoft Excel 365, Google Sheets, and Apple Numbers.
+              No VBA macros or plugins are required. Review formulas and formatting after opening the workbook in your chosen spreadsheet application.
             </p>
           </div>
         </div>

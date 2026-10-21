@@ -50,15 +50,15 @@ const WorkspaceLoader = () => (
 );
 
 // Helper to synchronously resolve initial route state from URL to prevent post-mount re-render flicker
-const getInitialRouteState = () => {
-  if (typeof window === 'undefined') {
+const getInitialRouteState = (initialPath?: string) => {
+  if (!initialPath && typeof window === 'undefined') {
     return {
       tab: 'home' as const,
       industry: 'enterprise_tech' as keyof typeof INDUSTRY_PRESETS,
       legalRoute: null as LegalRoute | null,
     };
   }
-  const path = window.location.pathname.toLowerCase();
+  const path = (initialPath || window.location.pathname).toLowerCase();
   let legalRoute: LegalRoute | null = null;
   let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' = 'home';
   let ind: keyof typeof INDUSTRY_PRESETS = 'enterprise_tech';
@@ -90,8 +90,8 @@ const getInitialRouteState = () => {
   return { tab, industry: ind, legalRoute };
 };
 
-export default function App() {
-  const initialRoute = useMemo(getInitialRouteState, []);
+export default function App({ initialPath }: { initialPath?: string } = {}) {
+  const initialRoute = useMemo(() => getInitialRouteState(initialPath), [initialPath]);
 
   // Dataset Configuration State
   const [config, setConfig] = useState<DatasetConfig>(() => {
@@ -375,6 +375,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
+        {!activeLegalRoute && activeTab !== 'home' && activeTab !== 'amazon-sales' && <header className="report-section-heading"><div><div className="eyebrow">Interactive workbook practice</div><h1>{activeTab === 'excel-preview' ? 'Excel workbook generator and preview' : 'Business dashboard: explore and verify your data'}</h1><p>Use simulated sample data or import a permitted file. Verify totals and formulas before relying on an exported workbook.</p></div></header>}
         {activeLegalRoute ? (
           <Suspense fallback={<WorkspaceLoader />}>
             <LegalPage
@@ -425,7 +426,7 @@ export default function App() {
               <div className="report-section-actions">
                 <span className="quiet-badge">
                   <span />
-                  {customImportResult ? `${config.recordCount.toLocaleString()} source records` : 'Live Sample Data'}
+                  {customImportResult ? `${config.recordCount.toLocaleString()} source records` : 'Simulated sample data'}
                 </span>
                 {!customImportResult && (
                   <button className="secondary-button" onClick={() => setIsCustomizerOpen(true)}>

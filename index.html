@@ -65,31 +65,7 @@
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
     </noscript>
 
-    <!-- Google Tag (gtag.js) - Deferred to protect Core Web Vitals (TBT/LCP/FCP) -->
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-Q4GEY4N9WN', { page_path: window.location.pathname, send_page_view: true });
-
-      function loadGtag() {
-        if (window.__gtagLoaded) return;
-        window.__gtagLoaded = true;
-        var s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-Q4GEY4N9WN';
-        document.head.appendChild(s);
-      }
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(function() { setTimeout(loadGtag, 1500); }, { timeout: 3000 });
-      } else {
-        setTimeout(loadGtag, 2000);
-      }
-      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(ev) {
-        window.addEventListener(ev, loadGtag, { once: true, passive: true });
-      });
-    </script>
+    <!-- Optional analytics and advertising are disabled. Do not load tags without a configured consent flow. -->
 
     <!-- Critical Anti-Flicker & Pre-Hydration Styles -->
     <style>

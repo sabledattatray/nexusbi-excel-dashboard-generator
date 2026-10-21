@@ -44,7 +44,7 @@ const PAGE_METADATA: Record<LegalRoute, { title: string; subtitle: string; icon:
   },
   privacy: {
     title: 'Privacy Policy',
-    subtitle: '100% In-Browser Privacy Guarantee — Zero cloud storage and zero telemetry',
+    subtitle: 'How browser processing, local preferences, hosting, and support requests use data',
     icon: Lock,
     path: '/privacy',
   },
@@ -105,7 +105,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Official Compliance
+                Site information
               </span>
               <span className="text-xs text-slate-500">excel.dattasable.com</span>
             </div>
@@ -134,7 +134,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                 <ShieldCheck size={26} className="text-emerald-700 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <strong className="block text-emerald-900 font-bold text-sm">
-                    100% Client-Side In-Browser Privacy Guarantee
+                    Spreadsheet processing in your browser
                   </strong>
                   <p className="text-emerald-800 leading-relaxed">
                     When you upload, paste, or process CSV, XLSX, or financial spreadsheets on <strong>excel.dattasable.com</strong>, all data parsing, statistical aggregation, formula compilation, and file generation take place entirely inside your web browser sandbox (memory). <strong>No rows, customer names, or transaction figures are ever transmitted to or stored on any external server or cloud database.</strong>
@@ -147,10 +147,10 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                   1. Information We Do Not Collect
                 </h2>
                 <p>
-                  We operate on a strict zero-knowledge, zero-telemetry architecture for user data:
+                  The spreadsheet import and workbook export flow processes records in browser memory. Hosting and support have separate data handling:
                 </p>
                 <ul className="list-disc pl-5 space-y-2 text-slate-600">
-                  <li><strong>Your Source Spreadsheets:</strong> Raw files uploaded through the browser interface remain in your local JavaScript heap memory. Closing the browser tab instantly flushes all session data.</li>
+                  <li><strong>Your Source Spreadsheets:</strong> Raw files uploaded through the browser interface remain in your local JavaScript heap memory. Closing the tab ends the active application session; downloaded files and browser-saved preferences remain under your control.</li>
                   <li><strong>Financial &amp; Business Metrics:</strong> We do not log revenue amounts, customer lists, HR employee rosters, or banking records.</li>
                   <li><strong>Personal Identifiable Information (PII):</strong> We do not mandate registration, passwords, phone numbers, or user accounts to generate and download Excel reports.</li>
                 </ul>
@@ -197,7 +197,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ currentRoute, onNavigate, 
                   4. Regulatory Alignment &amp; Data Rights
                 </h2>
                 <p>
-                  Our platform is engineered in compliance with global data protection principles, including the Indian Digital Personal Data Protection Act (DPDP Act, 2023), the Information Technology Act, 2000, and the European Union General Data Protection Regulation (GDPR). Because we never store your data on our servers, there is zero risk of server data breaches or corporate credential leakage.
+                  Browser processing reduces the need to upload spreadsheet records, but it does not eliminate every security risk or establish legal certification. Hosting providers receive ordinary request information such as IP addresses and browser headers. If you contact support, the details you choose to send are handled by the email or messaging service you use. Optional analytics and advertising are disabled in this release.
                 </p>
               </section>
 

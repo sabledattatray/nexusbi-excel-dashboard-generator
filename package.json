@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build && node scripts/generate-seo-pages.js",
+    "build": "vite build && node scripts/generate-seo-pages.js && node scripts/prerender.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/utils/*.test.ts"
+    "test": "tsx --test src/utils/*.test.ts",
+    "test:readiness": "node scripts/test-readiness.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -612,11 +612,11 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
           <div className="pt-2 mt-2 border-t border-white/10 space-y-1.5">
             <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-300 font-mono">
               <Database size={10} className="opacity-70" />
-              <span>{filteredOrders.length} Verified Orders</span>
+              <span>{filteredOrders.length} Sample Orders</span>
             </div>
             <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-white/5 text-[8.5px] text-slate-400 font-mono">
               <Shield size={10} className="opacity-70" />
-              <span>Real-Time Model</span>
+              <span>Simulated Model</span>
             </div>
 
             {/* Full Screen View Toggle in Sidebar */}
@@ -654,7 +654,7 @@ export const AmazonSalesDashboard: React.FC<AmazonSalesDashboardProps> = ({
                   className="px-1.5 py-0.5 rounded text-[8.5px] font-bold font-mono tracking-wider"
                   style={{ backgroundColor: palette.badgeBg, color: palette.badgeText }}
                 >
-                  LIVE FBA DATA
+                  SIMULATED FBA DATA
                 </span>
                 <span className="text-[9px] font-mono text-slate-500">
                   ({filteredOrders.length} transactions)

@@ -1,6 +1,62 @@
 {
   "rewrites": [
     {
+      "source": "/excel-dashboard-generator",
+      "destination": "/excel-dashboard-generator/index.html"
+    },
+    {
+      "source": "/mis-report-generator",
+      "destination": "/mis-report-generator/index.html"
+    },
+    {
+      "source": "/sales-dashboard",
+      "destination": "/sales-dashboard/index.html"
+    },
+    {
+      "source": "/amazon-sales-dashboard",
+      "destination": "/amazon-sales-dashboard/index.html"
+    },
+    {
+      "source": "/hr-dashboard",
+      "destination": "/hr-dashboard/index.html"
+    },
+    {
+      "source": "/financial-dashboard",
+      "destination": "/financial-dashboard/index.html"
+    },
+    {
+      "source": "/kpi-dashboard",
+      "destination": "/kpi-dashboard/index.html"
+    },
+    {
+      "source": "/excel-dashboard-examples",
+      "destination": "/excel-dashboard-examples/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/disclaimer",
+      "destination": "/disclaimer/index.html"
+    },
+    {
+      "source": "/refund-policy",
+      "destination": "/refund-policy/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -9,16 +65,31 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     },
     {
       "source": "/(favicon.svg|biexpert-og.png|biexpert-og.webp|og-main.png|og-main.webp|payment-qr.webp|dattasable.com.webp|datta.webp|manifest.json|robots.txt|sitemap.xml|llms.txt|ai-catalog.json)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=86400"
+        }
       ]
     }
   ]

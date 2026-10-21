@@ -81,7 +81,7 @@ export const SeoOverviewSection: React.FC = () => {
     {
       icon: TrendingUp,
       title: 'Cross-Platform Compatibility',
-      desc: 'Generated .xlsx files open flawlessly across Microsoft Office 365, Excel Desktop, Google Sheets, Apple Numbers, and LibreOffice.',
+      desc: 'Exported .xlsx workbooks are designed for Excel. Check formulas, charts, and formatting when importing into another spreadsheet application.',
     },
   ];
 
