@@ -10,7 +10,7 @@ import {exportToProfessionalExcel} from './excelExporter';
 import {DatasetConfig,IndustryType} from '../types/dataset';
 import {metricValue,Row} from './domainDatasets';
 const config:DatasetConfig={companyName:'Test',reportTitle:'Executive report',industry:'healthcare_pharma',recordCount:250,currency:'USD',currencySymbol:'$',includeChartsInExcel:true,useLiveExcelFormulas:true};
-const sheetNames=['Executive Dashboard','Pivot Table Analysis','Sales Transactions','Regional Performance','Product Catalog','Customer Accounts'];
+const sheetNames=['Executive Dashboard','Pivot Table Analysis','Sales Transactions','Regional Performance','Product Catalog','Customer Accounts','Audit & Data Provenance'];
 test('industry presentation preserves original records, catalog, regions, accounts and KPIs',()=>{
  for(const industry of Object.keys(INDUSTRY_PRESETS) as IndustryType[]){
   const cfg={...config,industry},original=generateRealisticDataset(cfg),styled=generateProfessionalDataset(cfg);

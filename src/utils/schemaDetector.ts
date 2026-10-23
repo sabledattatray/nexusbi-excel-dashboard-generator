@@ -4,6 +4,7 @@ import {
   DatasetSchemaProfile,
   IndustryType,
 } from '../types/dataset';
+import { parseUniversalDate, isHelpdeskDomain, detectHelpdeskColumns } from './helpdeskMetrics';
 
 // Keyword dictionary for each of the 12 industries
 const INDUSTRY_KEYWORDS: Record<IndustryType, { headers: string[]; values: string[] }> = {
@@ -216,8 +217,19 @@ const INDUSTRY_KEYWORDS: Record<IndustryType, { headers: string[]; values: strin
     values: ['enterprise dedicated', 'net retention', 'cloud compute', 'aws', 'gcp', 'azure', 'recurring revenue', 'tenant'],
   },
   customer_support_ops: {
-    headers: ['ticket', 'support', 'csat', 'fcr', 'helpdesk', 'agent', 'handletime', 'escalation', 'backlog', 'queue', 'call', 'inquiry', 'resolution', 'omnichannel'],
-    values: ['live chat', 'helpdesk', 'voice call', 'first contact resolution', 'customer support', 'csat', 'escalated', 'tier 1'],
+    headers: [
+      'ticket', 'support', 'csat', 'fcr', 'helpdesk', 'agent', 'handletime', 'escalation',
+      'backlog', 'queue', 'call', 'inquiry', 'resolution', 'omnichannel', 'case', 'caseref',
+      'loggedon', 'finishedat', 'currentstate', 'urgency', 'urgencyband', 'resolver',
+      'resolvergroup', 'issuefamily', 'intakemethod', 'servicesite', 'slalimit', 'reopenedflag',
+      'reopened', 'customerrating', 'incident', 'sla'
+    ],
+    values: [
+      'live chat', 'helpdesk', 'voice call', 'first contact resolution', 'customer support',
+      'csat', 'escalated', 'tier 1', 'tier 2', 'closed', 'resolved', 'in progress',
+      'waiting on customer', 'critical', 'p1 critical', 'p2 high', 'p3 medium', 'p4 low',
+      'portal', 'applications', 'infrastructure', 'network', 'end user support'
+    ],
   },
 };
 
@@ -233,35 +245,7 @@ function clean(str: string): string {
  */
 function isDateValue(val: any): boolean {
   if (val === null || val === undefined || val === '') return false;
-  if (val instanceof Date) return !isNaN(val.getTime());
-  if (typeof val === 'number') {
-    // Excel date serial number (range: 30000 to 65000 is ~1982 to 2078)
-    return val > 30000 && val < 65000;
-  }
-  if (typeof val === 'string') {
-    const s = val.trim();
-    if (s.length < 4 || s.length > 35) return false;
-    // A date string must contain at least one digit
-    if (!/\d/.test(s)) return false;
-    // Check common date patterns (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, etc.)
-    const dateRegex = /^(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4})/;
-    if (dateRegex.test(s)) {
-      const parsed = Date.parse(s);
-      return !isNaN(parsed);
-    }
-    // Formats like "Jan 15, 2024", "15-Jan-2024"
-    const monthRegex = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
-    if (monthRegex.test(s) && /\d{1,4}/.test(s)) {
-      const d = new Date(s);
-      return !isNaN(d.getTime());
-    }
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-      const d = new Date(s);
-      return !isNaN(d.getTime());
-    }
-    return false;
-  }
-  return false;
+  return parseUniversalDate(val) !== null;
 }
 
 /**
@@ -546,43 +530,129 @@ export function inspectDatasetSchema(
     return profileColumn(h, colValues);
   });
 
-  // 2. Detect Industry
-  const { industry, confidence } = detectIndustry(headers, rows);
+  // 2. Check for Helpdesk / Service Desk domain
+  const helpdeskDomain = isHelpdeskDomain(headers, rows);
+  const helpdeskCols = helpdeskDomain ? detectHelpdeskColumns(headers) : {};
 
-  // 3. Resolve Primary Metric
+  // 3. Detect Industry
+  const detected = detectIndustry(headers, rows);
+  const industry: IndustryType = helpdeskDomain ? 'customer_support_ops' : detected.industry;
+  const confidence = helpdeskDomain ? 99 : detected.confidence;
+
+  const hasFinancialMetrics = !helpdeskDomain && columns.some((c) => {
+    if (c.dataType === 'currency') return true;
+    const n = c.normalizedName;
+    return /^(sales|revenue|cost|cogs|price|profit|margin|spend|budget|balance|salary|fee|valuation|grossprofit|netsales|netrevenue)$/.test(n);
+  });
+
+  if (helpdeskDomain) {
+    const totalRecords = rows.length;
+    return {
+      columns,
+      primaryMetric: '',
+      primaryMetricLabel: 'Total Tickets',
+      secondaryMetric: undefined,
+      secondaryMetricLabel: undefined,
+      volumeMetric: undefined,
+      volumeMetricLabel: undefined,
+      primaryCategory: helpdeskCols.resolverCol || 'Resolver Group',
+      primaryCategoryLabel: helpdeskCols.resolverCol || 'Resolver Group',
+      secondaryCategory: helpdeskCols.siteCol || 'Service Site',
+      secondaryCategoryLabel: helpdeskCols.siteCol || 'Service Site',
+      channelColumn: helpdeskCols.intakeCol || 'Intake Method',
+      channelColumnLabel: helpdeskCols.intakeCol || 'Intake Method',
+      dateColumn: helpdeskCols.startCol || 'Logged On',
+      dateColumnLabel: helpdeskCols.startCol || 'Logged On',
+      identifierColumn: helpdeskCols.idCol || 'Case Ref',
+      entityColumn: helpdeskCols.resolverCol || 'Resolver Group',
+      statusColumn: helpdeskCols.statusCol || 'Current State',
+      detectedIndustry: 'customer_support_ops',
+      industryConfidence: 99,
+      totalRecords,
+      currencyCode: 'USD',
+      currencySymbol: '$',
+      detectedDomain: 'customer_support_ops',
+      hasFinancialMetrics: false,
+      grain: 'One support ticket / incident record',
+      slaLimitColumn: helpdeskCols.slaLimitCol,
+      reopenedColumn: helpdeskCols.reopenedCol,
+      ratingColumn: helpdeskCols.ratingCol,
+      startDateColumn: helpdeskCols.startCol,
+      endDateColumn: helpdeskCols.endCol,
+      priorityColumn: helpdeskCols.urgencyCol,
+      teamColumn: helpdeskCols.resolverCol,
+      intakeColumn: helpdeskCols.intakeCol,
+      locationColumn: helpdeskCols.siteCol,
+    };
+  }
+
+  // 4. Resolve Primary Metric
   // Prefer Currency > Numeric with high sum > largest range
   const currencyCols = columns.filter((c) => c.dataType === 'currency' && c.stats);
   const numericCols = columns.filter((c) => ['numeric', 'currency', 'percentage'].includes(c.dataType) && c.stats);
 
+  // Prefer Net Sales if present, else Gross Sales / Revenue / Salary / Valuation
   let primaryMetricCol = currencyCols.find((c) => {
     const n = c.normalizedName;
-    return n.includes('revenue') || n.includes('total') || n.includes('sales') || n.includes('amount') || n.includes('cost') || n.includes('balance') || n.includes('valuation') || n.includes('salary');
+    return n.includes('netsales') || n.includes('netrevenue') || n.includes('netamount');
   });
+
+  if (!primaryMetricCol) {
+    primaryMetricCol = currencyCols.find((c) => {
+      const n = c.normalizedName;
+      return n.includes('revenue') || n.includes('total') || n.includes('sales') || n.includes('amount') || n.includes('cost') || n.includes('balance') || n.includes('valuation') || n.includes('salary');
+    });
+  }
 
   if (!primaryMetricCol && currencyCols.length > 0) {
     primaryMetricCol = currencyCols[0];
   }
 
-  if (!primaryMetricCol && numericCols.length > 0) {
-    // Pick numeric column with largest sum
+  if (!primaryMetricCol && numericCols.length > 0 && hasFinancialMetrics) {
     primaryMetricCol = numericCols.reduce((prev, curr) => ((curr.stats?.sum || 0) > (prev.stats?.sum || 0) ? curr : prev), numericCols[0]);
   }
 
-  // 4. Resolve Secondary Metric (Profit, Cost, Discount, Bonus, Rate)
-  const secondaryMetricCol = numericCols.find((c) => {
+  // 5. Resolve Secondary Metric (Profit, Cost, COGS)
+  const nonPctNumericCols = columns.filter((c) => {
     if (c.name === primaryMetricCol?.name) return false;
+    if (c.dataType === 'percentage') return false;
+    if (!c.stats) return false;
     const n = c.normalizedName;
-    return n.includes('profit') || n.includes('cost') || n.includes('margin') || n.includes('discount') || n.includes('bonus') || n.includes('tax') || n.includes('interest');
+    if (/pct|percent|percentage|rate|margin|ratio/.test(n)) return false;
+    return ['numeric', 'currency'].includes(c.dataType);
   });
 
-  // 5. Resolve Volume Metric (Quantity, Units, Count, Headcount)
+  let secondaryMetricCol = nonPctNumericCols.find((c) => {
+    const n = c.normalizedName;
+    return n.includes('profit') || n.includes('grossprofit') || n.includes('netprofit');
+  });
+
+  if (!secondaryMetricCol) {
+    secondaryMetricCol = nonPctNumericCols.find((c) => {
+      const n = c.normalizedName;
+      return n.includes('cost') || n.includes('cogs') || n.includes('totalcost');
+    });
+  }
+
+  if (!secondaryMetricCol) {
+    secondaryMetricCol = nonPctNumericCols.find((c) => {
+      const n = c.normalizedName;
+      return n.includes('gross') || n.includes('discount') || n.includes('bonus') || n.includes('tax');
+    });
+  }
+
+  if (!secondaryMetricCol && nonPctNumericCols.length > 0 && hasFinancialMetrics) {
+    secondaryMetricCol = nonPctNumericCols[0];
+  }
+
+  // 6. Resolve Volume Metric (Quantity, Units, Count, Headcount)
   const volumeMetricCol = numericCols.find((c) => {
     if (c.name === primaryMetricCol?.name || c.name === secondaryMetricCol?.name) return false;
     const n = c.normalizedName;
     return n.includes('qty') || n.includes('quantity') || n.includes('units') || n.includes('volume') || n.includes('count') || n.includes('headcount');
   });
 
-  // 6. Resolve Primary Category (categorical with 2-50 distinct values)
+  // 7. Resolve Primary Category (categorical with 2-50 distinct values)
   const categoricalCols = columns.filter((c) => c.dataType === 'categorical' && c.distinctCount >= 2);
   let primaryCategoryCol = categoricalCols.find((c) => {
     const n = c.normalizedName;
@@ -593,7 +663,7 @@ export function inspectDatasetSchema(
     primaryCategoryCol = categoricalCols[0];
   }
 
-  // 7. Resolve Secondary Category / Filter 1 Dimension (State, Region, Zone, Facility, Location, Hub, Branch)
+  // 8. Resolve Secondary Category / Filter 1 Dimension (State, Region, Zone, Facility, Location, Hub, Branch)
   const secondaryCategoryCol = categoricalCols.find((c) => {
     if (c.name === primaryCategoryCol?.name) return false;
     const n = c.normalizedName;
@@ -616,34 +686,88 @@ export function inspectDatasetSchema(
     );
   }) || categoricalCols.find((c) => c.name !== primaryCategoryCol?.name);
 
-  // 7b. Resolve Channel / Filter 2 Dimension (Channel, City, Zone, Store, Tier, Department, Segment, Mode)
-  const channelCol = categoricalCols.find((c) => {
+  // 9. Resolve Channel / Filter 2 Dimension (Channel, City, Zone, Store, Tier, Department, Segment, Mode)
+  let channelCol = categoricalCols.find((c) => {
     if (c.name === primaryCategoryCol?.name || c.name === secondaryCategoryCol?.name) return false;
     const n = c.normalizedName;
-    return (
-      n.includes('channel') ||
-      n.includes('city') ||
-      n.includes('zone') ||
-      n.includes('store') ||
-      n.includes('tier') ||
-      n.includes('segment') ||
-      n.includes('department') ||
-      n.includes('mode') ||
-      n.includes('route') ||
-      n.includes('source') ||
-      n.includes('status') ||
-      n.includes('group') ||
-      n.includes('type')
-    );
-  }) || categoricalCols.find((c) => c.name !== primaryCategoryCol?.name && c.name !== secondaryCategoryCol?.name);
+    return n.includes('channel') || n.includes('saleschannel') || n.includes('distribution');
+  });
 
-  // 8. Resolve Date Column
+  if (!channelCol) {
+    channelCol = categoricalCols.find((c) => {
+      if (c.name === primaryCategoryCol?.name || c.name === secondaryCategoryCol?.name) return false;
+      const n = c.normalizedName;
+      return (
+        n.includes('store') ||
+        n.includes('tier') ||
+        n.includes('segment') ||
+        n.includes('department') ||
+        n.includes('mode') ||
+        n.includes('route') ||
+        n.includes('source')
+      );
+    });
+  }
+
+  if (!channelCol) {
+    channelCol = categoricalCols.find((c) => {
+      if (c.name === primaryCategoryCol?.name || c.name === secondaryCategoryCol?.name) return false;
+      const n = c.normalizedName;
+      return (
+        n.includes('city') ||
+        n.includes('zone') ||
+        n.includes('location') ||
+        n.includes('branch') ||
+        n.includes('status') ||
+        n.includes('group') ||
+        n.includes('type')
+      );
+    });
+  }
+
+  if (!channelCol) {
+    channelCol = categoricalCols.find((c) => c.name !== primaryCategoryCol?.name && c.name !== secondaryCategoryCol?.name);
+  }
+
+  // 10. Resolve Date Column
   const dateCol = columns.find((c) => c.dataType === 'date');
 
-  // 9. Resolve Identifier & Entity Column
+  // 11. Resolve Identifier & Entity Column
   const idCol = columns.find((c) => c.dataType === 'identifier');
-  const entityCol = columns.find((c) => c.suggestedRole === 'entityName') || columns.find((c) => c.dataType === 'text' && c.distinctCount > 5);
+  const entityCol = 
+    columns.find((c) => c.suggestedRole === 'entityName' && !/segment|tier|class|status/i.test(c.normalizedName)) ||
+    columns.find((c) => /customer_?id|client_?id|account_?id/i.test(c.normalizedName)) ||
+    columns.find((c) => c.suggestedRole === 'entityName') ||
+    columns.find((c) => c.dataType === 'text' && c.distinctCount > 5 && !/segment|tier|class|status/i.test(c.normalizedName)) ||
+    columns.find((c) => c.dataType === 'categorical' && c.distinctCount > 5 && !/segment|tier|class|status/i.test(c.normalizedName)) ||
+    columns.find((c) => c.dataType === 'categorical' && c.distinctCount >= 2);
   const statusCol = columns.find((c) => c.suggestedRole === 'status');
+
+  // 12. Detect Currency
+  let detectedCurrencyCode = 'USD';
+  let detectedCurrencySymbol = '$';
+  const allHeadersStr = headers.join(' ').toLowerCase();
+  const sampleStringVals = rows.slice(0, 50).flatMap((r) => Object.values(r)).filter((v) => typeof v === 'string').join(' ');
+
+  if (/(?:^|[_(\s])inr(?:$|[_)\s])|₹/.test(allHeadersStr) || sampleStringVals.includes('₹')) {
+    detectedCurrencyCode = 'INR';
+    detectedCurrencySymbol = '₹';
+  } else if (/(?:^|[_(\s])eur(?:$|[_)\s])|€/.test(allHeadersStr) || sampleStringVals.includes('€')) {
+    detectedCurrencyCode = 'EUR';
+    detectedCurrencySymbol = '€';
+  } else if (/(?:^|[_(\s])gbp(?:$|[_)\s])|£/.test(allHeadersStr) || sampleStringVals.includes('£')) {
+    detectedCurrencyCode = 'GBP';
+    detectedCurrencySymbol = '£';
+  } else if (/(?:^|[_(\s])jpy(?:$|[_)\s])|¥/.test(allHeadersStr) || sampleStringVals.includes('¥')) {
+    detectedCurrencyCode = 'JPY';
+    detectedCurrencySymbol = '¥';
+  } else if (/(?:^|[_(\s])cad(?:$|[_)\s])/.test(allHeadersStr)) {
+    detectedCurrencyCode = 'CAD';
+    detectedCurrencySymbol = 'CA$';
+  } else if (/(?:^|[_(\s])aud(?:$|[_)\s])/.test(allHeadersStr)) {
+    detectedCurrencyCode = 'AUD';
+    detectedCurrencySymbol = 'A$';
+  }
 
   return {
     columns,
@@ -667,5 +791,10 @@ export function inspectDatasetSchema(
     detectedIndustry: industry,
     industryConfidence: confidence,
     totalRecords: rows.length,
+    currencyCode: detectedCurrencyCode,
+    currencySymbol: detectedCurrencySymbol,
+    detectedDomain: hasFinancialMetrics ? 'sales' : 'generic',
+    hasFinancialMetrics,
+    grain: hasFinancialMetrics ? 'One commercial transaction order' : 'One tabular source record',
   };
 }

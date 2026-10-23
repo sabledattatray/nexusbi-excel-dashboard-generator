@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-10-23T14:48:58.373888",
+  "results": [
+    {
+      "dataset": "Sales & Commercial Transactions",
+      "metrics": {
+        "Net Sales Revenue": {
+          "expected": 339830586.55,
+          "display": "Rs. 339,830,586.55"
+        },
+        "Gross Profit": {
+          "expected": 71910440.05,
+          "display": "Rs. 71,910,440.05"
+        },
+        "Transactions Count": {
+          "expected": 6000,
+          "display": "6,000"
+        },
+        "Average Order Value": {
+          "expected": 56638.431091666665,
+          "display": "Rs. 56,638.43"
+        }
+      }
+    },
+    {
+      "dataset": "Helpdesk & Service Desk Operations",
+      "metrics": {
+        "Mean Resolution Duration (hrs, unrounded raw)": {
+          "expected": 55.608194870140345,
+          "display": "55.61 hrs",
+          "authoritative_raw_str": "55.6081948701",
+          "sum_durations": 344715.2,
+          "completed_tickets": 6199
+        },
+        "Mean Resolution Duration (Ledger 2-DP)": {
+          "expected": 55.6088853040813,
+          "display": "55.61 hrs",
+          "ledger_mean_str": "55.6088853041"
+        },
+        "Completed Tickets": {
+          "expected": 6199,
+          "display": "6,199"
+        },
+        "Total Unresolved Backlog": {
+          "expected": 1801,
+          "display": "1,801 (In Progress: 1181, Waiting: 620)"
+        },
+        "First Contact SLA Compliance Rate": {
+          "expected": 47.18502984352315,
+          "display": "47.19% (2,925/6,199)"
+        },
+        "Mean CSAT Rating": {
+          "expected": 2.9627329192546585,
+          "display": "2.96 (13,356.0/4,508)"
+        }
+      }
+    },
+    {
+      "dataset": "HR Workforce & Payroll Analytics",
+      "metrics": {
+        "Total Annual Payroll": {
+          "expected": 42159250,
+          "display": "$42,159,250.00"
+        },
+        "Average Salary": {
+          "expected": 84318.5,
+          "display": "$84,318.50"
+        },
+        "Total Headcount": {
+          "expected": 500,
+          "display": "500"
+        }
+      }
+    },
+    {
+      "dataset": "Inventory & Warehouse Logistics",
+      "metrics": {
+        "Total Stock On-Hand": {
+          "expected": 295100,
+          "display": "295,100"
+        }
+      }
+    },
+    {
+      "dataset": "Banking & Loan Portfolio Collections",
+      "metrics": {
+        "Total Principal Balance": {
+          "expected": 193241700,
+          "display": "INR 193,241,700"
+        }
+      }
+    },
+    {
+      "dataset": "Healthcare Clinical & Patient Encounters",
+      "metrics": {
+        "Total Billed Amount": {
+          "expected": 8574775,
+          "display": "$8,574,775.00"
+        },
+        "Mean Length of Stay": {
+          "expected": 7.477777777777778,
+          "display": "7.48 days"
+        }
+      }
+    },
+    {
+      "dataset": "Higher Education Academic Performance",
+      "metrics": {
+        "Mean Cumulative GPA": {
+          "expected": 3.0614285714285714,
+          "display": "3.06"
+        }
+      }
+    },
+    {
+      "dataset": "Industrial Manufacturing Quality Batches",
+      "metrics": {
+        "Gross Units Produced": {
+          "expected": 849750,
+          "display": "849,750"
+        },
+        "Overall Defect Rate": {
+          "expected": 0.4008237716975581,
+          "display": "0.40%"
+        }
+      }
+    },
+    {
+      "dataset": "Digital Marketing Campaign Performance",
+      "metrics": {
+        "Total Ad Spend": {
+          "expected": 1176907.2,
+          "display": "$1,176,907.20"
+        },
+        "Blended CPA": {
+          "expected": 25.52833282720923,
+          "display": "$25.53"
+        }
+      }
+    },
+    {
+      "dataset": "Adversarial Unknown Dataset (No Dates, Obfuscated Headers)",
+      "metrics": {
+        "Audited Record Count": {
+          "expected": 400,
+          "display": "400"
+        },
+        "Excluded Null Rows": {
+          "expected": 57,
+          "display": "57 omitted"
+        }
+      }
+    }
+  ]
+}

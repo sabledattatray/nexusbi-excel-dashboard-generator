@@ -1,0 +1,1082 @@
+{
+  "timestamp": "2026-10-23T16:31:01.717Z",
+  "results": [
+    {
+      "datasetId": "sales_6k",
+      "datasetName": "Sales & Commercial Transactions",
+      "rowCount": 6000,
+      "columnCount": 22,
+      "xlsxTimeMs": 810.1,
+      "xlsxSizeBytes": 643972,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 5.9,
+      "htmlSizeBytes": 586519,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 1.4,
+      "pdfHtmlSizeBytes": 29346,
+      "pdfBinaryTimeMs": 33.1,
+      "pdfBinarySizeBytes": 11325,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 7,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "helpdesk_8k",
+      "datasetName": "Helpdesk & Service Desk Operations",
+      "rowCount": 8000,
+      "columnCount": 13,
+      "xlsxTimeMs": 693.7,
+      "xlsxSizeBytes": 517536,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 2.6,
+      "htmlSizeBytes": 408709,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 25892,
+      "pdfBinaryTimeMs": 15.1,
+      "pdfBinarySizeBytes": 10568,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 4,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "hr_500",
+      "datasetName": "HR Workforce & Payroll Analytics",
+      "rowCount": 500,
+      "columnCount": 9,
+      "xlsxTimeMs": 57,
+      "xlsxSizeBytes": 38836,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.9,
+      "htmlSizeBytes": 153402,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 29989,
+      "pdfBinaryTimeMs": 13.1,
+      "pdfBinarySizeBytes": 10291,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 8,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "inventory_400",
+      "datasetName": "Inventory & Warehouse Logistics",
+      "rowCount": 400,
+      "columnCount": 8,
+      "xlsxTimeMs": 35.6,
+      "xlsxSizeBytes": 30155,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 1.1,
+      "htmlSizeBytes": 118460,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 20852,
+      "pdfBinaryTimeMs": 10.4,
+      "pdfBinarySizeBytes": 9721,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 6,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "banking_600",
+      "datasetName": "Banking & Loan Portfolio Collections",
+      "rowCount": 600,
+      "columnCount": 8,
+      "xlsxTimeMs": 43.6,
+      "xlsxSizeBytes": 40838,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 1.1,
+      "htmlSizeBytes": 191665,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 29768,
+      "pdfBinaryTimeMs": 7.8,
+      "pdfBinarySizeBytes": 10919,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 6,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "healthcare_450",
+      "datasetName": "Healthcare Clinical & Patient Encounters",
+      "rowCount": 450,
+      "columnCount": 7,
+      "xlsxTimeMs": 42.7,
+      "xlsxSizeBytes": 30591,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.8,
+      "htmlSizeBytes": 128711,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.4,
+      "pdfHtmlSizeBytes": 26240,
+      "pdfBinaryTimeMs": 9.9,
+      "pdfBinarySizeBytes": 10225,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 7,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "education_350",
+      "datasetName": "Higher Education Academic Performance",
+      "rowCount": 350,
+      "columnCount": 7,
+      "xlsxTimeMs": 22.4,
+      "xlsxSizeBytes": 25890,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.5,
+      "htmlSizeBytes": 111983,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 24259,
+      "pdfBinaryTimeMs": 10.5,
+      "pdfBinarySizeBytes": 11132,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 7,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "manufacturing_500",
+      "datasetName": "Industrial Manufacturing Quality Batches",
+      "rowCount": 500,
+      "columnCount": 7,
+      "xlsxTimeMs": 43.1,
+      "xlsxSizeBytes": 32675,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.9,
+      "htmlSizeBytes": 145605,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.2,
+      "pdfHtmlSizeBytes": 26579,
+      "pdfBinaryTimeMs": 16.4,
+      "pdfBinarySizeBytes": 10523,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 9,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "marketing_300",
+      "datasetName": "Digital Marketing Campaign Performance",
+      "rowCount": 300,
+      "columnCount": 8,
+      "xlsxTimeMs": 25.2,
+      "xlsxSizeBytes": 27184,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.6,
+      "htmlSizeBytes": 99348,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.3,
+      "pdfHtmlSizeBytes": 21566,
+      "pdfBinaryTimeMs": 8.4,
+      "pdfBinarySizeBytes": 10313,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 8,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    },
+    {
+      "datasetId": "adversarial_unknown_400",
+      "datasetName": "Adversarial Unknown Dataset (No Dates, Obfuscated Headers)",
+      "rowCount": 400,
+      "columnCount": 6,
+      "xlsxTimeMs": 26.9,
+      "xlsxSizeBytes": 24691,
+      "xlsxSheetsFound": [
+        "Executive Dashboard",
+        "Visual Aggregates",
+        "Operational Action Queue",
+        "Methods & Assumptions",
+        "Canonical Raw Data"
+      ],
+      "xlsxFormulaErrors": 0,
+      "htmlTimeMs": 0.3,
+      "htmlSizeBytes": 71347,
+      "htmlRemoteUrls": 0,
+      "pdfHtmlTimeMs": 0.1,
+      "pdfHtmlSizeBytes": 17574,
+      "pdfBinaryTimeMs": 5.1,
+      "pdfBinarySizeBytes": 8355,
+      "pdfBinaryPages": 3,
+      "canonicalKpiCount": 1,
+      "kpiParityVerified": true,
+      "crossFormatParitySuccess": true,
+      "desktopExcelRecalcStatus": "NOT EXECUTED (Pending runner)"
+    }
+  ],
+  "parityReports": [
+    {
+      "datasetName": "Sales & Revenue Operations Executive Dashboard",
+      "canonicalKpiCount": 7,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 132364,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_transactions",
+            "expectedValue": "6,000",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "total_net_sales",
+            "expectedValue": "₹339.83M",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "avg_order_value",
+            "expectedValue": "₹56,638.43",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "total_gross_sales",
+            "expectedValue": "₹360.25M",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "total_gross_profit",
+            "expectedValue": "₹71.91M",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "gross_profit_margin",
+            "expectedValue": "21.16%",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "total_units_sold",
+            "expectedValue": "17,966",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 643972
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 586519,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 7
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 29346,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 11325,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "IT Service Desk & Support Operations Executive Dashboard",
+      "canonicalKpiCount": 4,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 97240,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_tickets",
+            "expectedValue": "8,000",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "avg_resolution_hours_raw",
+            "expectedValue": "55.61",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "reopened_count",
+            "expectedValue": "415",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "avg_csat",
+            "expectedValue": "2.96",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 517536
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 408709,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 4
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 25892,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10568,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 8,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 4731,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "500",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "500",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "5,059,110",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "10,118.22",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "10,118",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_total",
+            "expectedValue": "42,159,250",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_average",
+            "expectedValue": "84,318.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_median",
+            "expectedValue": "84,318.50",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 38836
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 153402,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 8
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 29989,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10291,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 6,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 3364,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "400",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "400",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "54.73",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "54.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_min",
+            "expectedValue": "12.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_max",
+            "expectedValue": "96.50",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 30155
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 118460,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 6
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 20852,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 9721,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 6,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 5129,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "600",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "600",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "193,241,700",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "322,069.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "322,069.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "average_rate",
+            "expectedValue": "9.75%",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 40838
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 191665,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 6
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 29768,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10919,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 7,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 3352,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "450",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "450",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "8,574,775",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "19,055.06",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "18,229.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_average",
+            "expectedValue": "5.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_median",
+            "expectedValue": "5.50",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 30591
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 128711,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 7
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 26240,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10225,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 7,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 2736,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "350",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "350",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "119,712",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "342.03",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "0",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_average",
+            "expectedValue": "3.06",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_median",
+            "expectedValue": "3.10",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 25890
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 111983,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 7
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 24259,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 11132,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 9,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 3702,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "500",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "500",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "849,750",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "1,699.50",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "1,690",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_total",
+            "expectedValue": "3,406",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_average",
+            "expectedValue": "6.81",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_median",
+            "expectedValue": "4",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "average_rate",
+            "expectedValue": "99.51%",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 32675
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 145605,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 9
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 26579,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10523,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 8,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 2564,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "300",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "unique_entities_count",
+            "expectedValue": "300",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_total",
+            "expectedValue": "1,176,908.40",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_average",
+            "expectedValue": "3,923.03",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "primary_measure_median",
+            "expectedValue": "3,073.80",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_total",
+            "expectedValue": "7,498.74",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_average",
+            "expectedValue": "25.00",
+            "foundInSheet": true
+          },
+          {
+            "kpiId": "secondary_measure_median",
+            "expectedValue": "25",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 27184
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 99348,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 8
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 21566,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 10313,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    },
+    {
+      "datasetName": "Dataset Intelligence & Operational Analysis",
+      "canonicalKpiCount": 1,
+      "xlsxValidation": {
+        "passed": true,
+        "sheetsFound": [
+          "Executive Dashboard",
+          "Visual Aggregates",
+          "Operational Action Queue",
+          "Methods & Assumptions",
+          "Canonical Raw Data"
+        ],
+        "totalCellCount": 2488,
+        "formulaErrorCount": 0,
+        "formulaErrors": [],
+        "kpiParityChecks": [
+          {
+            "kpiId": "total_records",
+            "expectedValue": "400",
+            "foundInSheet": true
+          }
+        ],
+        "hasAutoFilter": true,
+        "byteSize": 24691
+      },
+      "htmlValidation": {
+        "passed": true,
+        "byteSize": 71347,
+        "remoteUrlCount": 0,
+        "remoteUrls": [],
+        "hasOfflineScript": true,
+        "hasFilterBanner": true,
+        "hasActionQueue": true,
+        "kpiMatches": 1
+      },
+      "pdfValidation": {
+        "passed": true,
+        "byteSize": 17574,
+        "pageCountApproximation": 3,
+        "hasPageBreakClasses": true,
+        "hasMethodsSection": true,
+        "hasProvenanceHeader": true
+      },
+      "pdfBinaryValidation": {
+        "passed": true,
+        "byteSize": 8355,
+        "hasValidPdfHeader": true,
+        "hasValidPdfEof": true,
+        "pageCount": 3,
+        "headerString": "%PDF-1.3"
+      },
+      "paritySuccess": true
+    }
+  ]
+}

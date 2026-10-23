@@ -3,6 +3,7 @@ import {
   Home,
   ArrowUpRight,
   BarChart3,
+  Sparkles,
   ChevronRight,
   Download,
   FileSpreadsheet,
@@ -49,7 +50,7 @@ interface NavbarProps {
   onDownloadExcel: () => void;
   isDownloading: boolean;
   onRegenerateData: () => void;
-  activeTab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales';
+  activeTab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' | 'universal-analytics';
   setActiveTab: (tab: NavbarProps['activeTab']) => void;
   isCustomDataActive?: boolean;
   isSidebarVisible: boolean;
@@ -81,15 +82,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Single active accordion: null by default (closed at initial load & refresh)
-  // At most ONE submenu can be open at any time; opening any submenu closes all others.
-  const [openSectionId, setOpenSectionId] = useState<string | null>(null);
+  // Clean section expansion state: Core, Analytics, and Tools open by default for immediate viewability;
+  // Legal section stays collapsed by default to eliminate visual clutter, and auto-expands when navigating to legal routes.
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    core: true,
+    analytics: true,
+    tools: true,
+    legal: false,
+  });
 
   const toggleSection = (id: string) => {
-    setOpenSectionId((prev) => (prev === id ? null : id));
+    setOpenSections((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
-  // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
+  // Auto-expand legal section when a legal route is active
+  React.useEffect(() => {
+    if (activeLegalRoute) {
+      setOpenSections((prev) => ({ ...prev, legal: true }));
+    }
+  }, [activeLegalRoute]);
+
+  // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar, Escape to close mobile menu
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
@@ -99,11 +115,23 @@ export const Navbar: React.FC<NavbarProps> = ({
         } else {
           onToggleSidebar();
         }
+      } else if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onToggleSidebar]);
+  }, [onToggleSidebar, isMobileMenuOpen]);
+
+  const getBadgeClass = (badge?: string) => {
+    if (!badge) return 'sidebar-pill-badge';
+    const b = badge.toLowerCase();
+    if (b === 'live') return 'sidebar-pill-badge live';
+    if (b === 'new') return 'sidebar-pill-badge new';
+    if (b.includes('xlsx')) return 'sidebar-pill-badge xlsx';
+    if (b === 'audit') return 'sidebar-pill-badge audit';
+    return 'sidebar-pill-badge';
+  };
 
   interface NavItemDef {
     id: NavbarProps['activeTab'] | string;
@@ -133,6 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       colorTheme: 'emerald',
       items: [
         { id: 'home', label: 'Home Page', icon: Home },
+        { id: 'universal-analytics', label: 'Universal Julius Analytics', icon: Sparkles, badge: 'v9.0', path: '/universal-analytics' },
         { id: 'dashboard', label: 'Executive Overview', icon: LayoutDashboard, badge: 'Live' },
         { id: 'amazon-sales', label: 'Amazon Sales Executive', icon: ShoppingBag, badge: 'New', path: '/amazon-sales-dashboard' },
         { id: 'excel-preview', label: 'Live Excel Workbook', icon: FileSpreadsheet, badge: '.XLSX' },
@@ -185,6 +214,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (typeof window !== 'undefined') {
         window.history.pushState(null, '', '/amazon-sales-dashboard');
       }
+    } else if (item.id === 'universal-analytics') {
+      onBackToApp?.();
+      setActiveTab('universal-analytics');
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', '/universal-analytics');
+      }
     } else {
       onBackToApp?.();
       setActiveTab(item.id as NavbarProps['activeTab']);
@@ -217,7 +252,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         className={`workspace-sidebar ${isMobileMenuOpen ? 'mobile-drawer-open' : ''}`}
         aria-label="Application sidebar"
       >
-        {/* Top Header inside Sidebar: Logo & Hide Button */}
+        {/* Top Header inside Sidebar: Logo & Collapse Button */}
         <div className="flex items-center justify-between w-full mb-2 pb-2.5 border-b border-white/[0.08]">
           <button
             onClick={() => handleSelectView('home')}
@@ -227,7 +262,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ExcelLogo size={28} tagline="EXECUTIVE BI STUDIO" />
           </button>
 
-          {/* Hide Sidebar button inside sidebar */}
+          {/* Collapse Sidebar button inside sidebar */}
           <button
             onClick={() => {
               if (window.innerWidth <= 1024) {
@@ -237,48 +272,62 @@ export const Navbar: React.FC<NavbarProps> = ({
               }
             }}
             className="sidebar-toggle-btn ml-1 cursor-pointer"
-            aria-label="Hide sidebar"
-            title="Hide sidebar (Ctrl+B)"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar (Ctrl+B)"
           >
-            <PanelLeftClose size={16} />
+            <PanelLeftClose size={15} />
           </button>
         </div>
 
-        {/* Active Dataset / Model Context Glass Card */}
-        <div className="sidebar-model-card group">
+        {/* Active Dataset / Workspace Context Card */}
+        <div
+          onClick={() => {
+            onOpenCustomizer();
+            setIsMobileMenuOpen(false);
+          }}
+          className="sidebar-context-card sidebar-model-card group cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onOpenCustomizer();
+              setIsMobileMenuOpen(false);
+            }
+          }}
+          title="Click to customize dataset or switch industry template"
+        >
           <div className="flex items-center justify-between gap-1.5 mb-1.5">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="relative flex h-2 w-2 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
               <span className="text-[9.5px] font-bold tracking-wider uppercase text-emerald-400/90 font-mono truncate">
-                {isCustomDataActive ? 'LOCAL DATASET' : 'SAMPLE TEMPLATE'}
+                {isCustomDataActive ? 'LOCAL DATASET' : 'ACTIVE MODEL'}
               </span>
             </div>
-            <button
-              onClick={() => {
-                onOpenCustomizer();
-                setIsMobileMenuOpen(false);
-              }}
-              className="text-[10px] text-slate-400 hover:text-emerald-300 flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-white/[0.06] cursor-pointer"
-              title="Change industry template / configuration"
-            >
-              <SlidersHorizontal size={11} />
+            <div className="text-[10px] text-slate-400 group-hover:text-emerald-300 flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded bg-white/[0.03] group-hover:bg-white/[0.08] border border-white/[0.05]">
+              <SlidersHorizontal size={10} />
               <span>Change</span>
-            </button>
+            </div>
           </div>
 
-          <div className="mt-1">
-            <span className="sidebar-model-title" title={config.companyName}>
+          <div className="mt-0.5">
+            <span className="sidebar-context-title sidebar-model-title" title={config.companyName}>
               {config.companyName}
             </span>
           </div>
 
-          <div className="sidebar-model-meta">
-            <span className="flex items-center gap-1 min-w-0">
+          <div className="sidebar-context-meta sidebar-model-meta">
+            <span className="flex items-center gap-1 min-w-0 text-slate-300">
               <Database size={11} className="text-emerald-400 shrink-0" />
-              <span>{config.recordCount ? (config.recordCount >= 1000 ? `${(config.recordCount / 1000).toFixed(0)}k rows` : `${config.recordCount} rows`) : '1,000 rows'}</span>
+              <span>
+                {config.recordCount
+                  ? config.recordCount >= 1000
+                    ? `${(config.recordCount / 1000).toFixed(0)}k rows`
+                    : `${config.recordCount} rows`
+                  : '1,000 rows'}
+              </span>
             </span>
             <span className="text-white/20">•</span>
             <span className="truncate capitalize text-emerald-300">
@@ -289,166 +338,131 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Navigation Sections */}
         <nav aria-label="Workspace views" className="sidebar-nav">
-          {navGroups.map((group, groupIdx) => {
-            const isOpen = openSectionId === group.id;
-            const GroupIcon = group.icon;
+          {navGroups.map((group) => {
+            const isOpen = !!openSections[group.id];
             const hasActiveInside = group.items.some((item) =>
               item.isLegal
                 ? activeLegalRoute === item.legalRoute
                 : (!activeLegalRoute && activeTab === item.id)
             );
+
             return (
-              <React.Fragment key={group.id}>
-                {groupIdx > 0 && <div className="sidebar-divider" role="separator" />}
+              <div key={group.id} className="sidebar-group-container">
+                {/* Clean Collapsible Section Header */}
                 <button
                   type="button"
                   onClick={() => toggleSection(group.id)}
-                  className={`sidebar-accordion-btn group cursor-pointer ${
-                    isOpen ? 'open' : ''
-                  } ${hasActiveInside && !isOpen ? 'has-active' : ''}`}
+                  className={`sidebar-section-header group cursor-pointer ${
+                    hasActiveInside ? 'has-active' : ''
+                  }`}
                   aria-expanded={isOpen}
-                  title={`${isOpen ? 'Collapse' : 'Expand'} ${group.title} Submenu (${group.items.length} items)`}
+                  title={`${isOpen ? 'Collapse' : 'Expand'} ${group.title} (${group.items.length} views)`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`accordion-icon-box ${group.colorTheme}`}>
-                      <GroupIcon size={14} />
-                    </div>
-                    <div className="flex flex-col min-w-0 text-left">
-                      <div className="flex items-center gap-1.5">
-                        <span className="accordion-title">{group.title}</span>
-                        {hasActiveInside && !isOpen && (
-                          <span
-                            className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"
-                            title="Active page inside this submenu"
-                          />
-                        )}
-                      </div>
-                      <span className="accordion-subtitle">{group.subtitle}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0 ml-1">
-                    <span className="accordion-pill-badge">
-                      <span className="font-semibold text-emerald-400">{group.items.length}</span>
-                      <span>Submenu</span>
-                      <ChevronDown
-                        size={11}
-                        className={`transition-transform duration-200 ${
-                          isOpen ? 'rotate-180 text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'
-                        }`}
-                      />
-                    </span>
+                  <span className="sidebar-section-title">
+                    {group.title}
+                  </span>
+                  <div className="sidebar-section-actions">
+                    <span className="sidebar-section-count">{group.items.length}</span>
+                    <ChevronDown
+                      size={12}
+                      className={`sidebar-section-chevron ${isOpen ? 'open' : ''}`}
+                    />
                   </div>
                 </button>
 
+                {/* Submenu Item List */}
                 {isOpen && (
-                  <div className="sidebar-submenu-wrapper animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="sidebar-item-list">
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isActive = item.isLegal
                         ? activeLegalRoute === item.legalRoute
                         : (!activeLegalRoute && activeTab === item.id);
+
                       return (
                         <button
                           key={item.id}
                           aria-current={isActive ? 'page' : undefined}
-                          className={`nav-item group cursor-pointer ${isActive ? 'active' : ''}`}
+                          className={`sidebar-nav-link nav-item group cursor-pointer ${
+                            isActive ? 'active' : ''
+                          }`}
                           onClick={() => handleItemClick(item)}
                           title={item.label}
                         >
-                          {isActive && <span className="nav-item-active-bar" />}
-                          <div className="nav-item-icon-box">
-                            <Icon size={14.5} />
-                          </div>
-                          <span className="truncate font-medium flex-1 min-w-0 text-left">{item.label}</span>
-                          {item.badge && <span className="nav-badge">{item.badge}</span>}
+                          {isActive && <span className="sidebar-nav-link-indicator" />}
+                          <Icon size={15} className="sidebar-nav-icon" />
+                          <span className="sidebar-nav-label">{item.label}</span>
+                          {item.badge && (
+                            <span className={getBadgeClass(item.badge)}>
+                              {item.badge}
+                            </span>
+                          )}
                         </button>
                       );
                     })}
                   </div>
                 )}
-              </React.Fragment>
+              </div>
             );
           })}
 
-          {/* Tools Section */}
-          <div className="sidebar-divider" role="separator" />
+          {/* Studio Tools Section */}
           {(() => {
-            const isToolsOpen = openSectionId === 'tools';
+            const isToolsOpen = !!openSections['tools'];
             return (
-              <>
+              <div className="sidebar-group-container">
                 <button
                   type="button"
                   onClick={() => toggleSection('tools')}
-                  className={`sidebar-accordion-btn group cursor-pointer ${
-                    isToolsOpen ? 'open' : ''
-                  }`}
+                  className="sidebar-section-header group cursor-pointer"
                   aria-expanded={isToolsOpen}
-                  title={`${isToolsOpen ? 'Collapse' : 'Expand'} Studio Tools Submenu (3 tools)`}
+                  title={`${isToolsOpen ? 'Collapse' : 'Expand'} Studio Tools (3 tools)`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="accordion-icon-box amber">
-                      <SlidersHorizontal size={14} />
-                    </div>
-                    <div className="flex flex-col min-w-0 text-left">
-                      <span className="accordion-title">Studio Tools</span>
-                      <span className="accordion-subtitle">Import, Templates &amp; Fabric</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0 ml-1">
-                    <span className="accordion-pill-badge">
-                      <span className="font-semibold text-emerald-400">3</span>
-                      <span>Submenu</span>
-                      <ChevronDown
-                        size={11}
-                        className={`transition-transform duration-200 ${
-                          isToolsOpen ? 'rotate-180 text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'
-                        }`}
-                      />
-                    </span>
+                  <span className="sidebar-section-title">Studio Tools</span>
+                  <div className="sidebar-section-actions">
+                    <span className="sidebar-section-count">3</span>
+                    <ChevronDown
+                      size={12}
+                      className={`sidebar-section-chevron ${isToolsOpen ? 'open' : ''}`}
+                    />
                   </div>
                 </button>
 
                 {isToolsOpen && (
-                  <div className="sidebar-submenu-wrapper animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="sidebar-item-list">
                     <button
-                      className="sidebar-tool-card group cursor-pointer"
+                      className="sidebar-quick-tool sidebar-tool-card group cursor-pointer"
                       onClick={() => {
                         onOpenUploadModal();
                         setIsMobileMenuOpen(false);
                       }}
                       title="Import your CSV or Excel dataset"
                     >
-                      <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-                        <Upload size={14} />
-                      </div>
+                      <Upload size={14} className="sidebar-nav-icon" />
                       <div className="flex flex-col min-w-0 text-left flex-1">
-                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12px] truncate flex items-center justify-between">
                           Import Dataset
-                          <ArrowUpRight size={12} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
+                          <ArrowUpRight size={11} className="opacity-40 group-hover:opacity-100 text-emerald-400 transition-opacity" />
                         </span>
-                        <span className="text-[10px] text-slate-400 truncate">CSV, XLSX, XLS</span>
+                        <span className="text-[9.5px] text-slate-400 truncate">CSV, XLSX, XLS</span>
                       </div>
                     </button>
 
                     <button
-                      className="sidebar-tool-card group cursor-pointer"
+                      className="sidebar-quick-tool sidebar-tool-card group cursor-pointer"
                       onClick={() => {
                         onOpenCustomizer();
                         setIsMobileMenuOpen(false);
                       }}
                       title="Browse 32 ready-to-use industry dashboard templates"
                     >
-                      <div className="nav-item-icon-box group-hover:bg-emerald-500/10 group-hover:border-emerald-500/25 group-hover:text-emerald-300">
-                        <LayoutTemplate size={14} />
-                      </div>
+                      <LayoutTemplate size={14} className="sidebar-nav-icon" />
                       <div className="flex flex-col min-w-0 text-left flex-1">
-                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12px] truncate flex items-center justify-between">
                           32 BI Templates
-                          <span className="nav-badge">Ready</span>
+                          <span className="sidebar-pill-badge">32 Ready</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
+                        <span className="text-[9.5px] text-slate-400 truncate">Sales, Finance, SaaS…</span>
                       </div>
                     </button>
 
@@ -456,18 +470,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                       href="https://fabric.dattasable.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="sidebar-tool-card group border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-950/20"
+                      className="sidebar-quick-tool sidebar-tool-card group"
                       title="Fabric Master — Microsoft Fabric Architecture, Capacity Estimator & FinOps Platform"
                     >
-                      <div className="nav-item-icon-box text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/30 group-hover:text-sky-300">
-                        <Cpu size={14} />
-                      </div>
+                      <Cpu size={14} className="sidebar-nav-icon text-sky-400" />
                       <div className="flex flex-col min-w-0 text-left flex-1">
-                        <span className="text-slate-200 group-hover:text-white font-medium text-[12.5px] truncate flex items-center justify-between">
+                        <span className="text-slate-200 group-hover:text-white font-medium text-[12px] truncate flex items-center justify-between">
                           Fabric Master
-                          <span className="nav-badge text-sky-300 border-sky-500/30 bg-sky-950/50">FinOps</span>
+                          <span className="sidebar-pill-badge new">FinOps</span>
                         </span>
-                        <span className="text-[10px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
+                        <span className="text-[9.5px] text-sky-400/80 truncate">Capacity &amp; Arch</span>
                       </div>
                     </a>
 
@@ -475,18 +487,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="sidebar-trust-box">
                       <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
                       <div className="flex flex-col min-w-0 text-left">
-                        <span className="text-[10.5px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
-                        <span className="text-[9px] text-slate-400 leading-tight">Zero cloud data retention</span>
+                        <span className="text-[10px] font-semibold text-emerald-200 leading-tight">100% In-Browser Privacy</span>
+                        <span className="text-[9px] text-slate-400 leading-tight">Zero server data retention</span>
                       </div>
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             );
           })()}
         </nav>
 
-        {/* Ultra-Premium Profile & Keyboard Shortcut Lockup */}
+        {/* Profile & Signature Lockup */}
         <div className="sidebar-bottom">
           <a
             href="https://dattasable.com/"
@@ -495,18 +507,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="sidebar-signature group"
             title="Visit Datta Sable's portfolio"
           >
-            <span className="workspace-avatar overflow-hidden rounded-full border border-emerald-500/50 p-0 shadow-sm">
+            <span className="workspace-avatar">
               <img
                 src="/dattasable.webp"
                 alt="Datta Sable"
-                width={30}
-                height={30}
+                width={28}
+                height={28}
                 loading="lazy"
                 className="w-full h-full object-cover object-top rounded-full"
               />
             </span>
             <div className="min-w-0 flex-1">
-              <strong className="group-hover:text-emerald-300 transition-colors flex items-center gap-1 text-[11.5px]">
+              <strong className="group-hover:text-emerald-300 transition-colors flex items-center gap-1 text-[11.5px] text-slate-200 font-semibold">
                 Datta Sable <ArrowUpRight size={11} className="opacity-50 group-hover:opacity-100 transition-opacity" />
               </strong>
               <small className="text-[9.5px] text-slate-400 block truncate">

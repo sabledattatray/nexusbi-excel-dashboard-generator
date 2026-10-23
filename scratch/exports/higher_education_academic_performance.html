@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Intelligence & Operational Analysis — NexusBI</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #141c2e;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --emerald: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 24px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .badge-bar { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
+    .badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .badge.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: transform 0.15s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 30px; font-weight: 700; color: #fff; margin: 8px 0 4px; }
+    .kpi-formula { font-size: 11px; color: #64748b; font-family: monospace; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .chart-title { font-size: 17px; font-weight: 600; color: #fff; }
+    .chart-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+    .bar-row { display: flex; align-items: center; margin-bottom: 10px; font-size: 13px; }
+    .bar-label { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
+    .bar-track { flex: 1; height: 18px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin: 0 12px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent-gradient); border-radius: 4px; }
+    .bar-val { width: 75px; text-align: right; font-weight: 600; font-family: monospace; }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 16px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dataset Intelligence & Operational Analysis</h1>
+      <div class="badge-bar">
+        <span class="badge">Classification: Universal Dataset Intelligence & Distribution Analysis</span>
+        <span class="badge">Confidence: 0.0%</span>
+        <span class="badge success">Audit: Zero-AI Parity Verified</span>
+        <span class="badge">Records: 350</span>
+        <span class="badge">Generated: 2026-10-23T13:47:54.550Z</span>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      
+        <div class="kpi-card">
+          <div class="kpi-label">Total Records Volume</div>
+          <div class="kpi-value">350</div>
+          <div class="kpi-formula">COUNTROWS</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Unique Entities (Student_ID)</div>
+          <div class="kpi-value">350</div>
+          <div class="kpi-formula">COUNTDISTINCT(Student_ID)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Mean GPA_Score</div>
+          <div class="kpi-value">3.19</div>
+          <div class="kpi-formula">AVERAGE(GPA_Score)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Median GPA_Score</div>
+          <div class="kpi-value">3.20</div>
+          <div class="kpi-formula">MEDIAN(GPA_Score)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Min GPA_Score</div>
+          <div class="kpi-value">2.40</div>
+          <div class="kpi-formula">MIN(GPA_Score)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Max GPA_Score</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-formula">MAX(GPA_Score)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Total Enrolled_Credits</div>
+          <div class="kpi-value">5,073</div>
+          <div class="kpi-formula">SUM(Enrolled_Credits)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Mean Enrolled_Credits</div>
+          <div class="kpi-value">14.49</div>
+          <div class="kpi-formula">AVERAGE(Enrolled_Credits)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Median Enrolled_Credits</div>
+          <div class="kpi-value">14</div>
+          <div class="kpi-formula">MEDIAN(Enrolled_Credits)</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Mean Attendance_Rate_Pct</div>
+          <div class="kpi-value">87.00%</div>
+          <div class="kpi-formula">AVERAGE(Attendance_Rate_Pct)</div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+      
+        <div class="chart-card">
+          <div class="chart-title">Distribution by Semester_Cohort</div>
+          <div class="chart-meta">Semester_Cohort vs Mean GPA_Score</div>
+          <div class="chart-body">
+            
+            <div class="bar-row">
+              <span class="bar-label" title="Cohort-2024">Cohort-2024</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">3.199</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Cohort-2025">Cohort-2025</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">3.191</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Cohort-2026">Cohort-2026</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">3.189</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Breakdown by Degree_Program</div>
+          <div class="chart-meta">Degree_Program vs Volume</div>
+          <div class="chart-body">
+            
+            <div class="bar-row">
+              <span class="bar-label" title="Business Admin">Business Admin</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">70</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Data Analytics">Data Analytics</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">70</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Mechanical Eng">Mechanical Eng</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">70</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Nursing">Nursing</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">70</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Computer Science">Computer Science</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">70</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Volume by Academic_Standing</div>
+          <div class="chart-meta">Academic_Standing vs Volume</div>
+          <div class="chart-body">
+            
+            <div class="bar-row">
+              <span class="bar-label" title="Good Standing">Good Standing</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 100%"></div>
+              </div>
+              <span class="bar-val">176</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Academic Probation">Academic Probation</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 49%"></div>
+              </div>
+              <span class="bar-val">87</span>
+            </div>
+
+            <div class="bar-row">
+              <span class="bar-label" title="Dean List">Dean List</span>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: 49%"></div>
+              </div>
+              <span class="bar-val">87</span>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <footer>
+      <span>Generated by NexusBI Universal Deterministic Analytical Platform</span>
+      <span>Three-Way Parity Guaranteed: Source Math == V8 JS == DuckDB-Wasm</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dataset Intelligence &amp; Operational Analysis — Executive PDF Report</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      font-size: 11px;
+      line-height: 1.4;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      width: 100%;
+      page-break-after: always;
+      position: relative;
+      min-height: 960px;
+    }
+    .page.last {
+      page-break-after: avoid;
+    }
+    header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .report-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .provenance-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 9px;
+      color: #475569;
+    }
+    .pdf-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .pdf-badge.crit {
+      background: #ffe4e6;
+      border-color: #f43f5e;
+      color: #9f1239;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #1e293b;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+    .pdf-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pdf-kpi-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      break-inside: avoid;
+    }
+    .pdf-kpi-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .pdf-kpi-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 4px 0 2px;
+    }
+    .pdf-kpi-formula {
+      font-size: 8.5px;
+      color: #475569;
+      font-family: monospace;
+    }
+    .pdf-kpi-meta {
+      font-size: 8px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .pdf-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .pdf-chart-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #ffffff;
+      break-inside: avoid;
+    }
+    .pdf-chart-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .pdf-chart-subtitle {
+      font-size: 9px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .pdf-chart-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5px;
+    }
+    .pdf-chart-table th {
+      background: #f1f5f9;
+      padding: 5px 6px;
+      font-weight: 700;
+      text-align: left;
+      border-bottom: 1px solid #cbd5e1;
+      font-size: 9px;
+      color: #334155;
+    }
+    .pdf-chart-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .bar-container {
+      width: 100%;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #0284c7;
+      border-radius: 4px;
+    }
+    .num-cell {
+      text-align: right;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .footer-note {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 6px;
+      font-size: 8px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+    .brief-bullets {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .brief-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #f8fafc;
+    }
+    .brief-title { font-weight: 700; color: #0369a1; font-size: 10px; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+  <!-- PAGE 1: EXECUTIVE BRIEF & AUDITED METRICS -->
+  <div class="page">
+    <header>
+      <div class="report-title">Dataset Intelligence &amp; Operational Analysis</div>
+      <div class="provenance-bar">
+        <span class="pdf-badge">Classification: Universal Dataset Intelligence &amp; Distribution Analysis (0.0%)</span>
+        <span class="pdf-badge">Profiling Conf: 90.0%</span>
+        <span class="pdf-badge">Records: 400</span>
+        <span class="pdf-badge">Source Hash: 4f480840</span>
+        <span class="pdf-badge">Parity Status: VERIFIED</span>
+      </div>
+    </header>
+
+    <div class="section-title">1. Executive Performance Scorecard</div>
+    <div class="pdf-kpi-grid">
+      
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Total Records Volume</div>
+          <div class="pdf-kpi-value">400</div>
+          <div class="pdf-kpi-formula">COUNTROWS</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Unique Entities (SKU_Code)</div>
+          <div class="pdf-kpi-value">400</div>
+          <div class="pdf-kpi-formula">COUNTDISTINCT(SKU_Code)</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Mean Unit_Cost</div>
+          <div class="pdf-kpi-value">54.73</div>
+          <div class="pdf-kpi-formula">AVERAGE(Unit_Cost)</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Median Unit_Cost</div>
+          <div class="pdf-kpi-value">54.50</div>
+          <div class="pdf-kpi-formula">MEDIAN(Unit_Cost)</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Min Unit_Cost</div>
+          <div class="pdf-kpi-value">12.50</div>
+          <div class="pdf-kpi-formula">MIN(Unit_Cost)</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+
+        <div class="pdf-kpi-card">
+          <div class="pdf-kpi-label">Max Unit_Cost</div>
+          <div class="pdf-kpi-value">96.50</div>
+          <div class="pdf-kpi-formula">MAX(Unit_Cost)</div>
+          <div class="pdf-kpi-meta">Exclusions: 0 rows omitted</div>
+        </div>
+    </div>
+
+    <div class="section-title">2. Management Decision Brief</div>
+    <div class="brief-bullets">
+      
+        <div class="brief-card">
+          <div class="brief-title">Ingestion &amp; Data Quality Profile</div>
+          <div style="font-size: 9.5px; color: #334155;">Audited 400 source rows across 8 columns with 100.0% full record completeness. Detected 0 duplicate records in source data.</div>
+        </div>
+      
+
+        <div class="brief-card">
+          <div class="brief-title">Total Records Volume Benchmark</div>
+          <div style="font-size: 9.5px; color: #334155;">Total Records Volume stands at 400 calculated via COUNTROWS. Supporting benchmark Mean Unit_Cost stands at 54.73.</div>
+        </div>
+      
+
+        <div class="brief-card">
+          <div class="brief-title">Cohort Concentration (Product_Category)</div>
+          <div style="font-size: 9.5px; color: #334155;">Largest volume resides in &#39;Hardware&#39; with 59.5 (18.1% of cohort total). Lead cohort exceeds &#39;Raw Metals&#39; by 1.2x.</div>
+        </div>
+      
+
+        <div class="brief-card">
+          <div class="brief-title">Unique Entities (SKU_Code) Distribution</div>
+          <div style="font-size: 9.5px; color: #334155;">Observed Unique Entities (SKU_Code) of 400. Denominator rules and null exclusions applied deterministically.</div>
+        </div>
+      
+    </div>
+
+    <div class="section-title">3. Dataset Integrity & Coverage Profile</div>
+    <div style="padding: 10px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 9.5px; color: #065f46; margin-bottom: 12px;">
+      <strong>Audited Records:</strong> 400 | 
+      <strong>Fully Populated:</strong> 400 (100.0%) | 
+      <strong>Duplicates:</strong> 0 | 
+      <strong>Data Locality:</strong> 100% In-Browser Memory (Zero-AI, Zero-Telemetry)
+    </div>
+
+    <div class="footer-note">
+      <span>Page 1 of 3 — Executive Performance Scorecard & Management Brief</span>
+      <span>Three-Way Parity Guaranteed: Source Math == V8 JS == DuckDB-Wasm</span>
+    </div>
+  </div>
+
+  <!-- PAGE 2: VISUAL DISTRIBUTIONS & OPERATIONAL ACTION QUEUE -->
+  <div class="page">
+    <header>
+      <div class="report-title">Dataset Intelligence &amp; Operational Analysis (Continued)</div>
+      <div class="provenance-bar">
+        <span>Section: Visual Cohort Distributions & Operational Action Queue</span>
+      </div>
+    </header>
+
+    <div class="section-title">4. Visual Distribution Vectors & Analytical Trajectories</div>
+    <div class="pdf-charts-grid">
+      
+        <div class="pdf-chart-block">
+          <div class="pdf-chart-title">Distribution by Product_Category</div>
+          <div class="pdf-chart-subtitle">Product_Category vs Mean Unit_Cost (Cohort Share)</div>
+          
+          <table class="pdf-chart-table">
+            <thead>
+              <tr>
+                <th>Product_Category</th>
+                <th>Vector</th>
+                <th style="text-align: right;">Volume</th>
+                <th style="text-align: right;">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Hardware</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">59.5</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">18.1%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Fasteners</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 96%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">56.918</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">17.3%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Electronics</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 92%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">55.037</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">16.8%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Packaging</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 89%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">53.157</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">16.2%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Hydraulics</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 88%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">52.5</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">16.0%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Raw Metals</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 86%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">51.276</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">15.6%</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pdf-chart-block">
+          <div class="pdf-chart-title">Volume by Warehouse_Site</div>
+          <div class="pdf-chart-subtitle">Warehouse_Site vs Volume (Cohort Share)</div>
+          
+          <table class="pdf-chart-table">
+            <thead>
+              <tr>
+                <th>Warehouse_Site</th>
+                <th>Vector</th>
+                <th style="text-align: right;">Volume</th>
+                <th style="text-align: right;">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            <tr>
+              <td class="cohort-label" style="width: 32%;">WH-South</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">80</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">20.0%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">WH-East</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">80</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">20.0%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">WH-West</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">80</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">20.0%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">Central-Depot</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">80</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">20.0%</td>
+            </tr>
+
+            <tr>
+              <td class="cohort-label" style="width: 32%;">WH-North</td>
+              <td style="width: 48%;">
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td class="num-cell" style="width: 12%;">80</td>
+              <td class="num-cell" style="width: 8%; color: #64748b;">20.0%</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+    
+
+    <div class="footer-note">
+      <span>Page 2 of 3 — Visual Cohort Distributions & Action Queue</span>
+      <span>NexusBI Universal Deterministic Analytical Platform v9.0</span>
+    </div>
+  </div>
+
+  <!-- PAGE 3: METHODOLOGY & METRIC DICTIONARY -->
+  <div class="page last">
+    <header>
+      <div class="report-title">Dataset Intelligence & Operational Analysis (Continued)</div>
+      <div class="provenance-bar">
+        <span>Section: Methodological Governance & Complete Metric Dictionary</span>
+      </div>
+    </header>
+
+    <div class="section-title">6. Methodological Policy & Additivity Standards</div>
+    <table class="pdf-chart-table" style="margin-bottom: 16px;">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Policy Identifier</th>
+          <th style="width: 75%;">Methodological Governance & Additivity Standards</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #1</td>
+            <td>All analytical aggregations are computed locally in-browser using full-precision raw IEEE 754 float values.</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #2</td>
+            <td>No intermediate rounded values are ever re-aggregated across groups, metrics, or export layers.</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #3</td>
+            <td>Non-additive metrics (ratings, GPA, percentages, unit prices) are aggregated via weighted or arithmetic mean/median only; summation is strictly forbidden.</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #4</td>
+            <td>Semi-additive metrics (stock on hand, account balances) are point-in-time state indicators and must not be aggregated over time dimensions.</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #5</td>
+            <td>Missing, null, or empty string values are excluded on a per-metric basis without corrupting adjacent columns.</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-weight: 700; color: #0284c7;">Standard #6</td>
+            <td>Zero AI hallucination guarantee: 100% deterministic code compilation with verified three-way engine parity.</td>
+          </tr>
+        
+      </tbody>
+    </table>
+
+    <div class="section-title">7. Canonical Metric Dictionary & Calculation Formulas</div>
+    <table class="pdf-chart-table">
+      <thead>
+        <tr>
+          <th>Metric ID</th>
+          <th>Label</th>
+          <th>Calculation Formula</th>
+          <th>Denominator Constraint</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">total_records</td>
+            <td style="font-weight: 600;">Total Records Volume</td>
+            <td style="font-family: monospace; font-size: 8.5px;">COUNTROWS</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">unique_entities_count</td>
+            <td style="font-weight: 600;">Unique Entities (SKU_Code)</td>
+            <td style="font-family: monospace; font-size: 8.5px;">COUNTDISTINCT(SKU_Code)</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">primary_measure_average</td>
+            <td style="font-weight: 600;">Mean Unit_Cost</td>
+            <td style="font-family: monospace; font-size: 8.5px;">AVERAGE(Unit_Cost)</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">primary_measure_median</td>
+            <td style="font-weight: 600;">Median Unit_Cost</td>
+            <td style="font-family: monospace; font-size: 8.5px;">MEDIAN(Unit_Cost)</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">primary_measure_min</td>
+            <td style="font-weight: 600;">Min Unit_Cost</td>
+            <td style="font-family: monospace; font-size: 8.5px;">MIN(Unit_Cost)</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+
+          <tr>
+            <td style="font-family: monospace; color: #0284c7;">primary_measure_max</td>
+            <td style="font-weight: 600;">Max Unit_Cost</td>
+            <td style="font-family: monospace; font-size: 8.5px;">MAX(Unit_Cost)</td>
+            <td style="font-size: 8.5px; color: #64748b;">N/A</td>
+          </tr>
+        
+      </tbody>
+    </table>
+
+    <div class="footer-note">
+      <span>Page 3 of 3 — Methodological Governance & Complete Metric Dictionary</span>
+      <span>Three-Way Parity Guaranteed • Zero External Telemetry</span>
+    </div>
+  </div>
+</body>
+</html>

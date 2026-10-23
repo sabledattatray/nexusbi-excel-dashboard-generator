@@ -1,0 +1,1881 @@
+===============================================================================================
+MASTER PRD v8.0 — CRITICAL XLSX ACCURACY, TIMESTAMP FIDELITY & EXPORT VALIDATION HOTFIX
+===============================================================================================
+Product: excel.dattasable.com
+Date: 23 October 2026
+Audience: Codex / Antigravity / engineering / QA
+Status: REQUESTED IMPLEMENTATION SPECIFICATION, not evidence of completed fixes.
+Scope: Correct defects in the NEW IT Service Desk Operations XLSX, then continue the complete
+Julius-Plus zero-AI, browser-only universal dashboard platform from v7.0.
+
+HOW TO USE THIS DOCUMENT
+- Read this v8 correction first; then read the COMPLETE v7 specification preserved below.
+- This v8 correction supersedes conflicting v7/v6/v5 clauses. All non-conflicting requirements
+  remain binding. Older optional-AI provisions are OVERRIDDEN: zero AI, zero remote dataset processing.
+- Do not replace the current product or its 32 templates. Audit the actual repository and identify
+  exact defective functions before coding. Preserve working features, sales regression, privacy.
+- Do not deploy, buy services, change databases or make irreversible migrations without approval.
+- Do not hardcode reference figures in production logic; fixture figures are ONLY for tests.
+
+===============================================================================================
+A. NEW WORKBOOK: OBSERVED DEFECTS AND CONFIDENCE BOUNDARIES
+===============================================================================================
+Observed artifact:
+ Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test_Upload_IT_Service_Desk_Operations_Dashboard_2026.xlsx
+Reference fixture:
+ Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test.csv
+Independent reference:
+ Helpdesk_Operations_8000_Validation_Reference.json
+
+Prior inspection findings to REPRODUCE and VERIFY against current source:
+ A01 PASS/PROGRESS: IT Service Desk domain detected; previous fake Sales/Product/Revenue pages
+     were replaced with operational worksheets. Six relevant sheets and three Excel chart objects
+     were reported. Do not regress domain detection or chart creation.
+ A02 P0: Dashboard displays SLA compliance 26.75%, but reference is 2925/6199 = 47.185%.
+ A03 P0: Dashboard displays mean resolution 67.52 hours, but reference ~55.6082 hours.
+ A04 P0: Source Logged On timestamps may be truncated to whole Excel day serials in the
+     exported ledger. Fixture HD-000001 was reported Logged On 12:35 and Finished At 16:35;
+     expected elapsed duration is 4.00 hours, not ~16.58 hours. Reinspect raw source row
+     and XLSX cell types/serials to confirm and document exact evidence.
+ A05 P0: Earlier OOXML/cached-cell inspection reported 3,602 #VALUE! cells, concentrated
+     in duration and SLA derived columns. Verify exact count and locations on current artifact.
+ A06 P0: Derived formulas were reported on initial rows but not consistently on later rows;
+     cached/static values may coexist with formulas. Verify row-by-row, and fix formula fill.
+ A07 P0: Audit worksheet reportedly lists correct expected KPI values even while the
+     dashboard displays wrong values. Audit is NOT evidence of reconciliation unless it
+     independently reads and checks the actual exported dashboard/ledger output.
+ A08 NOT YET VERIFIED: Resolver Group / Service Site filter interactions, Excel desktop
+     recalc, chart source ranges and visual layout. Do not mark PASS without tests.
+ A09 Confirmed correct/previously reported: 8,000 total, 6,199 completed, 415 reopened,
+     4,508 rating responses, rating ~2.96. Revalidate them as part of full test run.
+
+Treat A02-A07 as P0 defects requiring reproduction, root-cause analysis and regression tests.
+The previous inspection did NOT establish the exact code root cause, so do not assume only
+one parser or writer function is responsible. Fix the pipeline end to end.
+
+===============================================================================================
+B. NON-NEGOTIABLE RELEASE GATES
+===============================================================================================
+ B01. Never display a KPI marked VERIFIED if any critical source->engine->export value differs.
+ B02. Preserve exact source timestamps including hours, minutes, seconds, milliseconds when
+      available; preserve original text/precision alongside typed normalized representation.
+ B03. 0 uncaught Excel errors in derived KPI/formula ranges: #VALUE!, #REF!, #DIV/0!,
+      #NAME?, #NUM!, #N/A, #NULL!, and corrupted formula/cache states. Legitimate missing
+      business values are blank/N/A with explicit semantics, never Excel error leakage.
+ B04. Every derived row has a valid formula OR explicitly documented static materialization;
+      no accidental formula-only-first-row behavior.
+ B05. Exported dashboard, detail sheets, audit, chart caches and reference engine reconcile
+      at full precision, allowing documented floating point tolerance.
+ B06. Reopened denominator and SLA denominator must be explicit in labels/tooltips.
+ B07. No synthetic money, sales, product or customer financial KPIs for Helpdesk.
+ B08. Unknown schemas get generic truthful dashboard or user confirmation, never forced sales.
+ B09. Do not claim "FULL RECALC SAFE" until Excel desktop has recalculated the workbook and
+      saved/reopened with correct results. OOXML checks alone are insufficient.
+ B10. All computations remain in browser; exports generated locally; no AI, no cloud data API.
+
+===============================================================================================
+C. TIMESTAMP LOSSLESS PIPELINE — DETAILED ENGINEERING REQUIREMENTS
+===============================================================================================
+ C01. Inventory data flow: CSV raw bytes -> delimiter/encoding parser -> typed values ->
+      semantic mapping -> duration engine -> ReportSpec -> XLSX serialization -> formulas/
+      cached results -> Excel recalculation -> charts -> audit. Log LOCAL redacted diagnostic
+      trace at every boundary (field ID, row ID, type, timezone, precision, serialized value).
+ C02. CSV parser must not convert datetime to date-only; recognize ISO 8601 date and datetime,
+      timezone offsets, fractional seconds and quoted values. Preserve raw string verbatim.
+ C03. Date-only and datetime are distinct types. Never call startOfDay(), floor(serial),
+      toDateString(), date-only formatter, integer conversion, or Math.trunc() on timestamps
+      used in durations. Date-only is allowed for calendar grouping AFTER metric computation.
+ C04. Keep typed time as epoch milliseconds/microseconds where unambiguous, or an explicit
+      timezone-naive local datetime structure when source timezone unspecified. Do not
+      silently convert naive local timestamps to UTC or browser timezone.
+ C05. Detect DST gaps/overlaps and timezone ambiguity; request user confirmation where
+      elapsed time would change. For the fixture, use consistent naive elapsed calendar-time
+      arithmetic if no timezone exists, disclose that policy.
+ C06. XLSX uses numeric date-time serial with FRACTIONAL DAY: serial = date component +
+      (hour*3600 + minute*60 + second + fractionalSecond)/86400. Retain precision at least
+      to seconds (milliseconds where source has them). Format `yyyy-mm-dd hh:mm:ss` or a
+      locale-appropriate equivalent; display formatting alone must NOT mask lost serials.
+ C07. Respect 1900 vs 1904 workbook epoch; handle Excel's 1900 leap-year compatibility
+      without off-by-one mistakes. Ensure round-trip conversion is tested for both epochs.
+ C08. Formula duration for valid completed row: (FinishSerial - StartSerial)*24 hours.
+      Native JS duration: (finishMs-startMs)/3_600_000. The two must agree within tolerance.
+ C09. Status and date validity: completed = terminal status AND valid completion timestamp.
+      If terminal status conflicts with missing/invalid finish date, flag and exclude from
+      duration/SLA denominator pending user confirmation; never silently treat as zero.
+ C10. SLA met iff valid completed duration <= SLA Limit (hrs), with explicit equality case.
+      SLA breach iff > limit. Exclude invalid durations and invalid limits with counts.
+ C11. Guard negative, nonfinite, overflow and mixed-unit durations. Detect duration expressed
+      as Excel day fraction vs hour count; never double-multiply or double-divide by 24.
+ C12. Preserve timezone and as-of assumptions in report metadata and every export.
+ C13. Test round trips with midnight, same-day, cross-day, month-end, leap day, 1900/1904,
+      seconds, fractions, blank end, invalid input, negative duration, 0-hour completion,
+      DST ambiguity, locale ambiguity and thousands of heterogeneous rows.
+ C14. Golden case HD-000001: compare source values with normalized values, XLSX serials,
+      rendered text, formula, cached value, engine duration and Excel recalculated duration.
+      Expected 4.00 hours if source timestamps match observed example. Log a failed assertion
+      on any mismatch, with no data leaked to remote telemetry.
+
+===============================================================================================
+D. EXCEL FORMULA FILL, TYPES, CACHES AND INTEROPERABILITY
+===============================================================================================
+ D01. Choose ONE tested strategy per derived column:
+      (a) structured Excel Table calculated column, correctly filled through all data rows;
+      (b) explicit per-row formulas with correctly adjusted relative references;
+      (c) static precomputed typed values with formula definition/provenance and NO false
+          promise of live Excel recalculation. Mixed strategies require deliberate metadata.
+ D02. Never write formula only in row 2 and assume Excel/library autofill will occur.
+      Verify each eligible row's formula or materialized value after workbook export.
+ D03. Use real Excel numeric date-time cells (fractional serials) for computations; no
+      text-to-date implicit coercion or locale-dependent DATEVALUE parsing in formulas.
+ D04. Example formula logic (adjust to actual safe table references):
+      =IF(OR([@[Logged On]]="",[@[Finished At]]=""),"",([@[Finished At]]-[@[Logged On]])*24)
+      =IF([@ResolutionHours]="","",IF([@ResolutionHours]<=[@[SLA Limit (hrs)]],1,0))
+      BUT include terminal-status validation and invalid-date guards; these examples are
+      not complete business definitions or a substitute for typed canonical engine.
+ D05. Formulas must use correct separators/function names for XLSX interoperability,
+      preserve relative/absolute references, and avoid implicit intersection mistakes.
+ D06. Scan worksheet XML for `<f>`, `<v>`, cell `t`, styles and shared/array formulas;
+      count formulas by derived column and expected eligible rows; verify shared formula
+      anchors and range boundaries. Inspect actual values, not only XML string presence.
+ D07. Detect Excel errors in BOTH cached values and formula evaluation. Zero error target
+      for supported data. Do not suppress #VALUE! by replacing it with invented 0.
+ D08. Ensure chart series point to valid dynamic table/ranges and cached chart values agree
+      with canonical aggregates; chart totals reconcile to their source population.
+ D09. Recalculate and verify in actual Microsoft Excel desktop when available; test
+      reopening saved file and changing a source value. Check automatic recalc settings,
+      cached values and formulas after save. LibreOffice may be supplemental but not proof
+      of Microsoft Excel parity.
+ D10. When Excel execution unavailable, report "Excel desktop recalc NOT_TESTED"; OOXML
+      inspection is not sufficient to label "recalc safe".
+ D11. Prevent formulas in original untrusted CSV text from executing (CSV injection).
+      Preserve source values and escape safely when writing cells.
+ D12. Ensure row count 8,000 plus headers; no silent truncation, no extra fabricated rows,
+      no source mutation. Preserve original 12 fields separately from derived fields.
+ D13. Scan all sheets, all used ranges, all charts and defined names for #VALUE!, #REF!,
+      broken external links, stale ranges, inappropriate domain labels and inconsistent KPIs.
+ D14. Numeric precision: preserve double or decimal precision in canonical metrics;
+      present 47.19% only after computing exact 2925/6199. Avoid integer truncation.
+ D15. Export should be atomic: validate in memory before enabling verified download.
+      If blocked, offer clearly labeled DRAFT with explanation, never false PASS.
+
+===============================================================================================
+E. INDEPENDENT AUDIT MUST CHECK ACTUAL OUTPUT, NOT EXPECTED CONSTANTS
+===============================================================================================
+ E01. Distinguish reference expected values (fixture-only), actual engine results,
+      actual workbook cached/formula results, actual dashboard KPI cells, actual chart
+      series, and actual exported PDF/HTML displayed values.
+ E02. Auditor MUST read exported workbook with independent OOXML reader, reconstruct
+      cell values and formulas and compare with independently parsed CSV reference.
+ E03. Audit may not report PASS by copying values from fixture JSON or original ReportSpec
+      without verifying what was written into exported artifact.
+ E04. Required audit table columns: metric ID, label, source numerator, source denominator,
+      expected value, engine value, workbook KPI value, ledger-derived value,
+      chart cache value (if applicable), delta, tolerance, evidence ID, test run time,
+      status PASS/FAIL/NOT_RUN/NOT_APPLICABLE and explanation.
+ E05. SLA compliance test must fail when workbook shows 26.75% vs 47.185%, even if audit
+      displays 47.185%. Resolution mean must fail at 67.52h vs 55.6082h.
+ E06. Recompute from SOURCE rows using separate algorithm/library or independently
+      implemented reference logic, not the same metric helper as production.
+ E07. Row invariants: 6199+1801=8000; 2925+3274=6199 for valid completed SLA cohort;
+      resolver group totals sum to 8000; intake channel totals sum to 8000.
+ E08. Check source timestamp preservation on every row with a non-midnight time; quantify
+      how many times changed, maximum delta seconds, and impact on duration/SLA.
+ E09. Check formula coverage: expected derived rows, formula-bearing rows, intentionally
+      materialized rows, missing formulas, error cells; provide exact per-column counts.
+ E10. Check audit self-consistency: if any P0 KPI fails, overall workbook status FAILED,
+      never VERIFIED, 100% RECONCILED or SEALED & AUDITED.
+ E11. Filter changes invalidate or recompute metric/chart/insight/audit evidence; no
+      stale audit certification after changing input, mapping, filter or formula.
+ E12. Export JSON evidence locally with source hash, renderer version, check IDs, values,
+      failed cell references, warnings and timestamp; omit raw personal data by default.
+ E13. Distinguish P0 blocking errors from P1 design imperfections and NOT_TESTED behavior.
+ E14. Only claim zero network leakage after a browser network-capture test of import,
+      filtering, all three exports and errors; no sensitive values in logs.
+
+===============================================================================================
+F. EXACT HELPDESK ACCEPTANCE MATRIX — GOLDEN FIXTURE
+===============================================================================================
+ Dataset: 8,000 source records / 12 source fields.
+ Total tickets: 8000
+ Completed: 6199
+ Open/unresolved: 1801
+ SLA met (completed valid): 2925
+ SLA breached (completed valid): 3274
+ SLA compliance: 2925/6199 = 0.4718502984352315 (47.1850298435%; display 47.19%)
+ Mean resolution: approx 55.6082 elapsed hours (display 55.61 h)
+ Reopened flagged: 415
+ Reopened / all: 415/8000 = 5.1875% (display 5.2%)
+ Rating responses: 4508
+ Average rating: approx 2.9627 / 5 (display 2.96)
+ Distinct ticket IDs: 8000
+
+ IMPORTANT: Use reference JSON/CSV as authority for full-precision values and distributions;
+ values shown rounded here are not an excuse to weaken tolerance. Test source row HD-000001
+ against CSV before asserting its times and expected 4.00-hour duration.
+
+ Minimum 20 acceptance checks for this specific failure:
+ H01: CSV parse preserves non-midnight times; H02: XLSX date serial retains fractions;
+ H03: date formats show full timestamps; H04: round-trip timestamps match within 1 sec;
+ H05: fixture HD-000001 duration matches; H06: 6199 valid completed durations;
+ H07: SLA met 2925; H08: breached 3274; H09: 47.185% compliance;
+ H10: 55.6082h mean; H11: 8000 source rows; H12: all 12 original fields retained;
+ H13: zero #VALUE! in all used sheets; H14: zero other Excel error cells;
+ H15: formula coverage for all eligible rows; H16: dashboard and audit same values;
+ H17: chart caches reconcile; H18: source/ledger/audit reconciled;
+ H19: no sales/margin/SKU sheets; H20: Excel desktop recalculation verified OR marked
+ NOT_TESTED (in which case do not claim FULL RECALC SAFE).
+
+===============================================================================================
+G. UNIVERSAL REGRESSION AND 3-EXPORT PARITY
+===============================================================================================
+ G01. Do not solve Helpdesk by hardcoding names, dates, row counts, KPI values or column
+      offsets. Rename and reorder source columns, add extra fields and test mappings.
+ G02. Sales 6k regression: quantity 17,966; Net Sales INR 339,830,586.55;
+      COGS INR 267,920,146.50; gross profit INR 71,910,440.05; margin 21.16%.
+ G03. Test HR, inventory, surveys, education, generic X17/V_2 fields and multi-table
+      XLSX. Unsupported semantics must lead to user confirmation or neutral summaries.
+ G04. The exact same canonical metric result/denominator must appear in browser UI,
+      Excel, PDF and offline HTML. Format-specific rounding is presentation-only.
+ G05. Excel: editable where supported, native charts and formula coverage tested;
+      PDF: crisp readable pagination, static snapshot clearly labeled;
+      HTML: self-contained interactive offline report, zero CDN/network requests.
+ G06. Filters: confirm team/site/date/priority selection changes every KPI, chart,
+      scorecard, insight, action queue and exported filtered dataset consistently.
+ G07. Distinguish calendar-time SLA vs business-hours SLA; don't assert overdue backlog
+      without confirmed as-of date and pause policy.
+ G08. Performance goal: 8k Helpdesk browser dashboard <=10s, each export ideally <=20s
+      on reference device, only after accuracy and validation gates pass. Report measured
+      p50/p95; never guarantee on all devices.
+ G09. Retain 32 presentation templates as optional layouts, never domain assumptions.
+ G10. No AI, no hosted LLM, no remote file processing, no telemetry of source data.
+
+===============================================================================================
+H. CODING PLAN / REQUIRED DELIVERABLES / DEFINITION OF DONE
+===============================================================================================
+ PHASE 0: Reproduce exact new workbook failures and document source cells, XML paths,
+          dashboard addresses, derived column counts and test evidence. Do not guess.
+ PHASE 1: Fix parser/typed date-time and XLSX fractional serial writer. Add golden tests.
+ PHASE 2: Fix duration/SLA formula propagation and cached values across ALL eligible rows.
+ PHASE 3: Correct canonical KPI aggregation, dashboard values, chart ranges and audit.
+ PHASE 4: Implement independent post-export verification and block false certification.
+ PHASE 5: Run Helpdesk and Sales regression plus renamed/unknown-field tests.
+ PHASE 6: Verify filters and Excel/PDF/HTML parity, privacy and offline operation.
+ PHASE 7: Document performance, residual limitations and obtain owner approval to deploy.
+
+ CODING DELIVERABLES:
+ - Root cause report (repro steps, affected modules, source line references, evidence).
+ - Minimal backward-compatible code patch with typed timestamp and formula handling.
+ - Independent golden fixture tests and OOXML post-export validator.
+ - Before/after report with every acceptance check PASS/FAIL/NOT_TESTED.
+ - Actual exported sample workbook, PDF, HTML and local audit JSON for review.
+ - Changelog, rollback plan and list of unverified external Excel behaviors.
+
+ DEFINITION OF DONE:
+ [ ] No loss of hour/minute/second information in normalized or exported timestamps.
+ [ ] All supported derived columns computed correctly on all eligible rows.
+ [ ] No #VALUE! or other Excel formula errors in supported generated ranges.
+ [ ] SLA compliance and mean resolution match independent source fixture.
+ [ ] Workbook dashboard, ledger, audit and chart values reconcile.
+ [ ] Audit refuses VERIFIED when output is wrong or untested.
+ [ ] Excel desktop recalc explicitly tested or honestly marked NOT_TESTED.
+ [ ] Browser, Excel, PDF, HTML share same verified metric semantics.
+ [ ] Sales, generic data and existing 32 templates remain working.
+ [ ] Zero AI/cloud dataset processing and zero data leakage verified by network test.
+
+===============================================================================================
+COMPLETE PRESERVED PRD v7.0 FOLLOWS — APPLY v8 PRIORITY WHERE REQUIREMENTS CONFLICT
+===============================================================================================
+
+
+==============================================================================================
+MASTER PRD v7.0 — JULIUS-PLUS, ZERO-AI, BROWSER-ONLY UNIVERSAL DASHBOARD PLATFORM
+==============================================================================================
+Product: excel.dattasable.com
+Date: 23 October 2026
+Audience: Codex, Antigravity, technical lead, QA, product owner
+Priority: P0 critical semantic correctness, P1 three exporters and premium dashboard, P2 advanced UX.
+Status: Implementation specification; NO features are claimed as already delivered.
+
+MISSION
+Transform arbitrary SUPPORTED structured tabular data into a reliable, aesthetically premium,
+interactive business intelligence report in the user's browser; export consistent Excel (.xlsx),
+PDF (.pdf) and portable HTML (.html). No generative AI, hosted inference, LLMs, API tokens,
+cloud dataset processing or telemetry of data contents. The user should understand what each
+metric means, where it came from, and what assumptions were made.
+
+MANDATORY EXISTING-PRODUCT CONSTRAINTS
+- EXTEND the existing codebase; preserve routes, auth if present, styles, working features,
+  and 32 existing templates as OPTIONAL presentation presets, never forced domain logic.
+- Do not replace existing framework, backend, hosting, database or working export flows unless
+  demonstrably necessary and approved by owner.
+- Detect existing technology from repository; don't assume library APIs or silently migrate.
+- Existing production URLs and contracts must not break; use versioned adapters.
+- Default to local-first; do not send file contents, derived values, names, metadata or report
+  previews to server endpoints, analytics, logs, crash reporters, AI services or CDNs.
+- The site's initial HTML/CSS/JS may be delivered from hosting; "local processing" means that
+  the dataset remains inside the browser. "Offline capable" is a separate acceptance criterion.
+- User permission is required for optional local persistence, download and any external share.
+
+COMPETITIVE TARGET
+Match the usefulness and information architecture of the provided one-page Julius Helpdesk
+Operations Dashboard, then exceed it with semantic confidence, multi-domain universality,
+editable native Excel, print-quality PDF, portable interactive HTML, complete audit trail,
+editable visual layout, accessibility, privacy assurance, deterministic insight/action rules,
+and one canonical metric definition for all three formats.
+
+NON-GOALS
+- Claiming to infer arbitrary unknown business meanings without ambiguity.
+- Creating financial metrics when fields are absent; predicting targets or making up benchmarks.
+- Claiming to be faster, more accurate, or more private than named competitors without tests.
+- Cloning Julius proprietary interface/assets, copying branding, or reproducing its code.
+- Supporting non-tabular PDF/image/audio as source datasets in the initial release.
+- Making a web dashboard screenshot the only Excel deliverable.
+
+
+==============================================================================================
+01. JULIUS REFERENCE: WHAT THE USER-SUPPLIED PDF ACTUALLY SHOWS
+==============================================================================================
+Source: Helpdesk_Operations_Dashboard.pdf, page 1 (user-provided). These are benchmark
+observations, NOT evidence of how Julius implemented its internals.
+- Title: "Helpdesk performance dashboard"; 8,000 tickets, six service sites, five teams.
+- Context bar: intake period 2025-01-01 to 2026-09-23; reference snapshot 2026-09-29
+  19:23 (timezone unspecified); filters for dates, priority, resolver group, service site,
+  intake channel; reset; visible selection count.
+- Executive KPI row: total tickets 8,000; open backlog 1,801; completed SLA met 47.2%;
+  median resolution 42.7 hours; customer rating 2.96/5; reopen rate 5.2%.
+- Supporting facts: completed 6,199; SLA breaches 3,274; mean resolution 55.6 hours;
+  ratings responses 4,508; reopened flag count 415.
+- Sections: intake/completions trend, SLA by priority, backlog age profile, open workload by
+  resolver group, rating distribution, channel mix, three-item decision brief, team scorecard,
+  priority action queue with CSV export, definitions/assumptions/data-quality section.
+- Notable labels: "Completed = Resolved + Closed", calendar-time SLA, selected intake cohort,
+  ratings exclude missing, response bias caveat, comparison not adjusted for staffing/complexity.
+- The PDF depicts an HTML-style interactive layout but a PDF alone DOES NOT prove filters work,
+  local/offline execution works, or exports are available. Verify those separately.
+- Julius reports 1,801 overdue open tickets and 1,573 older than 90 days at an inferred snapshot.
+  This depends on the as-of timestamp and pause-calendar SLA assumptions; MUST NOT become a
+  default assertion for other data. Inferred snapshot date must be disclosed and confirmable.
+
+JULIUS-PLUS DELTAS (ALL REQUIRED FOR TARGET QUALITY)
+A. Explainable semantic mapping, confidence, alternate interpretations, user confirmation.
+B. No-AI rule-based management insight generator with numerical evidence links.
+C. All three output types generated from identical immutable report model.
+D. Formula lineage, metric denominators, time grain and validation statuses visible.
+E. Fully responsive, keyboard-accessible, themeable, printable UI.
+F. Cross-filter interactions, drill-down, saved local views, undo/reset, export current view.
+G. Stronger data-quality center: missingness, duplicates, schema drift, ambiguous dates,
+   nonfinite numbers, outliers, mismatched currencies/units and join-fanout hazards.
+H. A configurable action queue and thresholds, never made-up targets or risk scoring.
+I. Offline-safe single-file HTML with embedded data/assets and CSP-aware security.
+J. Excel-native charts/tables where feasible, not merely raster images; parity tests.
+K. Independent cross-export reconciliation and explicit NOT VERIFIED / BLOCKED statuses.
+L. Domain-neutral fallback when no business dictionary applies.
+
+
+==============================================================================================
+02. USER JOURNEYS, SCREEN MAP AND PRODUCT EXPERIENCE
+==============================================================================================
+PRIMARY FLOW
+1. Landing: privacy promise with verifiable details, sample datasets, upload CTA.
+2. Drop CSV/XLSX; local parse with progress, cancellation and limits.
+3. Source inspector: file type, sheet/table selector, row/column count, sample rows,
+   inferred header, type badges, errors, data quality and raw-column preview.
+4. Semantic review: field roles and confidence; user confirms ambiguities; no guess-to-green.
+5. Dashboard planner: proposed KPI cards, sections, charts, calculations and reasons.
+6. Generate: deterministic workers compute canonical aggregates; render premium dashboard.
+7. Explore: date/segment filters, cross-filter, drill-through, metric tooltips, theme/layout.
+8. Validate: audit center, provenance graph, source vs derived reconciliation.
+9. Export: Excel / PDF / standalone HTML; options for full data, filtered view, PII inclusion,
+   formula mode, paper size, theme, local encryption where supported.
+10. Save report definition to local IndexedDB ONLY after explicit consent; allow clear/export.
+
+NAVIGATION
+- Workspace / Data / Field Mapping / Dashboard / Insights / Action Queue / Quality & Audit /
+  Export / Saved Views / Settings.
+- Responsive sticky filter ribbon and quick "Explain metric" side panel.
+- User may edit report title, logo, accent, grid density and section order; edits affect all
+  exports through a shared report specification, not separate ad-hoc copies.
+- First-time tour may be dismissed; no mandatory account to generate a local report.
+
+UX STATES
+Idle, importing, parsing, profiling, mapping-needs-confirmation, computing, rendering,
+ready, partially-supported, validation-failed, export-generating, export-complete, cancelled.
+Progress indicators report real worker events, not fabricated percentages.
+Error messages include affected source column/row count, cause and repair suggestion.
+A safe generic dashboard is preferable to blocking all work when only business semantics
+are uncertain; show confirmed summaries and ask for mapping before domain-specific metrics.
+
+
+==============================================================================================
+03. DATA CONTRACTS AND IMMUTABLE CANONICAL REPORT MODEL
+==============================================================================================
+DEFINE STRONGLY TYPED SCHEMAS; validate at boundaries (e.g. Zod or equivalent):
+SourceManifest {sourceId, fileNameLocalOnly, byteLength, contentHashLocal, parserVersion,
+ sheets[], rowCount, columnCount, importedAt, timeZoneAssumption?, provenanceWarnings[]}
+FieldProfile {fieldId, originalHeader, displayHeader, physicalType, logicalType, nullable,
+ missingCount, uniqueCount, sampleDistinct, min, max, quantiles, semanticCandidates[],
+ units?, currency?, parseErrors[], sourceCoordinates, confidence, ambiguityFlags[]}
+DatasetGraph {tables[], relationships[], joinCardinality, verifiedGrain?, joinRisks[]}
+SemanticRole {fieldId, role, confidence, positiveEvidence[], negativeEvidence[],
+ ruleId, requiresConfirmation, confirmedByUser, confirmedAt?}
+MetricSpec {metricId, title, domain, description, numerator, denominator, populationFilter,
+ nullPolicy, zeroDivisionPolicy, unit, format, aggregation, grain, timeBasis, ruleVersion,
+ requiredRoles[], expressionAST, confidence, provenanceIds[]}
+MetricResult {metricId, value, unit, sampleSize, missingExcluded, denominatorValue,
+ filterFingerprint, evidenceId, status:VERIFIED|PROVISIONAL|BLOCKED|NOT_APPLICABLE}
+ChartSpec {chartId, title, intent, dataQueryAST, chartType, xField, yMetrics[], segmentField?,
+ sort, topN?, missingCategoryPolicy, scalePolicy, annotations[], whyChosen[], warnings[]}
+InsightSpec {insightId, severity, headline, evidenceMetricIds[], comparisonBasis,
+ thresholdSource, conditionsAST, recommendedReview, caveats[], ruleVersion}
+ActionItem {sourceRowIds[], priorityRuleId, rankingScoreComponents[], label, reason,
+ dueAsOf?, statusSourceField?, sourceFieldReferences[], isInferred}
+ReportSpec {version, manifestId, semanticMap, metricSpecs, chartSpecs, filterSpec,
+ dashboardSections, theme, insights, actionQueueSpec, auditSummary, exportOptions}
+ExportManifest {format, reportSpecHash, sourceHash, metricResultHash, filterFingerprint,
+ exportTimestamp, rendererVersion, validationEvidenceIds[], warnings[], outputHash}
+
+HARD RULES
+- Source rows are immutable and indexed by internal row IDs; preserve original column names.
+- ReportSpec is the SINGLE source of truth; all exporters consume the same materialized
+  validated aggregates, not separate business calculations.
+- No string concatenation to execute expressions; use a typed AST and allowlisted functions.
+- Store null/invalid/missing distinctly; never replace blanks with zero by default.
+- Preserve precision internally; round only at presentation boundaries.
+- Track dataset-local timezone assumptions; distinguish naive local dates vs UTC instants.
+- No synthetic values or new columns unless explicitly marked DERIVED with expression lineage.
+
+
+==============================================================================================
+04. IMPORT, PARSING, TYPE PROFILING AND MULTI-TABLE SUPPORT
+==============================================================================================
+P0 formats: CSV (UTF-8 BOM, common encodings with confirmation, quoted delimiters), XLSX.
+P1: TSV, XLS, JSON arrays/JSONL and ODS only if safe, vetted browser parsers available.
+P2: Parquet/Arrow, ZIP batch import after decompression-bomb guard; no silent promise.
+Enforce configured maximum upload size (currently ~50 MB) and independently enforce row,
+column, cell length, workbook sheets, inflated ZIP size, formula, memory and worker-time limits.
+If data exceeds device capability, explain limits; never silently sample for final metrics.
+
+Parsing checks: MIME/signature sniffing; CSV delimiter, line ending, quote and encoding;
+header detection with explicit override; multi-row headers; merged XLSX headers; blank and
+hidden sheets; Excel date serial system 1900/1904; leading zeros in IDs; booleans; locale
+thousands/decimal separators; scientific notation; percentages; currencies; duplicate names;
+formula cached value vs formula expression; error cells; hyperlinks and unsafe strings.
+
+Profiles: type distribution, distinct ratio, min/max, missing, skew, quantiles, date range,
+invalid examples, ID patterns, monotonicity, domain candidate and unit consistency.
+Rows with errors must remain traceable, with optional exclude/repair decisions logged.
+Detect sheet relationships with exact key overlaps and uniqueness; reject ambiguous joins,
+fanout, duplicate dimension keys and many-to-many without aggregation plan.
+No joins are performed just because two columns have similar names.
+
+Browser resource safety: use Web Workers and transferable buffers where practical, chunked
+parsing, streaming aggregation, cancellation via AbortController/worker messages, memory
+budget estimates, safe workbook decompression, guard against prototype pollution and
+formula injection. Data files are untrusted input.
+
+
+==============================================================================================
+05. ZERO-AI SEMANTIC INTELLIGENCE ENGINE
+==============================================================================================
+IMPLEMENT A DETERMINISTIC, VERSIONED RULE ENGINE. NO LLM, EMBEDDINGS, MODEL INFERENCE,
+REMOTE CLASSIFICATION, NETWORK LOOKUPS OR GENERATED BUSINESS FACTS.
+
+A. Normalize labels: Unicode normalization, camel/snake/kebab splitting, punctuation,
+   acronym dictionary, locale aliases and pluralization. Keep original labels unchanged.
+B. Physical/logical types: numeric, integer, decimal, date, datetime, duration, boolean,
+   category, ID, free text, monetary, percentage, geospatial candidate.
+C. Semantic role candidates: ticket_id, created_at, completed_at, status, priority,
+   assignee/team, site, channel, SLA_limit, reopened, rating; order_id, order_date,
+   amount, cost, quantity, unit_price, discount; employee_id, join_date, leave_date;
+   SKU, stock_on_hand, reorder_point; student_id, exam_score, attendance, etc.
+D. Evidence scoring: header tokens, value patterns, cardinality, plausible range, field
+   co-occurrence, business unit, candidate negative evidence and cross-field consistency.
+E. Domain detection is MULTI-LABEL and defeasible: helpdesk, sales, HR, inventory,
+   finance, marketing, education, healthcare operations, logistics, surveys, generic.
+F. Apply domain guards: sales KPI requires real financial role + valid grain and units;
+   helpdesk KPI requires statuses/timestamps/SLA; do not force a default sales template.
+G. Confidence thresholds (configurable): high >=0.90; medium 0.70-0.899;
+   low <0.70. Thresholds are product defaults to validate empirically, not proof of
+   probability calibration. Any ambiguous critical field requires user confirmation.
+H. Resolve conflicts by ranked evidence; if unresolved show mapping dialog, do not invent.
+I. Record user overrides with before/after evidence; propagate recalculation and audit.
+J. Unknown schema => neutral dashboard: row count, missingness, category distributions,
+   numeric distributions, date trend only if confirmed, no fabricated business meaning.
+
+CROSS-DOMAIN EXAMPLES
+- Helpdesk: Case Ref, Logged On, Finished At, Current State, Urgency Band, Resolver Group,
+  Issue Family, Intake Method, Service Site, SLA Limit (hrs), Reopened Flag, Rating.
+- Sales: Order ID, Date, Net Sales, COGS, Profit, Region, Product, Quantity; reject
+  unsupported margin if cost missing.
+- HR: Employee ID, Department, Start Date, Exit Date, Status; headcount requires as-of
+  semantics, not sum of rows when employee history has multiple records.
+- Inventory: SKU, Warehouse, Stock On Hand, Reorder Point, Snapshot Date; do not sum
+  repeated snapshots as current stock.
+- Survey: Response ID, Question, Scale, Response; percentages use eligible denominator.
+- Financial ledger: Account, Debit, Credit, Posting Date, Currency; no currency blending.
+
+Explain mapping UI: "Interpreted 'Finished At' as completion timestamp because values
+parse as dates, occur after 'Logged On', and are blank for open states." Show confidence
+and alternative interpretations. Never claim all domains are perfectly inferable.
+
+
+==============================================================================================
+06. METRIC ENGINE, TIME LOGIC AND FORMULA LIBRARY
+==============================================================================================
+ONE metric registry: typed expression AST, filter context, null handling, unit checks,
+row-grain checks, denominator metadata, date basis, comparison eligibility, precision,
+quality requirements, provenance and deterministic execution.
+
+BASE OPERATIONS
+countRows, countDistinct, sum, avg, weightedAvg, median, percentile, min, max, variance,
+stdDev, countIf, sumIf, ratio, shareOfTotal, runningTotal, movingAverage, delta,
+periodOverPeriod, cohortRetention, durationBetween, ageAsOf, SLAWithinLimit.
+No zero-division: emit N/A with reason. No divide-by-blank. No implicit cross-currency sums.
+
+HELPDESK METRICS FOR FIXTURE (EXACT)
+- Total tickets = COUNT(rows) = 8,000.
+- Completed = count status in {Resolved, Closed} AND valid Finished At = 6,199;
+  verify status/timestamp consistency and surface conflicts.
+- Open = 8,000 - completed = 1,801 for this fixture; generally use explicit status map.
+- Completed resolution hours = (Finished At - Logged On) / 3600, completed valid only.
+- Mean resolution hours = 55.6082 (display 55.61).
+- Median resolution = independently calculate from CSV; Julius displays 42.7h; do not
+  hardcode this value as reference until verified by test computation.
+- Completed SLA met = count completed with duration <= SLA Limit = 2,925.
+- Completed SLA breached = count completed with duration > SLA Limit = 3,274.
+- SLA compliance = 2,925/6,199*100 = 47.185% (display 47.19% or 47.2%).
+- Reopened = 415 flagged. Julius shows 5.2% = 415/8,000; existing reference JSON
+  describes "reopen_rate = sum flag / resolved tickets" (=6.69%). THESE ARE DIFFERENT
+  DEFINITIONS. Never label either generically as "Reopen Rate" without denominator.
+  Offer: "Reopened share of all tickets" 415/8000=5.1875% and "Reopened share of
+  completed tickets" 415/6199≈6.69%, with clear cohort qualification. If flags appear
+  on open tickets, do not imply 415 are completed reopened tickets.
+- Rated responses = 4,508; mean customer rating = 2.9627 / 5 (display 2.96).
+- Rating response rate = 4,508 / eligible completed tickets only if eligibility
+  established; Julius uses 72.7%=4508/6199, but this requires documenting whether
+  open tickets with ratings exist. Validate population before labeling coverage.
+- Backlog age as of reference date requires an EXPLICIT as-of date and timezone.
+  Don't infer from current date or newest row without user-visible confirmation.
+- SLA for OPEN tickets: overdue calendar-time is NOT the same as completed SLA breach;
+  do not assert 100% overdue absent valid snapshot, pause calendar and policy.
+- Trends: intake by Logged On month; completions by Finished At month, clearly note
+  selected intake cohort vs total completed in calendar period.
+
+FORMULA SEMANTICS
+- Duration uses timestamps and timezone handling; negative/invalid durations excluded
+  with error counts; distinguish business hours vs calendar hours.
+- Percentages label numerator, denominator, inclusion/exclusion and date context.
+- Missing rating excluded from average; missing completion time never zero duration.
+- Percentile and median algorithm documented; tie/quantile method consistent everywhere.
+- Financial metrics enforce sign conventions, unit consistency, discounts/tax definitions.
+- Derived columns never overwrite raw source columns.
+- Comparisons (YoY, MoM) require comparable periods, coverage and minimum observations.
+- Avoid meaningless averages of rates; use weighted numerator/denominator aggregation.
+
+
+==============================================================================================
+07. PREMIUM JULIUS-PLUS DASHBOARD COMPOSITION
+==============================================================================================
+LAYOUT: executive visual language, crisp type scale, restrained color palette, high contrast,
+white space, compact readable scorecards, optional dark mode, consistent chart legends.
+
+SECTION A: Context / filters
+- Dataset title, record count, period, as-of date, domain, confidence, report timestamp.
+- Responsive filter bar: date range, categories, groups, sites, priorities, source table.
+- Filter chips, clear all, reset, saved views, URL-independent local view state.
+- Display N selected of total; warn when chart/metric uses different eligible cohort.
+
+SECTION B: Executive KPI strip
+- 4-8 cards chosen by domain and available valid metrics, NOT fixed to six.
+- Value, unit, denominator subtitle, optional change with comparable prior period,
+  tooltip with formula, source, confidence and exclusion counts.
+- Do not show trend arrows when no valid comparator.
+
+SECTION C: Demand & delivery
+- Timeline combo charts (intake/completions), SLA by priority or process stage;
+  show incomplete months and different cohort semantics.
+
+SECTION D: Backlog and risk
+- Age buckets, status distribution, team-by-priority stacked bars, thresholds and
+  caveats; only if dates, statuses and as-of context are valid.
+
+SECTION E: Experience & channels
+- Rating distribution, satisfaction coverage, intake channel mix, missing responses.
+
+SECTION F: Decision brief
+- 3-6 ranked, evidence-linked deterministic insight cards, user-configurable thresholds,
+  "what this means", "what to verify", "suggested next action".
+
+SECTION G: Scorecards
+- Group/site/category table with counts, denominators, medians, quality flags, sort,
+  search, pagination and export; comparisons labeled descriptive, not causal.
+
+SECTION H: Action queue
+- Top N actionable source rows ranked by transparent rules, user-selected priority,
+  open age, breach risk, exceptions; click to inspect original row and evidence.
+
+SECTION I: Data quality and methodology
+- Field mapping, assumptions, missingness, duplicate counts, reconciliation, export
+  evidence, formula dictionary and caveats. Available in all formats.
+
+ADVANCED FEATURES
+- Drill-down and drill-through with breadcrumbs; cross-highlighting; brush-select;
+  chart swapping; annotations; saved local filters; user-built calculated measures using
+  safe AST editor; date grain controls; unit formatting; compact/expanded layouts.
+- Responsive breakpoints; no cut-off legends, charts or table cells in exports.
+- Show "No meaningful chart" when dimensionality or sample size is unsuitable.
+
+
+==============================================================================================
+08. AUTONOMOUS CHART RECOMMENDATION ENGINE
+==============================================================================================
+Select charts based on data shape, semantic role, statistical suitability and audience.
+- Time + metric => line/area; sparse periods => columns; explain missing periods.
+- Category + count => sorted horizontal bar; high cardinality => top N + Other.
+- Category + rate => bar with denominator and optional Wilson confidence interval
+  only when statistically appropriate and correctly implemented.
+- Part-to-whole => donut only for few nonnegative mutually exclusive categories;
+  otherwise bar/treemap. Do not use donut for arbitrary continuous measures.
+- Priority x team => stacked bar or heatmap; warn if color implies misleading ranking.
+- Distribution => histogram, box plot, quantile strip; require enough observations.
+- Numeric x numeric => scatter with outlier handling and sample size note.
+- Cohort => retention matrix only with real cohort IDs/time semantics.
+- Geographical maps only with reliable geocoding and explicit user consent; default to
+  bar charts for site names, never invent coordinates.
+- Choose zero baseline for ordinary bar charts; prevent misleading truncation.
+- Reject unsupported combinations; chart selection must include reason and rejected
+  alternatives. All chart queries reuse canonical aggregates.
+- Target 5-9 meaningful visuals for rich datasets; fewer when data does not support them.
+- Avoid filler visuals; adapt to screen size and export pagination.
+
+
+==============================================================================================
+09. DETERMINISTIC MANAGEMENT INSIGHTS AND ACTION ENGINE
+==============================================================================================
+NO GENERATIVE AI. Insight engine = library of explicit conditions, thresholds,
+comparators, ranking and text templates with bound numeric values.
+
+Insight rule contract:
+{ruleId, version, applicableDomain, requiredMetrics, eligibility, conditionAST,
+ severity, template, evidenceRefs, counterexamples, caveatTemplate, thresholdSource}
+
+EXAMPLES
+- "X of Y completed tickets breached SLA (Z%). Review SLA definitions and routing."
+- "N high-priority tickets remain open as of DATE. Review oldest first."
+- "Ratings are missing for M of E eligible tickets; avoid overgeneralizing the mean."
+- "Team completion rates vary by P percentage points; compare priority mix before
+   attributing cause."
+- "Metric increased X% vs comparable previous period" ONLY if time coverage valid.
+
+RULE SAFETY
+- No unsupported causal claims, guarantees, prescriptive medical/financial advice,
+  invented targets, inferred urgency beyond configured threshold, fabricated sentiment.
+- Every statement links to computed metric IDs and source row populations.
+- Thresholds are tagged USER_CONFIGURED, DOMAIN_DEFAULT_WITH_SOURCE, or NONE;
+  generic arbitrary percentages cannot be marketed as universal standards.
+- Insight priorities: verified risk > data-quality issues > notable changes > descriptive.
+- Deduplicate contradictory or overlapping cards; cap cards; display "no validated
+  insights" when evidence insufficient.
+- Action queue is a filtered/sorted view of actual records; no fictitious tasks.
+- Explain priority score components and ties; allow user adjustment and export.
+
+
+==============================================================================================
+10. INTERACTIVITY, FILTER ENGINE AND PERFORMANCE
+==============================================================================================
+FilterSpec typed expression tree: AND/OR, include/exclude, range, relative date,
+null category, search, numeric threshold. No eval and no arbitrary JS execution.
+- Filter propagation across cards/charts/tables/insights/action queue.
+- Cross-filter selected segment; clearly show selected N and denominator changes.
+- Cache aggregates keyed by source hash + semantic version + filter fingerprint.
+- Avoid re-parsing on filter changes; use typed arrays/indexes/columnar memory as useful.
+- Worker execution for heavy aggregates, percentiles, PDF rendering and XLSX packaging.
+- UI remains responsive; cancellation; yield to browser; memory release on reset.
+- Measure import, profile, map, compute, render, export separately via performance marks
+  kept local and optionally downloadable as diagnostic JSON.
+
+PERFORMANCE TARGETS (GOALS, NOT CURRENT FACTS)
+- 8k x 12 Helpdesk CSV: preview <=2s, core metrics <=5s, interactive dashboard <=10s,
+  Excel/PDF/HTML each ideally <=20s on a documented reference Windows desktop.
+- 50MB input: no unbounded heap, graceful memory/device warnings, progress, cancel.
+- No universal 20-second guarantee without browser/device/file complexity benchmark.
+- Run repeated warm/cold benchmarks on Chrome, Edge, Firefox; document p50/p95 and
+  peak memory. Never optimize speed by skipping validation or silently sampling.
+
+
+==============================================================================================
+11. EXPORT ENGINE — ONE SOURCE, THREE PROFESSIONAL FORMATS
+==============================================================================================
+EXPORT PRECONDITION
+Canonical ReportSpec + materialized validated aggregates + AuditSummary.
+Every export records source hash, filter fingerprint, metric hash, semantic rule versions,
+format renderer version and warnings. Critical audit failures block "verified" labeling;
+allow explicitly marked DRAFT export only if user acknowledges.
+
+A. EXCEL .XLSX
+- Native editable workbook; summary/dashboard sheet, supporting analysis sheets, original
+  source table (subject to Excel row limits), methodology, evidence and data-quality.
+- Use real Excel tables and native chart objects where library capability allows;
+  avoid raster-only dashboards. Preserve formulas for auditable KPIs where safe and
+  performant; cached results/Excel recalculation flags must be tested in Excel desktop.
+- Where native formulas/charts are not supported, clearly disclose limitations and
+  provide static values with full formula definitions in methodology.
+- Avoid external workbook links, macros, untrusted formulas and formula injection.
+- Formula injection guard for source strings beginning =,+,-,@ in CSV-derived cells;
+  preserve original text semantics without execution.
+- Workbook styling: merged title areas where appropriate, frozen headers, number formats,
+  conditional formatting, readable widths, print areas, sensible sheet names <=31 chars,
+  accessible palettes, no overlapping charts.
+- Excel interoperability: Microsoft Excel desktop and LibreOffice visual and numeric
+  checks; do not claim full recalculation safe until executed test evidence exists.
+- Excel exports must not invent domain-specific sheets; Helpdesk must not get Sales
+  Transactions/Product Catalog/Net Revenue/Software Margin.
+
+B. PDF .PDF
+- A4/Letter and landscape options, vector text and vector charts when feasible,
+  embedded/standard fonts, crisp print resolution, page numbers, repeated table headers,
+  appropriate section page breaks, no truncated legends or overlapping content.
+- Include executive summary, filters/time basis, methodology, provenance, quality caveats;
+  configurable appendix of detailed records. Pagination adapts to dataset complexity.
+- Optional high-resolution PNG/SVG chart assets generated locally, without CDN.
+- PDF is a static snapshot: do not falsely label interactive filters as operational.
+- Verify PDF visually at 100% and 200% zoom, text selectable, contrast and pagination.
+
+C. HTML .HTML
+- Download standalone single-file report with embedded JS/CSS/data/chart engine (or
+  packaged offline ZIP only if single-file exceeds safe limits and user explicitly chooses).
+- No network dependencies: no CDN, Google Fonts, remote telemetry, analytics, image fetch,
+  external iframes, API calls, service-worker registrations or remote assets.
+- Safe serialization and HTML escaping; strict local security policy compatible with
+  file:// usage, no eval, no unsanitized innerHTML, no executable source-cell markup.
+- Filterable, keyboard accessible, responsive, printable, local CSV export for selected
+  records, reset, legends and tooltips. Data embedded means recipient can inspect it;
+  warn user before embedding sensitive rows or identifiers.
+- Offer aggregate-only HTML privacy option, excluding raw rows and PII.
+- Browser compatibility: Chrome/Edge/Firefox local file mode; verify offline with
+  network disabled and no fetch requests.
+
+EXPORT PARITY
+- Shared metric values identical at full precision, same filter population, same chart
+  categories and same caveats across Excel/PDF/HTML; allow documented format-specific
+  interaction differences. Snapshot hash embedded in each artifact.
+- Export button disabled only while needed, with clear failure recovery; don't silently
+  produce partial/corrupt downloads.
+
+
+==============================================================================================
+12. PRIVACY, SECURITY AND VERIFIABLE ZERO-CLOUD CLAIM
+==============================================================================================
+ZERO-AI: No LLM calls, model APIs, remote embeddings, AI SDKs or hosted analytics for
+user content. Static rule dictionaries ship with application assets.
+ZERO DATA UPLOAD: Never send dataset bytes, rows, derived values, column names, file names,
+chart snapshots, error excerpts or report contents to server or third parties.
+- Implement Content Security Policy, Trusted Types where supported, safe DOM rendering,
+  dependency pinning, supply-chain scanning, strict MIME/ZIP checks and sanitized downloads.
+- Optional website analytics may collect only non-sensitive aggregate site events with
+  consent and must be isolated from workspace; no data-derived dimensions.
+- Error handling must redact dataset values, filenames and field names from remote logs.
+- Local IndexedDB storage opt-in, explain retention, delete-all control and browser limits.
+- No silent remote font, CDN script, image, or browser reporting endpoint from exported HTML.
+- Audit using browser DevTools network capture with sample sensitive marker values;
+  inspect requests, crash reporting and console logs under import/filter/export.
+- Threat tests: CSV formula injection, XLSX zip bombs, malicious cell strings, XSS,
+  giant numbers, unsafe dates, deeply nested JSON, path traversal, resource exhaustion,
+  compromised dependencies, service-worker cache contamination.
+- Be precise in marketing: "processed locally in your browser" after verification;
+  "offline-capable" only after standalone report and optional app-shell offline tests.
+
+
+==============================================================================================
+13. VALIDATION, AUDIT, EVIDENCE AND TRUST STATES
+==============================================================================================
+AUDIT STATES: VERIFIED, PARTIALLY_VERIFIED, NEEDS_CONFIRMATION, FAILED, NOT_TESTED.
+Never print 100% RECONCILED, CONFIRMED GRAIN, SEALED & AUDITED, CURRENCY PURE or
+FULL RECALC SAFE without corresponding independent executed evidence.
+
+VALIDATION LAYERS
+1. Parse: rows/columns, errors, source-preservation and byte/hash lineage.
+2. Schema: inferred types, null counts, distinct IDs, negative durations, duplicates.
+3. Semantics: roles, domain guards, confidence and user overrides.
+4. Calculation: independent reference engine, exact count reconciliation, tolerance
+   for floating point, denominator/units and group sum invariants.
+5. Charts: data values, totals, categories, scale, filtering and title accuracy.
+6. Insights: bound metrics, correct thresholds, caveats and evidence references.
+7. Exports: Excel/PDF/HTML numeric parity, page integrity, no domain hallucination.
+8. Privacy: network trace contains no source data or derived values.
+
+REQUIRED AUDIT OUTPUT
+- Source hash; import and parser versions; row counts and exclusions.
+- Semantic map with evidence and confirmed/uncertain status.
+- Metric dictionary, formula AST, population, numerator/denominator, precision, units.
+- Reconciliation table with observed, expected, delta, tolerance, pass/fail.
+- Chart and insight provenance; date and as-of assumptions.
+- Export renderer versions and format-specific caveats.
+- Privacy self-test outcome and tests actually run (not implied).
+- User can export audit JSON locally and open metric lineage inspector.
+
+INDEPENDENCE
+Validator must not merely re-read cached KPI results from the generator. Use separate
+reference implementations or property-based invariants for crucial totals, plus fixed
+fixture golden outputs. Avoid both engines sharing the same buggy aggregation helper.
+
+
+==============================================================================================
+14. QUALITY GATES AND CROSS-DOMAIN TEST MATRIX
+==============================================================================================
+P0 FIXTURE A: 8,000-row Helpdesk CSV (attached in this conversation)
+Golden expected: total 8000, completed 6199, open 1801, SLA met 2925, breached 3274,
+SLA compliance 47.185%, mean completed resolution 55.6082h, rating responses 4508,
+mean rating 2.9627, reopened flags 415, channel Portal 3493, Email 2220,
+Phone 1223, Chat 1064, five resolver groups.
+- Validate reopened denominator ambiguity explicitly: 5.1875% all-ticket share vs
+  415/6199 completed denominator (not interchangeable).
+- No revenue/cost/margin/order/customer/SKU sheets or metrics.
+- As-of-dependent overdue claims only when user confirms snapshot/policy.
+- Visuals: operational metrics, trends, SLA, backlog, teams, ratings, channels.
+- Generate Excel/PDF/HTML and compare displayed KPI results and source counts.
+
+P0 FIXTURE B: 6,000-row Sales MIS CSV
+Golden expected: quantity 17,966; Net Sales INR 339,830,586.55;
+COGS INR 267,920,146.50; Gross Profit INR 71,910,440.05; margin 21.16%.
+- Retain correct sales functionality while preventing fake targets and invented YoY.
+
+P0 FIXTURE C: arbitrary unknown fields
+- Example X17, V_2, ZQ; neutral statistical report; request mapping for business KPIs.
+
+P1 FIXTURES: HR employee snapshots vs history, inventory daily stock, finance ledger
+multi-currency, survey with missing answers, education scores, logistics timestamps,
+marketing funnel with multiple grains, healthcare operations without clinical inference.
+
+TEST CATEGORIES (MINIMUM 100 AUTOMATED CASES; EXPAND EXISTING v6 80 CASES)
+01-10 parsing: CSV delimiters/encoding/quotes/BOM; XLSX multi-sheet; blank sheets;
+       Excel serials; duplicate headers; hidden rows; invalid files; 50MB guard.
+11-20 typing: IDs with zeros; currencies; percent units; mixed dates; locale;
+       nulls; invalid durations; booleans; ambiguous headers; scientific notation.
+21-30 semantic: Helpdesk recognition; Sales recognition; mixed domains; unknown
+       fields; negative evidence; ambiguous role; confidence override; no invented KPI.
+31-40 grain/joins: duplicate keys; composite keys; dimension uniqueness; fanout;
+       many-to-many; conflicting join; snapshots; slowly changing dimensions; null IDs.
+41-50 metrics: exact counts; distinct; missing exclusions; mean/median; weighted
+       rates; zero denominators; unit mismatches; period alignment; SLA boundaries.
+51-60 filtering: multiple filters; null bucket; date range; reset; cross-filter;
+       selected denominator; drill-through; date grain; saved view; export filtered.
+61-70 chart: valid type selection; rejected unsuitable type; topN+Other; labels;
+       empty chart; outlier scale; category totals; date gaps; legends; accessibility.
+71-80 insights/actions: threshold source; evidence link; no invented targets;
+       deduplication; missing data caveat; as-of confirmation; action ranking;
+       source row trace; zero-result state; no unsupported causality.
+81-90 exports: native Excel charts; Excel formula injection; PDF page breaks;
+       text selectable; standalone HTML offline; HTML XSS; parity hash;
+       large file warnings; no clipped labels; multi-browser compatibility.
+91-100 security/performance: no network upload; no telemetry leak; zip bomb;
+       cancellation; worker memory; no long UI block; CSP; local persistence delete;
+       p95 benchmarks; export recovery.
+101-110 regression: all 32 templates still selectable; no template forced;
+       original source preservation; workbook audit honesty; locale; timezone;
+       comparison periods; reopened denominator; no duplicated rows; crash restart.
+
+AUTOMATED EVIDENCE
+- Unit tests, property-based tests, snapshot/golden fixtures, export OOXML assertions,
+  independent CSV reference script, PDF page render comparison, browser E2E,
+  privacy network interception and cross-browser download validation.
+- Tests must fail CI if helpdesk gets finance labels or a false verified audit badge.
+
+
+==============================================================================================
+15. PHASED IMPLEMENTATION, FILE STRUCTURE AND ACCEPTANCE
+==============================================================================================
+PHASE 0 — REPOSITORY AUDIT (NO FEATURE CHANGES)
+Inventory current stack, 32 templates, parser, existing Excel exporter, all calculations,
+server endpoints, telemetry, data-flow diagram and known issues. Output dependency map,
+risks and compatibility plan. Ask owner before destructive migrations.
+
+PHASE 1 — P0 SEMANTIC SAFETY
+Build typed dataset manifest, immutable rows, semantic candidates and domain guards.
+Fix Helpdesk mapping, remove fabricated financial values and false audit assertions.
+Pass 8k Helpdesk and 6k Sales fixtures. BLOCK further polish until passing.
+
+PHASE 2 — CANONICAL CALCULATION + INDEPENDENT AUDIT
+Implement metric registry, AST, filter context, provenance, separate validator,
+source/group invariants, missingness and explicit as-of logic.
+
+PHASE 3 — JULIUS-PLUS RESPONSIVE DASHBOARD
+Implement dashboard planner, premium layout, sections A-I, cross-filters, scorecards,
+insights, action queue, explanations and data-quality center.
+
+PHASE 4 — THREE EXPORTERS
+Excel native objects and formulas where supported; print-quality PDF; standalone
+offline HTML. All consume identical ReportSpec and validated materialized results.
+
+PHASE 5 — PRIVACY, PERFORMANCE, ACCESSIBILITY, CROSS-BROWSER
+Network leakage test, workers, cancellation, 50MB safety, keyboard/screen reader,
+local file HTML, browser matrix and p95 benchmark.
+
+PHASE 6 — PILOT, LAUNCH AND OBSERVABILITY
+10+ testers across domains and devices. Collect only explicitly volunteered test
+feedback; no sensitive file contents. Fix defects; release notes and rollback plan.
+
+SUGGESTED LOGICAL MODULES (ADAPT TO REPO, DO NOT FORCE REWRITE)
+/src/engine/import, profile, semantic, graph, metrics, filters, charts, insights,
+ actions, validation, report-spec, provenance
+/src/export/excel, pdf, html, shared-render-model
+/src/workers/import.worker, compute.worker, export.worker
+/src/components/workspace, mapping, dashboard, scorecard, chart, action-queue,
+ quality, audit, export-dialog
+/tests/fixtures, unit, property, e2e, golden, security, privacy, performance
+
+DEFINITION OF DONE
+[ ] Helpdesk report correct, domain appropriate and source-reconciled.
+[ ] Sales report correct and existing features/templates preserved.
+[ ] Unknown dataset handled honestly without fabricated semantics.
+[ ] All 3 exports produced locally, professionally formatted, numerically identical.
+[ ] Audit statuses only reflect executed evidence; metric lineage visible.
+[ ] No source data sent over network during upload, analysis, filters or exports.
+[ ] HTML works offline with no external dependencies; Excel opens without repair;
+    PDF readable and unclipped.
+[ ] 110+ tests pass; P0/P1 issues resolved; measured performance documented.
+[ ] No claims of universal understanding, guaranteed 20 seconds or 100% verified
+    unless actual test evidence supports the exact claim.
+
+IMPLEMENTATION INSTRUCTIONS FOR CODEX / ANTIGRAVITY
+1. Read THIS WHOLE DOCUMENT including preserved v6 requirements below.
+2. Audit current repo first; show implementation plan and affected files.
+3. Implement in small reversible commits with tests and no unrelated refactoring.
+4. Do not substitute AI, hosted APIs, server-side parsing, analytics or upload services.
+5. Do not bypass semantic/validation gates to make demo look successful.
+6. Maintain a change log, fixture results, benchmark and remaining known limitations.
+7. Ask for approval before deploying, changing hosting/database or introducing costs.
+8. Demonstrate 8k Helpdesk and 6k Sales in all three formats with independent audit.
+
+
+==============================================================================================
+16. SOURCE LIMITATIONS, CONFLICT RESOLUTION AND PRIORITY OF REQUIREMENTS
+==============================================================================================
+- This v7 addendum is authoritative over conflicting v6 requirements, especially the
+  prohibition on optional AI and the clarified reopened-rate denominator.
+- The user-provided Julius PDF is an example of layout and report content, not a
+  verified description of Julius product implementation, privacy, export availability,
+  actual interactivity or benchmark time.
+- The 8k Helpdesk and 6k Sales reference JSONs are fixture expectations; where their
+  labels/denominators are ambiguous, show both definitions and require explicit choice.
+- Every item in this document is a requested target, not a claim that the current app
+  already implements it.
+- If constraints conflict (e.g. 50MB input and all raw rows embedded in HTML), choose
+  privacy/safety and explicit user selection over silent data loss or unsafe output.
+- If a feature is not supported by the selected browser XLSX/PDF library, document the
+  exact gap and implement a tested fallback without pretending it is native/editable.
+
+
+##############################################################################################
+PRESERVED v6 SPECIFICATION — BACKWARD-COMPATIBLE REQUIREMENTS AND DETAIL
+##############################################################################################
+
+UNIVERSAL DASHBOARD INTELLIGENCE — CRITICAL CORRECTION PRD v6.0
+Product: excel.dattasable.com | 23 October 2026
+Scope: source-driven dashboards for arbitrary SUPPORTED tabular datasets
+
+
+================================================================================
+V6 EXTENSION — SPECIFIC REMEDIATION AFTER SECOND HELPDESK XLSX AUDIT
+================================================================================
+This extension is authoritative where stricter than v5. The full v5 text is retained below in this file, so engineers need only this one document. Status: requirements, not implemented.
+
+A. VERIFIED ARTIFACT OBSERVATIONS (ZIP/XML INSPECTION)
+- Uploaded second export: Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test_Upload_Executive_Sales_Dashboard_2026.xlsx.
+- Workbook contains sheets Executive Dashboard, Pivot Table Analysis, Sales Transactions, Regional Performance, Product Catalog, Customer Accounts, Audit & Data Provenance.
+- Stored shared-string text contains 'Blended Software Margin', 'Net Revenue', '100% RECONCILED', 'CONFIRMED GRAIN', 'CURRENCY PURE', 'SEALED & AUDITED', 'FULL RECALC SAFE'.
+- These are concrete export findings; XML presence alone does not prove formula recalculation or that each visual is currently visible. Perform Excel desktop verification.
+- This dataset has no finance fields. Such labels are semantically inappropriate. Any audit badge asserting verification requires evidence from independently executed validation.
+
+B. RELEASE BLOCKERS (P0) — IMPLEMENT FIRST
+B01. Domain guard: unsupported semantic mappings cause BLOCKED_METRIC, not synthetic substitutes.
+B02. Provenance gate: audit sheet must never show PASS without actual executed test results and evidence ID.
+B03. Source fidelity: every source row and original value preserved; no timestamp mapped to customer ID.
+B04. Zero invented fields: no revenue, cost, margin, currency, product SKU, customer tier, region manager, sales target or software licenses for helpdesk.
+B05. Dataset-specific dashboard: generate helpdesk operational pages and KPIs, not sales.
+B06. Row grain verified from keys, not asserted from the chosen template.
+B07. Independent reconciliation: totals and subgroup counts must match raw uploaded source.
+B08. Explicit uncertainty: if domain unclear, neutral profile and mapping confirmation, never confident but wrong sales report.
+B09. Fix audit metadata: unsupported certification wording removed until gates pass.
+B10. No regressions on correct 6,000-row Sales MIS fixture.
+
+C. IMPLEMENTATION CONTRACTS (TYPES / INTERFACES)
+Use equivalent strongly typed interfaces in the actual codebase; do not force a language rewrite.
+DatasetManifest:
+ {sourceId, filename, sha256, mimeDetected, sizeBytes, importedAt, parserVersion,
+  sheets:[{name, selectedRanges, headerRow, rowCount, columnCount, hidden, mergedRanges}],
+  privacyMode, warnings}
+ColumnProfile:
+ {columnId, originalHeader, normalizedHeader, originalIndex, physicalType,
+  logicalType, semanticCandidates:[{role, confidence, evidence, contraindications}],
+  nullable, missingCount, missingRate, distinctCount, distinctRate,
+  min, max, mean, median, quantiles, topValues, lengthStats, examplesRedacted,
+  parseSuccessRate, unit, currency, timezone, ambiguityFlags, sensitivity}
+TableProfile:
+ {tableId, rowCount, keyCandidates, grainCandidates, primaryKey, grainConfidence,
+  dateCandidates, measureCandidates, dimensions, qualityIssues, rowHashSamples}
+Relationship:
+ {leftTable, leftKey, rightTable, rightKey, cardinality, matchedRate,
+  nullKeyRate, duplicateKeyRate, inferredConfidence, fanoutRisk, enabled}
+SemanticDecision:
+ {sourceColumnIds, targetRole, status: confirmed|inferred|ambiguous|rejected,
+  confidence, evidence, conflicts, requiresConfirmation, userDecision, version}
+MetricDefinition:
+ {id, label, domain, eligibleGrains, requiredRoles, requiredUnits, filters,
+  aggregation, numerator, denominator, nullPolicy, zeroPolicy, timePolicy,
+  currencyPolicy, expectedRange, resultType, displayFormat, lineage}
+MetricExecution:
+ {metricId, inputRows, includedRows, excludedRows, value, warnings,
+  numeratorValue, denominatorValue, sourceHash, executionVersion}
+ChartSpec:
+ {chartId, purpose, metricIds, dimensionIds, chartType, aggregation,
+  filterContext, sorting, topN, otherGroup, axisUnits, seriesLimit,
+  dataPoints, warnings, validationStatus}
+ValidationEvidence:
+ {checkId, severity, expected, actual, tolerance, algorithm, sourceHash,
+  timestamp, status: pass|fail|not_run|not_applicable, affectedMetrics, evidencePath}
+ExportManifest:
+ {sourceHash, schemaVersion, mappingVersion, metricEngineVersion, chartEngineVersion,
+  workbookVersion, includedSheets, checkResults, verificationStatus}
+Every field must be serializable, versioned and testable. Do not put raw PII into telemetry.
+
+D. FILE DISCOVERY AND STRUCTURE (MUST HANDLE REAL-WORLD FILES)
+D01 CSV: UTF-8 with/without BOM, supported legacy encodings with detection warning, separators comma/semicolon/tab/pipe, quoting/escaped delimiters, embedded newlines, locale-specific decimal separators, inconsistent rows, repeated header lines.
+D02 XLSX: multiple sheets, hidden sheets, merged cells, multi-row headings, title rows above table, Excel Tables, formulas vs cached results, date serials including 1900/1904 systems, named ranges, blank separators, repeated sections.
+D03 Find candidate tabular blocks using density and type consistency; do not assume first row is header or first sheet is data.
+D04 Detect multi-table worksheets and show selection preview. Detect totals/subtotals and exclude from row-level facts to prevent double counting.
+D05 Reject or safely isolate macros, external links, unsupported formula evaluation, corrupt archives and decompression bombs.
+D06 Preserve header originals, case, order, duplicates (with stable internal IDs), leading zeros, and unparsed raw cells.
+D07 Parse large files incrementally; cancellation and memory budget; explicit 50 MB upload policy and workbook decompressed-size guard.
+D08 Never claim 'any file' literally: accept supported tabular formats; for unsupported formats return informative error, not invented interpretation.
+D09 Determine locale/timezone only from explicit metadata or user confirmation when ambiguous. Store UTC only when timezone known; preserve local original.
+D10 Detect multiple plausible tables and ask which to analyze, or analyze separately without joining until verified.
+
+E. COLUMN TYPE AND SEMANTIC INFERENCE
+E01 Separate physical type (string, float, boolean, date) from logical type (ID, currency, rate, duration, status, timestamp, count, free text, geographic code).
+E02 Use all nonempty values or representative stratified samples for initial inference, then validate against entire column before certifying.
+E03 Numeric-looking identifiers (ZIP, SKU, phone, invoice, account IDs) must remain strings; leading zeros retained.
+E04 Rate detection: 0..1 vs 0..100, `%` strings, basis points; never guess scaling silently. Ask when both plausible.
+E05 Units: hours/minutes/days, kilograms/pieces, currencies, temperature, distance; reject incompatible arithmetic.
+E06 Date parsing: ISO, Excel serial, D/M/Y vs M/D/Y ambiguity, timestamps, daylight-saving gaps, partial dates; keep original text.
+E07 Boolean mapping: true/false, yes/no, 0/1, reopened flag; only when value distribution and context support.
+E08 Status: categorical not numeric; support custom lifecycle and explicit terminal statuses; do not treat all statuses as 'Closed'.
+E09 Free text: distinguish comments/descriptions from category fields; avoid exposing private text in exported charts.
+E10 Semantic inference evidence: header synonyms + value patterns + units + neighboring columns + dataset context + key/grain constraints.
+E11 Negative evidence mandatory: 'SLA Limit (hrs)' is NOT money; 'Logged On' is NOT customer ID; 'Customer Rating' is NOT revenue.
+E12 Confidence thresholds configurable, calibrated and domain-specific; no invented universal 0.9 threshold. High confidence still requires invariant checks.
+E13 Ambiguous 'Amount', 'Value', 'Date', 'ID', 'Score' require clarification if their mapping changes financial or operational conclusions.
+E14 If columns are renamed A,B,C, infer only safe primitive facts unless value semantics are strong; request concise confirmation.
+E15 Prevent semantic leakage from filename, selected template, old session or cached mapping; user-selected template is a presentation hint, never evidence of source facts.
+E16 Validate mapping after every schema change and every new upload, even if a saved profile exists.
+E17 Detect categorical numeric codes (1,2,3) vs quantitative measures; avoid inappropriate sum/average.
+E18 Detect percent vs fractional value from values AND header, with warnings for conflicts.
+
+F. MISSINGNESS, QUALITY AND OUTLIERS
+F01 Distinguish absent field, empty cell, whitespace, 'NA', 'N/A', 'NULL', dash, zero, negative, invalid token, redacted value.
+F02 Per-column missing count/rate; per-row completeness; patterns by category/date; co-missingness correlations.
+F03 Missingness can be structural: unresolved helpdesk tickets have blank Finished At by design, not necessarily bad data.
+F04 Never replace blank completion time with opening time or zero duration.
+F05 Null numeric values excluded from averages with coverage denominator shown; additive sums may treat missing as unknown rather than zero based on metric policy.
+F06 Outliers flagged, not automatically removed. Preserve original rows and expose exclusions with reasons.
+F07 Detect duplicates using candidate keys and near-duplicate content; never silently deduplicate valid line items.
+F08 Quality scores must disclose formula, weightings and uncertainty; no opaque 100% badges.
+F09 Data validation failures may block only affected KPIs, not the entire file when a safe generic profile is possible.
+F10 Add missingness heatmap and schema report when useful; do not clutter executive page with quality visuals if no issue exists.
+
+G. KEYS, ROW GRAIN, TABLE RELATIONSHIPS
+G01 Candidate keys: uniqueness, null rate, stability, type, semantic meaning; high uniqueness alone does not prove ID.
+G02 Detect event row, transaction line, transaction header, account snapshot, daily inventory snapshot, survey response, time-series observation, multi-measure aggregate.
+G03 Helpdesk: Case Ref unique => candidate ticket grain; validate against source. Multiple updates per case => event grain; count DISTINCT Case Ref for tickets.
+G04 Sales: order line vs order ID: distinct orders differs from number of lines; use explicit labels.
+G05 Inventory: stock on hand is semi-additive across time; choose last valid period balance, not sum daily stock.
+G06 Multi-sheet relationships: candidate join key overlap, referential integrity, cardinality and fanout analysis.
+G07 Never auto-join when many-to-many or ambiguous keys could multiply financial totals; preview join impact.
+G08 Compare pre/post join row counts and aggregate invariant metrics; block if unintended fanout.
+G09 Mixed granularity columns in same sheet require distinct metric rules; preserve dimensions at their native grain.
+G10 Allow user confirmation for ambiguous relationships, and show diagram + risk warnings.
+
+H. DOMAIN-NEUTRAL METRIC ENGINE
+H01 No universal 'Revenue' default. Metrics are generated from validated semantics, not template names.
+H02 Metric operators: count, distinct count, sum, weighted average, min/max, median/percentile, duration difference, ratios, last observation, cohort and period comparison where eligible.
+H03 Typed dimensional analysis: money cannot add to hours; ratios require numerator/denominator units; currencies cannot mix without FX.
+H04 Deterministic metric registry with domain packs: sales, helpdesk, HR, inventory, education, finance, healthcare operations (nonclinical), marketing, projects, logistics, survey, generic.
+H05 Each pack has required/optional roles and explicit contraindications; packs may coexist without forcing a single domain.
+H06 Generic fallback: row count, missingness, unique keys, categorical distributions, numeric descriptive stats, valid time trends. No financial or operational jargon.
+H07 All ratios calculated from aggregate numerators/denominators, not arithmetic mean of row ratios unless mathematically intended.
+H08 Exclude missing observations from denominator only according to stated business definition. Show coverage.
+H09 Define denominator-zero behavior: N/A with reason, not 0%.
+H10 Preserve negative values; treat returns, refunds, cancellations and reversals based on source semantics.
+H11 Avoid causal claims, forecasts, targets, anomalies and benchmarks without sufficient evidence and opt-in policy.
+H12 User overrides are marked USER_DEFINED and stored in provenance; never treated as verified source values.
+H13 Independent validation implementation must not share the same aggregation code path as metric execution.
+H14 Calculations in UI, export and validation must share canonical metric definitions, not three inconsistent formula implementations.
+H15 Decimal-safe finance, precise duration arithmetic, stable sorting, reproducible rounding and locale-aware display.
+
+I. HELPDESK METRIC PACK — EXACT CONTRACT FOR TEST FIXTURE
+I01 Source roles:
+ Case Ref=case ID; Logged On=opened timestamp; Finished At=completion timestamp;
+ Current State=workflow status; Urgency Band=priority; Resolver Group=team;
+ Issue Family=category; Intake Method=channel; Service Site=site;
+ SLA Limit (hrs)=allowed resolution hours; Reopened Flag=boolean; Customer Rating (1-5)=optional rating.
+I02 Total tickets=distinct valid Case Ref if confirmed unique and one case per row; source fixture 8,000.
+I03 Completed=rows with Finished At and terminal Current State Resolved/Closed; fixture 6,199.
+I04 Unresolved=all tickets minus completed; fixture 1,801. Flag contradictions (closed status with missing timestamp).
+I05 Resolution duration hours=(Finished At - Logged On) in elapsed hours for completed only. Negative duration invalid.
+I06 SLA met=completed duration <= SLA Limit; breached=> SLA Limit; fixture met 2,925, breached 3,274.
+I07 SLA compliance=met/completed valid SLA-evaluable tickets; fixture 47.185% (47.19% display).
+I08 Average resolution=mean valid completed durations; fixture 55.6082 hours (55.61 display).
+I09 Reopened count=SUM validated boolean flag; compute from source/reference, not remembered narrative.
+I10 Rating mean=average nonblank valid 1–5 ratings only; coverage=valid rating count/eligible population as explicitly defined.
+I11 Ticket trends by Logged On month; never by fabricated Order Date.
+I12 Team workload, urgency mix, issue families, intake channels, sites and statuses as real categories; unknown groups explicit.
+I13 Open-ticket SLA breach as-of requires a user-selected as-of timestamp and policy; otherwise omit.
+I14 If SLA thresholds missing, show completion metrics but mark SLA unsupported.
+I15 If priority changes over time, single-row latest status vs event history must be distinguished.
+I16 Validate every metric against independent JSON fixture and source CSV; don't hardcode expected numbers in production engine.
+I17 Never generate USD, margin, SKU, accounts, regional sales, customer tier or software license KPIs from these fields.
+
+J. CHART INTELLIGENCE & COMPOSITION
+J01 Visual grammar chooses by semantic role, grain, cardinality, sign, completeness, time continuity, and user goal.
+J02 Timestamp+count => monthly/weekly trend; timezone and missing periods explicitly handled.
+J03 Category+count => sorted bar; high cardinality => Top N + Other, totals reconcile.
+J04 Two categorical dimensions => stacked bar or heatmap if cardinality manageable.
+J05 Numeric distribution => histogram/boxplot; explain outlier treatment.
+J06 Duration => histogram/median/p90 and grouped bars by priority/team when sample sizes sufficient.
+J07 Rating 1..5 => distribution and average with response coverage; never present a rating as currency.
+J08 Part-to-whole only when categories are mutually exclusive and values appropriate; pie only for few nonnegative categories.
+J09 Time series comparison only when comparable periods; do not invent YoY for missing previous year.
+J10 Geographical visuals only when site/country fields valid and mapping confidence high; don't infer country from city alone.
+J11 Avoid misleading dual axes, truncated baselines for bar charts, 3D effects, redundant donuts and overloaded dashboards.
+J12 Charts and KPI cards must share filter context, denominator definitions and provenance.
+J13 No charts built from synthetic filler columns; no 7-chart fixed quota.
+J14 Ranking utility score: validity gate first, then business relevance, data quality, information gain, interpretability, visual diversity.
+J15 Empty/invalid series => omit chart with explanation, not blank axes or placeholder numbers.
+J16 Export static charts only if clearly labeled static; interactive Excel charts must have tested supported controls.
+J17 Dashboard page planning: overview, operational drivers, trends, detail, quality/audit. Only create sections supported by data.
+J18 Accessibility: contrast, readable labels, patterns/labels not only color, print-friendly layout.
+
+K. EXCEL WORKBOOK OUTPUT CONTRACT
+K01 Sheet names generated by detected domain, e.g. Helpdesk Overview, Ticket Details, SLA Analysis, Team Performance, Data Quality, Calculation Audit.
+K02 No 'Executive Sales Dashboard' sheet for helpdesk.
+K03 Source Data sheet contains original headers and values, with a separate normalized/calculated table; no destructive overwrite.
+K04 Excel Tables/dynamic ranges where practical; formulas must work for arbitrary row counts and preserve filtering.
+K05 Formula examples (after validated mapping):
+ ResolutionHours = IF(OR([@[Finished At]]="",[@[Logged On]]=""),"",([@[Finished At]]-[@[Logged On]])*24)
+ SLAMet = IF([@ResolutionHours]="","",IF([@ResolutionHours]<=[@[SLA Limit (hrs)]],1,0))
+ NOTE: Excel formulas are illustrative; correct timestamp and cell types must be confirmed. Blank vs zero must be preserved.
+K06 Formula error scans: #REF!, #DIV/0!, #VALUE!, #NAME?, #NUM!, broken external links and stale caches.
+K07 Currency and date formats follow source locale/explicit choice; never auto-insert USD.
+K08 Protect formulas optionally, but allow user inspection and avoid incompatible protection XML; test in Excel desktop/web.
+K09 Chart references and caches verified; no stale values from previous generation.
+K10 Workbook provenance includes source SHA256, mapping decisions, grain, metric definitions, chart metadata, checks and versions.
+K11 Source count, totals and groupings cross-checked after export by independent reader.
+K12 Excel workbook file naming reflects dataset/domain and period, never default '_Executive_Sales_Dashboard_2026' for unrelated data.
+
+L. AUDIT CERTIFICATION REPLACEMENT — STRICT EVIDENCE GATES
+L01 Replace marketing-style labels with explicit statuses: VERIFIED, PARTIALLY_VERIFIED, NOT_VERIFIED, FAILED, NOT_APPLICABLE.
+L02 VERIFIED only when all required applicable source-integrity, mapping, calculation and export checks actually ran and passed.
+L03 '100% RECONCILED' forbidden unless 100% of eligible declared metrics reconciled; show counts e.g. 18/20 checks passed.
+L04 'CONFIRMED GRAIN' forbidden until key and grain tests pass with evidence.
+L05 'CURRENCY PURE' forbidden if no currency measure exists; status NOT_APPLICABLE, not PASS.
+L06 'FULL RECALC SAFE' forbidden without Excel-compatible recalculation and cached-value tests.
+L07 'SEALED & AUDITED' forbidden as generic label; provide validation timestamp, version and signed/hashed manifest only if truly implemented.
+L08 Each audit assertion links to check ID, source hash, expected, actual, tolerance, run timestamp and evidence artifact.
+L09 Validation on wrong semantics is failure even if arithmetic reconciles to synthetic numbers.
+L10 Reconcile against the RAW upload, never against values generated by the same engine being checked.
+L11 Tests not run must show NOT_RUN and cannot count toward verified score.
+L12 Tampering/changes after verification invalidate certification unless rerun.
+L13 Separate audit of file integrity, semantic interpretation, business calculation, chart selection, export compatibility and privacy.
+L14 Display human-readable reasons for exclusions, inferred mappings and user-confirmed assumptions.
+L15 Audit sheet must not include sensitive raw samples, secrets or personal identifiers.
+
+M. AI ASSISTANCE BOUNDARY
+M01 Optional LLM may propose semantic labels, domain candidates, chart ideas and plain-English explanations; it cannot assert numeric truths.
+M02 Never send raw uploads to external AI by default; obtain explicit consent and show data transfer/privacy implications.
+M03 Strict schema-constrained AI output, source-column IDs only, no free-form executable formulas or arbitrary code.
+M04 Deterministic validator checks AI suggestions against types, units, distributions, constraints and known contradictions.
+M05 Low confidence -> user confirmation; unsupported -> omit; conflicting evidence -> neutral profile.
+M06 Prompt injection in spreadsheet cells must be treated as data, never instructions.
+M07 AI failure, network outage or quota exhaustion must fall back to deterministic generic dashboard.
+M08 Store model/version/consent/decision metadata without retaining sensitive payloads unnecessarily.
+M09 Explainable decision cards: 'Recognized Finished At as completion timestamp because ...' with confidence and override.
+M10 Never call report 'AI-verified' simply because a model generated it.
+
+N. USER EXPERIENCE & PRODUCT DIFFERENTIATION
+N01 Upload -> preview original data -> auto-understanding summary -> resolve only blocking ambiguities -> generate -> download.
+N02 Show inferred dataset type, row grain, keys, date coverage, missingness, and selected KPIs before export.
+N03 'Why this KPI?' displays exact formula, included rows, denominator, filters and source columns.
+N04 'Why this chart?' displays rationale, source fields and aggregation.
+N05 'Data Quality' screen with actionable fixes and impact estimates; allow exclude/fix with reversible operations.
+N06 'No Guessing Mode' enabled by default; any optional speculative insights must be explicitly labeled and off by default.
+N07 'Trust Report' shows pass/fail/not-run with real evidence, not badges.
+N08 Let users choose between Auto Dashboard and compatible templates; incompatible template produces warning and alternative.
+N09 Support guided correction for unusual column headers; ask at most the necessary questions.
+N10 Save reusable mapping profiles keyed by structural fingerprint and revalidate against every new file.
+N11 One-click regeneration after mapping edits, deterministic output under same inputs/config.
+N12 Mobile-friendly upload, schema preview, ambiguity confirmation, export progress and download.
+N13 Shareable sample demos with synthetic data; never accidentally expose uploads publicly.
+N14 Explain unsupported metrics instead of quietly hiding user-requested results.
+
+O. SECURITY / PRIVACY / RESOURCE SAFETY
+O01 CSV/Excel formula injection sanitization for untrusted text beginning =,+,-,@ where interpreted as formulas, preserving raw value separately.
+O02 ZIP bombs, XML entity expansion, huge shared strings, malformed formulas, embedded hyperlinks, external references and macros.
+O03 File size 50 MB upload limit plus decompressed bytes, cells, rows, columns and runtime limits.
+O04 Memory-safe parsing, background workers, cancellation, progress reporting, timeout and retry.
+O05 Sensitive field detection (email, phone, ID, addresses, health-like notes), data minimization, export warnings and masking options.
+O06 No cross-tenant data mixing; avoid reusing cached mappings or totals across users/uploads.
+O07 Source content cannot instruct agent behavior; never execute formulas/macros/scripts from uploaded file.
+O08 Privacy promises must match actual architecture, telemetry, processing location and retention policy.
+O09 Download expiry and access controls when files touch servers; delete temporary files per documented retention.
+O10 Error logging redacts raw data and sensitive column examples.
+
+P. PERFORMANCE AND SCALABILITY
+P01 Baseline 8k rows, 12 cols, <1 MB CSV; record parsing, profiling, inference, aggregation, charts, export timings separately.
+P02 20-second generation is an aspiration until tested across devices and formats; don't promise fixed latency universally.
+P03 Stress tests 100, 8k, 100k, 500k rows and wide tables within file/memory limits.
+P04 Streaming column profiling, sketches/approximate distinct only when labeled, exact final metrics when feasible.
+P05 Cache by source hash + engine version + mapping version + user permissions; invalidate on schema/mapping changes.
+P06 Limit chart cardinality and worksheet formatting overhead; avoid per-cell expensive operations.
+P07 Provide partial preview while full report computes; never show provisional numbers as verified.
+P08 Document browser/device-specific resource limits.
+
+Q. REQUIRED TEST SUITE — GATED CI
+Q01 Current 8,000-row Helpdesk: no financial sheets/metrics/labels anywhere.
+Q02 Helpdesk: source rows/keys exact, 8,000.
+Q03 Helpdesk: completed 6,199; unresolved 1,801.
+Q04 Helpdesk: SLA met 2,925; breached 3,274; compliance 47.185%.
+Q05 Helpdesk: average resolution 55.6082h.
+Q06 Helpdesk: rating count 4,508; rating average from reference JSON.
+Q07 Helpdesk: reopened count from reference JSON.
+Q08 Helpdesk: all monthly/team/status/priority/channel counts reconcile.
+Q09 Helpdesk: dates unchanged; no fake Order Date.
+Q10 Helpdesk: no USD/currency assertions, no fake 46% margin.
+Q11 Helpdesk: audit must not contain unsupported certification labels.
+Q12 Helpdesk: workbook sheet names and charts match service desk.
+Q13 Sales 6,000-row fixture: net sales, cost, gross profit, margin and dimensions reconcile.
+Q14 Sales: no degradation to correct formula/format behavior.
+Q15 Sales: revenue vs net sales vs gross sales correctly distinguished.
+Q16 Rename/reorder Helpdesk headers; confirm mapping or prompt, no financial fallback.
+Q17 Generic columns A,B,C; neutral dashboard with uncertainty.
+Q18 100% missing date column; no trend chart, clear warning.
+Q19 Date ambiguous 03/04/2026; request locale or safe parse policy.
+Q20 Duration unit minutes vs hours; correct conversion and label.
+Q21 Blank completion dates; exclude from resolved duration mean.
+Q22 Completed date earlier than open; reject invalid durations and report.
+Q23 SLA limit 0; valid zero threshold not missing.
+Q24 Mixed SLA text '4h','240min'; normalized or flagged.
+Q25 Percent 0.25 vs 25%; ask on ambiguous.
+Q26 Numeric identifiers with leading zeros; preserved.
+Q27 Duplicate headers; stable internal IDs and mapping preview.
+Q28 Repeated subtotal rows; no double count.
+Q29 One-to-many join; no multiplied sums.
+Q30 Many-to-many join; block unsafe automatic join.
+Q31 Inventory snapshots; no summing stock across time.
+Q32 HR headcount snapshots; end-of-period count and attrition eligibility.
+Q33 Education scores; weighted mean only when weight provided.
+Q34 Survey 1–5 ratings; mean and distribution with missing coverage.
+Q35 Finance mixed currencies; no summation without FX.
+Q36 Negative sales returns; correct sign and profit rules.
+Q37 Dataset with no numbers; counts and category distributions only.
+Q38 Dataset with no dates; no invented trends.
+Q39 Text-only free-form file; informative unsupported error.
+Q40 Multiple tables in one sheet; candidate selection and no accidental join.
+Q41 XLSX 1904 date system; correct dates.
+Q42 XLSX formula cache absent; warning and safe handling.
+Q43 CSV formula injection; safe export.
+Q44 Prompt injection in cell; ignored as data.
+Q45 Missing source customer ID; no invented customer count.
+Q46 Product list price vs realized sales margin distinguished.
+Q47 Unknown geographic code; no invented location.
+Q48 Top N + Other sum to original category total.
+Q49 All KPI filters and charts reconcile.
+Q50 Empty filters; N/A/empty-state, not zero or fabricated data.
+Q51 Chart type appropriate to semantic data and cardinality.
+Q52 No hardcoded seven charts, fixed six-sheet output or sales file naming.
+Q53 Workbook formulas recalc in Excel desktop.
+Q54 Chart caches and series match exported data.
+Q55 No broken formulas or OOXML relationships.
+Q56 Protection metadata compatible with target viewers.
+Q57 Export source hash matches uploaded file.
+Q58 Audit VERIFIED only when applicable independent tests pass.
+Q59 Audit NOT_APPLICABLE for currency on helpdesk.
+Q60 Audit NOT_RUN when Excel recalc untested.
+Q61 Privacy: no raw uploads leaked to telemetry.
+Q62 Tenant isolation across two concurrent users.
+Q63 Cache invalidation on file/schema change.
+Q64 50MB resource limit and ZIP bomb rejection.
+Q65 Browser mobile upload/export and keyboard accessibility.
+Q66 Determinism: identical input + config + version => identical KPIs.
+Q67 Conflicting semantic evidence => user confirmation.
+Q68 AI disabled/unavailable => deterministic safe generic output.
+Q69 User override appears in provenance.
+Q70 Performance timing by stage and device documented.
+Q71 Quality gate failure blocks misleading affected metrics.
+Q72 All known existing 32 templates retained and regression-tested.
+Q73 User-visible report correctly distinguishes actual vs assumed values.
+Q74 Data quality report enumerates invalid/missing/excluded rows.
+Q75 User requests incompatible template -> warn and offer safe alternative.
+Q76 Source fields with literal '100% RECONCILED' do not become audit claims.
+Q77 Dashboard with several legitimate business domains uses mixed metric packs safely.
+Q78 Join with duplicate right-side keys triggers fanout warning.
+Q79 Timezone ambiguous -> no silent UTC assumption.
+Q80 Reopening rate uses declared denominator and is reproducible.
+Each test must have fixture, expected value, observed value, tolerance, result, code revision and artifact link. Never mark unexecuted test passed.
+
+R. REQUIRED ENGINEERING DELIVERABLES
+R01 Current-state architecture and exact root-cause analysis (source file paths and functions).
+R02 Before/after mapping report for all 12 helpdesk columns.
+R03 Semantic schema, metric registry and confidence policy.
+R04 Domain-neutral dashboard planner with testable decisions.
+R05 Independent validator and evidence-based audit sheet.
+R06 XLSX export regression evidence (screenshots and formula/OOXML checks).
+R07 Full automated test output and reproducible fixture scripts.
+R08 Security/privacy threat model and mitigations.
+R09 Performance benchmark report with real timings.
+R10 Feature flag rollout, rollback plan and migration compatibility for 32 templates.
+R11 User-facing documentation: limitations, unsupported fields, corrections.
+R12 Final acceptance matrix; explicit unresolved issues and risk owners.
+
+S. IMPLEMENTATION PHASES / APPROVAL GATES
+S0 Snapshot existing behavior; collect failing Helpdesk output, original CSV, reference JSON, correct Sales fixture. Identify exactly where sales defaults leak into importer, mapping, metric engine, chart planner, export and audit.
+S1 Implement source preservation, schema profiling, key/grain inference, semantic confidence, no-guessing block rules.
+S2 Implement typed metric registry and helpdesk pack; produce correct 8k ticket calculations with independent validator.
+S3 Implement domain-aware sheet/chart planner and remove unsupported Sales outputs.
+S4 Rebuild audit certification to be evidence-based; add per-metric provenance.
+S5 Extend to HR, inventory, education, finance, survey, logistics, generic fallback.
+S6 Harden XLSX, UI, mobile, performance, privacy/security.
+S7 Run complete 80-test matrix, compare old/new artifacts, then request explicit approval for production deploy.
+No automatic deployment. No hardcoding fixture totals. No replacing existing working features.
+
+T. FINAL NON-NEGOTIABLE DEFINITION OF DONE
+- Same source values preserved; semantic roles correctly inferred or transparently confirmed.
+- Every generated metric has a valid formula, data lineage, units, grain, null policy and denominator.
+- Every chart is valid, useful and derived from real data; no unsupported field invention.
+- Every exported sheet title matches its actual dataset and contents.
+- Every audit claim is backed by independent executed evidence, not decorative text.
+- Helpdesk and Sales fixtures both pass; at least 3 additional unrelated domain fixtures pass.
+- The system safely refuses unsupported conclusions and explains uncertainty.
+- Production release is blocked until critical failures are fixed and owner approves.
+
+================================================================================
+INSTRUCTIONS TO CODEX / ANTIGRAVITY
+================================================================================
+Treat this as a correction to the EXISTING app, not a greenfield rewrite. Inspect repository, determine current stack and boundaries, map failing Helpdesk fields, identify hardcoded Sales defaults and stale audit assertions, and implement the above in the stated phases. Use the uploaded second Helpdesk workbook as a regression artifact, the original Helpdesk CSV/JSON as independent truth, and Sales fixture as no-regression benchmark. Preserve 32 templates, export capabilities, user experience and privacy. Build deterministic calculations, optional guarded AI suggestions, domain-aware charts, and independent validation. Provide concrete code diffs, test results, workbook samples and explicit evidence for every claimed fix. Do not deploy without approval.
+
+================================================================================
+ORIGINAL V5 PRD (PRESERVED IN FULL BELOW)
+================================================================================
+
+UNIVERSAL DATA INTELLIGENCE ENGINE (UDIE)
+PRODUCTION-GRADE CORRECTION & IMPLEMENTATION PRD — VERSION 5.0
+Product: excel.dattasable.com
+Date: 23 October 2026
+Audience: Codex / Antigravity / Engineering / QA
+Status: Implementation specification; no implementation is asserted complete.
+
+================================================================================
+00. EXECUTIVE DIRECTIVE — READ BEFORE CODING
+================================================================================
+The existing product can import a CSV and export an Excel dashboard. A test with an 8,000-row IT Helpdesk Operations dataset exposed a critical architectural failure: a non-sales dataset was forced into an Executive Sales dashboard and unsupported revenue/profit/customer/product semantics. This is not a cosmetic defect; it invalidates business calculations and destroys user trust.
+
+REQUIRED OUTCOME:
+Build a deterministic, provenance-aware, confidence-scored, domain-independent data intelligence pipeline that:
+1. Inspects any supported tabular file BEFORE choosing a template.
+2. Preserves original source data exactly and records every transformation.
+3. Identifies column data types, semantic roles, entity keys, date fields, relationships, missing values, distributions, and row grain.
+4. Understands when information is ambiguous, conflicting, unavailable, or unsupported.
+5. Chooses valid metrics from a typed metric registry; never fabricates financial, operational, demographic, geographic, target, or growth data.
+6. Chooses charts and worksheets appropriate to the actual data.
+7. Produces correct, auditable Excel output with source reconciliation.
+8. Retains the existing 32 templates as OPTIONAL compatible presets and does not break current mobile, export, privacy, or performance workflows.
+9. Performs comprehensive automated and human acceptance testing before release.
+
+NON-NEGOTIABLE: No default Sales schema, no arbitrary numeric columns reinterpreted as revenue, no fake customer IDs, no artificial margins, no silent date rewriting, no fabricated location or targets. On uncertainty, ask a concise user question or degrade gracefully to a neutral exploratory dashboard.
+
+Do not hardcode the 8,000-ticket or 6,000-sales test fixtures into production logic. Do not automatically deploy or remove existing functionality. Start with a repo audit and write a gap analysis.
+
+================================================================================
+01. KNOWN FAILURE / TEST CASE
+================================================================================
+Uploaded synthetic test dataset: Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test.csv
+Columns: Case Ref; Logged On; Finished At; Current State; Urgency Band; Resolver Group; Issue Family; Intake Method; Service Site; SLA Limit (hrs); Reopened Flag; Customer Rating (1-5).
+Expected domain: IT helpdesk / ticket operations, or generic event/case workflow.
+Expected row grain: one ticket/case per row; confirm Case Ref uniqueness.
+Expected source-preserving measures: ticket count, completed count, unresolved count, duration for completed cases, SLA compliance, reopening, rating response coverage, priority/team/channel distributions.
+Unacceptable generated content: Executive Sales Dashboard, revenue, profit, product SKU, customer accounts derived from timestamps, sales targets, fabricated country or licenses.
+
+Reference expected values from synthetic fixture:
+Total tickets 8,000; completed 6,199; unresolved 1,801; SLA met 2,925; SLA breached 3,274; compliance 47.185% (display 47.19%); mean completed-case resolution 55.6082 hours (display 55.61); rating responses 4,508. Other values MUST be computed from the reference JSON and input, not guessed.
+
+The observed XLSX behavior is a reported audit finding from a prior examination; verify the current source implementation and reproduce before changing code. Capture input-to-output lineage and a failing regression test.
+
+================================================================================
+02. SCOPE AND NON-GOALS
+================================================================================
+IN SCOPE: CSV/XLSX parsing; schema detection; headers; profiling; data quality; semantic inference; keys/grain; relationships; domain classification; typed metrics; chart selection; dashboard layout; Excel export; validation; observability; tests; UX; performance; security; compatibility.
+OUT OF SCOPE for initial release: magical understanding of every industry without confirmation; reliable forecasting without sufficient time-series evidence; inferential causal claims; invented goals/targets; automatic external enrichment; unsupported currency conversion; guaranteed correctness for every malformed dataset.
+The product must explicitly communicate confidence and limits rather than overpromise.
+
+================================================================================
+03. END-TO-END ARCHITECTURE — MANDATORY STAGES
+================================================================================
+Pipeline:
+Upload -> File Safety Gate -> Workbook/CSV Discovery -> Structural Normalization -> Column Profiling -> Candidate Semantic Mapping -> Key/Grain/Relationship Analysis -> Data Quality Report -> User Confirmation (only if needed) -> Valid Metric Plan -> Dashboard/Chart Plan -> Independent Calculation -> Export Builder -> Post-Export Reconciliation -> Download.
+
+Each stage returns a versioned, immutable result with input hashes and structured warnings. A downstream stage must not bypass an upstream hard-fail. Separate semantic decisions from presentation presets.
+
+Suggested modules/interfaces (adapt to current repo, do not rewrite without need):
+- ingest/file-validator
+- ingest/sheet-discovery
+- profile/type-profiler
+- profile/missingness
+- semantics/role-inference
+- semantics/domain-classifier
+- semantics/confidence-policy
+- model/key-grain-detector
+- model/relationship-validator
+- metrics/registry
+- metrics/planner
+- metrics/executor
+- charts/eligibility-rules
+- dashboards/layout-planner
+- export/xlsx-writer
+- export/post-export-validator
+- quality/reconciliation
+- quality/audit-trail
+- tests/fixtures-and-golden-results
+
+================================================================================
+04. FILE DISCOVERY, SAFE INGESTION AND NORMALIZATION
+================================================================================
+4.1 Supported inputs: CSV with UTF-8/UTF-8-BOM and other explicitly supported encodings; XLSX multi-sheet; maintain existing 50 MB limit unless changed through tested product decision. Reject macro execution, malicious formula payloads and decompression bombs.
+4.2 CSV sniffing: detect delimiter comma/tab/semicolon/pipe, quoting, escapes, BOM, encoding, inconsistent field counts, empty rows, multiline quoted cells. Report confidence and offer override.
+4.3 Excel discovery: enumerate visible/hidden sheets, dimensions, merged cells, title rows, blank separators, Excel Tables, date-formatted cells, formulas vs cached values, multiple independent tables in one sheet, charts-only sheets, named ranges. Do not assume first sheet or first row is data.
+4.4 Header detection: score candidate header rows using type consistency, uniqueness, density, text patterns, repeated headers, merged titles and surrounding content. Ask user if multiple plausible tables. Support multi-row headers and duplicate/empty headers with stable internal column IDs.
+4.5 Infer data blocks and footer/total rows; exclude subtotals from fact-row sums only after evidence and preserve excluded source records in provenance.
+4.6 Preserve exact original values, original column names, row order, sheet origin and cell coordinates. Use normalized copies; never silently overwrite original data.
+4.7 Preserve identifiers as strings, including leading zeros, long numeric identifiers, scientific-looking codes and postal codes.
+4.8 Date/time: distinguish actual Excel date serial from integer, date vs datetime vs time-of-day, timezone aware vs naive, locale day/month ambiguity, duration vs timestamp. Preserve original raw string and normalized ISO value. Never manufacture a reporting date.
+4.9 Parse numeric values with locale awareness: 1,234.50 vs 1.234,50, negative parentheses, percent signs, currency symbols, spaces and null tokens. Preserve raw values and conversion errors.
+4.10 Handle sheets with multiple unrelated tables: discover and ask for selection or model separate entities, never concatenate indiscriminately.
+4.11 Provide a preview before heavy generation with detected table(s), rows, columns, sample, type confidence and warnings.
+
+================================================================================
+05. COLUMN DATA TYPE INFERENCE
+================================================================================
+5.1 Distinguish physical types: string, integer, decimal, boolean, date, datetime, time, duration, currency, percentage, categorical, free-text, JSON-like, geolocation, binary/unsupported, mixed/unknown.
+5.2 Distinguish logical roles: identifier, dimension, additive measure, semi-additive measure, non-additive ratio, timestamp, start timestamp, end timestamp, status, category, hierarchy level, geographic field, free-text description, target/plan, flag, unit/quantity, reference/master attribute.
+5.3 Combine header clues, actual value distribution, uniqueness ratio, null ratio, formatting, unit suffix, range, co-occurrence, relationships and domain context. Never rely on header name alone.
+5.4 For every column output candidate types/roles with confidence, evidence, sample valid/invalid counts, null count, distinct count, cardinality ratio, parsing success, outliers, min/max and representative values.
+5.5 Recognize numeric IDs: unique sequential ticket numbers are keys, not measures; ZIP codes and phone numbers are identifiers, not quantities.
+5.6 Recognize binary 0/1 flags, but distinguish from measures. Reopened Flag can be SUM for count of reopened tickets if validated.
+5.7 Recognize rating scales (1–5, 0–10) but require scale validation; compute mean only over nonmissing valid responses.
+5.8 Recognize rates (0.2 vs 20%) and currency amounts only with sufficient evidence. Do not assume all decimals are percentages.
+5.9 Distinguish 'SLA Limit (hrs)' as a threshold duration, not cost or revenue.
+5.10 Distinguish 'Logged On' and 'Finished At' as event timestamps and derive duration only when both are present and end >= start.
+5.11 Mixed-type columns: report type proportions, parsing exceptions and whether coercion is safe. Preserve unparseable values; do not silently discard.
+5.12 Ambiguous date strings like 03/04/2026 require locale selection or consistency evidence; show preview before committing.
+5.13 Very sparse columns must not be assigned confident business semantics based on a few rows.
+5.14 Column profiling should be based on complete data where feasible; sample for speed but confirm decisions using full-column validation.
+
+================================================================================
+06. MISSING VALUES, INVALID VALUES AND DATA QUALITY
+================================================================================
+6.1 Separate missing/null/blank/whitespace/'N/A'/'NA'/'NULL'/'Unknown'/'-'/'—'/'Not provided'/0/false. Zero is a legitimate number, not missing.
+6.2 Per-column metrics: missing count/rate, invalid count/rate, unique values, duplicates, outliers, type inconsistency, min/max, parse failures.
+6.3 Per-row metrics: invalid key, missing required fields, impossible date order, negative duration, invalid rating, orphan foreign key, contradictory status/end date.
+6.4 Missingness by segment/time: optional analysis to detect systematic gaps; avoid treating random and structural missingness as equivalent.
+6.5 Policy matrix: identifiers missing -> cannot safely distinct count; numerator missing -> metric invalid or partial with disclosure; denominator zero -> N/A; missing rating -> exclude from mean and report response count; missing end timestamp -> unresolved/unknown, not zero-hour duration.
+6.6 Do not fill missing values automatically with zero, average, 'Active', generic locations, synthetic dates or category names. Imputation only on explicit user request, with original vs imputed separated and tagged.
+6.7 Date order validation: Finished At earlier than Logged On must be flagged and excluded from duration calculations unless corrected with user confirmation.
+6.8 Status consistency: Completed/Resolved/Closed with no end timestamp is an anomaly; open with an end timestamp is an anomaly. Define policy explicitly, do not silently fix.
+6.9 SLA comparisons: compute completed-ticket compliance from actual elapsed hours and SLA Limit (hrs). If business-hours SLA or pause periods are not present, label result 'elapsed-time SLA (illustrative)' rather than implying contractual SLA compliance.
+6.10 Missing categorical values should appear as '(Missing)' or be excluded with clear accounting, not vanish unnoticed.
+6.11 Distinguish expected nonapplicability from data defect: unresolved tickets normally lack completion timestamp.
+6.12 Produce quality scores only with transparent formulas and weights; do not assert '100% verified' from superficial checks.
+
+================================================================================
+07. ENTITY KEYS, ROW GRAIN AND AGGREGATION SAFETY
+================================================================================
+7.1 Detect candidate primary keys using non-null coverage, uniqueness, stability, composite-key combinations, patterns and domain hints.
+7.2 Identify row grain explicitly: one ticket per row, one ticket event per row, one sales order line, one order, one employee snapshot per month, one stock item per day, one survey response, etc.
+7.3 Use confidence-scored hypotheses and ask when ambiguity affects sums or counts.
+7.4 Ticket fixture: one Case Ref per row -> COUNTROWS and DISTINCTCOUNT(Case Ref) should both be 8,000; if repeated Case Ref exists, determine event vs ticket grain before using either.
+7.5 Sales fixture: transaction ID uniqueness and order-line grain must be verified before interpreting average order value.
+7.6 Distinguish additive (sales, ticket events), semi-additive (inventory balances, account balance), and non-additive (rates, margins, averages, percentages) metrics.
+7.7 Never SUM a snapshot balance across dates. Use latest valid observation per entity for point-in-time measures.
+7.8 Never average row margins to produce total margin; recompute weighted ratio from summed numerator and denominator.
+7.9 Detect duplicate records vs legitimate repeated events; preserve duplicates until business rules authorize deduplication.
+7.10 Track count semantics: rows, unique tickets, unique customers, resolved tickets, ticket events, responses; label every count precisely.
+
+================================================================================
+08. MULTI-SHEET RELATIONSHIP DISCOVERY
+================================================================================
+8.1 Identify possible entity tables and candidate joins from names, type compatibility, overlap of distinct keys and uniqueness/cardinality.
+8.2 Calculate one-to-one, one-to-many, many-to-one, many-to-many and orphan rates; do not create joins based on matching names alone.
+8.3 Detect accidental fan-out: joining transactions to duplicate product master rows must not multiply sales.
+8.4 Require uniqueness or explicit aggregation before one-to-many joins; use bridge tables for many-to-many only with supported rules.
+8.5 Validate relationship direction, join coverage, null keys, key normalization and temporal effective dates.
+8.6 Show a relationship diagram/summary with confidence and sample matches. User confirms risky joins.
+8.7 Metric planner must specify source table and grain, not assume a global flat dataset.
+8.8 Cross-sheet reconciliation: joined row counts and source financial totals must remain unchanged unless intentionally transformed.
+
+================================================================================
+09. SEMANTIC INTELLIGENCE AND DOMAIN RECOGNITION
+================================================================================
+9.1 Separate domain recognition from metric selection. Recognize broad patterns: sales, finance, helpdesk, HR, inventory, marketing, education, survey, operations, project management, manufacturing, generic tabular.
+9.2 Allow multi-domain data, e.g. sales plus inventory, without forcing a single label.
+9.3 Use column ensembles and value patterns: Case Ref + status + open/end times + SLA -> helpdesk; SKU + stock snapshot -> inventory; employee ID + hire date -> HR; sales amount + invoice -> sales.
+9.4 Header aliases must be extensible: 'Logged On', 'Created At', 'Opened Date', 'Ticket Opened' can be candidates for start timestamp, subject to evidence.
+9.5 Score candidate semantic roles and domain with explainable evidence, not opaque guesses.
+9.6 AI/LLM, if available, may propose roles and interpretations only; deterministic validators decide whether candidate metrics are legal. Never allow LLM text to write fabricated values into report.
+9.7 Do not transmit private user data to external AI without clear disclosure, consent and applicable policy. Prefer metadata/redacted samples when sufficient.
+9.8 Domain classification should include 'generic/unknown' as a successful safe outcome, not an error.
+9.9 For unknown data, generate truthful counts, missingness, distributions, numeric summaries and relationships; do not manufacture a business narrative.
+9.10 Detect conflicts: a column called 'Sales' containing ticket states is not automatically revenue. Actual values and grain override weak header clues.
+9.11 Source-provided target, budget, forecast, prior-year and margin fields require exact definitions and units before being displayed.
+9.12 Maintain user-approved semantic mapping profiles by schema fingerprint; invalidate or re-confirm when column semantics change.
+
+================================================================================
+10. CONFIDENCE, ABSTENTION AND USER CLARIFICATION
+================================================================================
+10.1 Every inferred role/metric/relationship gets confidence [0,1] and evidence list.
+10.2 Suggested policy (configurable and calibrated): >=0.90 high confidence, 0.70–0.90 review for consequential metrics, <0.70 abstain. Do not mistake these thresholds for statistically calibrated probabilities without evaluation.
+10.3 Consequential mapping (revenue, cost, profit, headcount, SLA, currency, date range, customer identity, joins) requires stronger evidence than a generic category.
+10.4 Ask at most a small number of high-impact questions, e.g. 'Is SLA Limit measured in elapsed hours or business hours?' or 'Which column is the ticket identifier?'
+10.5 Provide user choice: Confirm / Change mapping / Exclude metric / Continue with generic report.
+10.6 No blocking question when safe generic dashboard is possible.
+10.7 Every exclusion must be explained in report or preview: 'Gross Profit not available: no validated cost field.'
+10.8 User override must be persisted with provenance; it does not transform assumption into verified source fact.
+10.9 Confidence is separate from correctness; verify predictions against labeled fixtures and track precision/recall.
+
+================================================================================
+11. TYPED METRIC REGISTRY AND VALIDATION ENGINE
+================================================================================
+11.1 Every metric definition must include: metric_id, display name, semantic domain, required fields/roles, source table, grain, aggregation, numerator/denominator, filters, time semantics, missing policy, unit, formatting, dependencies, lineage, validation and eligibility.
+11.2 Formula execution is deterministic and type-checked. Metrics with missing prerequisites are ineligible and MUST NOT be replaced with made-up values.
+11.3 Valid universal metrics: record count, distinct key count (when key confirmed), missingness, category frequency, numeric min/max/mean/median (where meaningful), time trend (valid date), outlier distribution.
+11.4 Helpdesk metrics:
+- Total Tickets = distinct Case Ref when one ticket per key verified.
+- Completed = count of valid completed cases under documented status/end-date policy.
+- Unresolved = total - completed only if categories are exhaustive and non-overlapping.
+- Resolution Hours = (Finished At - Logged On) in elapsed hours, completed valid cases only.
+- Average Resolution Hours = SUM(valid resolution hours)/COUNT(valid completed cases).
+- SLA Met = COUNT(completed cases with duration <= valid SLA Limit).
+- SLA Breached = COUNT(completed cases with duration > valid SLA Limit).
+- SLA Compliance = SLA Met/(SLA Met+SLA Breached); exclude unknown/unassessable with count disclosed.
+- Reopened Tickets = SUM(valid 0/1 Reopened Flag) if ticket grain and flag semantics validated.
+- Average Customer Rating = SUM(valid ratings)/COUNT(nonmissing valid ratings); report response coverage.
+- Backlog = unresolved as of a defined date, if historical status data supports it; current-state backlog only when latest state is available.
+11.5 Sales metrics: gross sales, discount amount, net sales, cost, gross profit, gross profit margin only when corresponding fields and grain are validated. Weighted margin = SUM(profit)/SUM(net sales). Never SUM discount percentages.
+11.6 HR metrics: headcount distinct employees at as-of date; attrition rate only with confirmed employee population and exits; salary only if supplied and authorized.
+11.7 Inventory metrics: on-hand at date is point-in-time, inventory turnover needs validated COGS and average inventory, stockouts require actual data.
+11.8 Survey metrics: response counts, rating distribution and missingness; avoid inferring revenue or demographics.
+11.9 Reject divide-by-zero with N/A and reason; don't convert missing to 0.
+11.10 Validate units: hours vs minutes, INR vs USD, ratio vs percentage, headcount vs FTE, dates vs durations.
+11.11 For mixed currencies, segment by currency or require authorized conversion rate; never add unconverted currencies.
+11.12 Every metric output must have calculation trace and exact supporting source fields.
+
+================================================================================
+12. CHART ELIGIBILITY AND AUTONOMOUS SELECTION
+================================================================================
+12.1 Chart planning occurs AFTER metric eligibility and relationship validation.
+12.2 Valid date + additive count/measure -> line/column trend; use proper time grain and chronological sort.
+12.3 Low/medium-cardinality category + count/measure -> sorted horizontal bar/column; show Top N + Other and reconcile to total.
+12.4 Valid status categories -> status distribution; priority -> priority mix; team -> workload; intake -> channel mix.
+12.5 Numeric continuous measure -> histogram/boxplot with meaningful bins; don't use ticket IDs as numeric distribution.
+12.6 Two validated numeric measures -> scatter if observations align at same grain.
+12.7 Two categorical dimensions -> heatmap/stacked bars if cardinality manageable.
+12.8 Geographic visualization only with validated geolocation; do not invent country, region, state or coordinates.
+12.9 Pie/donut only for small, mutually exclusive nonnegative composition; avoid misleading slices.
+12.10 No time field -> no fake monthly trend; no cost -> no profit chart; no SLA field -> no SLA compliance chart.
+12.11 Detect missing/partial periods and warn about misleading period comparisons.
+12.12 Charts must specify measure, aggregation, filters, grain, source and quality status.
+12.13 Score chart utility by relevance, variety, readability, evidence, data quality and user goal; prevent duplicate/redundant charts.
+12.14 Allow compatible chart override; reject nonsensical visual combinations.
+12.15 Accessibility: legible labels, color contrast, non-color-only semantics, print layout and mobile-friendly preview.
+
+================================================================================
+13. DYNAMIC DASHBOARD AND WORKSHEET COMPOSITION
+================================================================================
+13.1 Never generate a fixed 'Executive Sales Dashboard' for unknown/helpdesk datasets.
+13.2 Plan workbook sheets based on detected entities, metrics and business domain.
+13.3 Helpdesk example: Service Desk Overview, Ticket Details, SLA Analysis, Team & Priority, Customer Feedback, Data Quality, Metric Definitions.
+13.4 Sales example: Executive Sales Overview, Transactions, Regions/Channels, Product Analysis, Data Quality, Metric Definitions.
+13.5 Generic example: Data Overview, Column Profiles, Category Analysis, Numeric Analysis, Missing Values, Source Data.
+13.6 Preserve user-selected built-in template only when its semantic requirements are met. Incompatible template -> explain why and offer compatible layouts.
+13.7 Dashboard KPI count and chart count should be data-dependent, not forced to fixed counts.
+13.8 Show report title, period, record population, filter context, generation timestamp, source label and limitations.
+13.9 Distinguish generated insights from observed facts; no ungrounded 'high performance' or 'growth' claims.
+13.10 Export should retain raw source and a readable data dictionary. Separate calculated columns from original source.
+13.11 Do not insert unsupported fields as zero-filled placeholders.
+13.12 Preserve workbook navigation, branding, readable formats, print area, chart positioning, frozen headers and filters.
+
+================================================================================
+14. XLSX EXPORT CORRECTNESS AND COMPATIBILITY
+================================================================================
+14.1 Use supported export implementation compatible with current architecture; do not require replacing existing library without evidence.
+14.2 Preserve data types, timestamps, leading zeros, numeric precision and nulls in exported cells.
+14.3 Prevent CSV/XLSX formula injection from untrusted text. Do not execute macros or external links.
+14.4 Formula definitions must reference correct ranges, sheets, table columns and filters. Avoid fixed row end 6002.
+14.5 Validate cached values/recalculation behavior; don't claim formulas are correct because cached displayed numbers look plausible.
+14.6 Check OOXML ZIP relationships, chart references, shared strings, styles, defined names and protection metadata.
+14.7 Test Microsoft Excel desktop, web, and mobile if claimed; record actual environment and outcomes.
+14.8 All dashboard totals and chart source series must reconcile to independently computed source results.
+14.9 Sheet protection is optional; if used, must not break intended filters, recalculation, accessibility or third-party parsing.
+14.10 No #REF!, #DIV/0!, #VALUE!, #NAME?, stale chart categories or unexpected hidden placeholder data.
+
+================================================================================
+15. UX AND PRODUCT WORKFLOW
+================================================================================
+15.1 After upload show 'Analyzing structure', then detected dataset type, row count, date coverage, data quality and proposed KPIs/charts.
+15.2 Explain semantic decisions in plain English: 'Logged On identified as ticket start time because values are timestamps and match ticket records.'
+15.3 Provide 'Review mappings' panel with confidence, examples, units and change control.
+15.4 Ask only consequential questions; otherwise one-click Generate.
+15.5 Warn 'No cost data found; profit will not be shown' rather than silently inventing profit.
+15.6 Show report preview and validation summary before download.
+15.7 Errors should be actionable: unsupported file, invalid header, ambiguous date, conflicting keys, join fan-out, no valid numeric metrics.
+15.8 Retain existing templates, drag/drop, mobile generation, 50 MB guardrail and save/download workflows.
+15.9 Add 'Explain KPI' and 'Data Lineage' affordances where feasible.
+15.10 Do not expose raw personal/sensitive data in diagnostics, logs or analytics.
+
+================================================================================
+16. DATA CONTRACTS / JSON SCHEMAS (ILLUSTRATIVE)
+================================================================================
+ProfiledColumn {
+  columnId, originalName, sourceSheet, sourceIndex,
+  physicalType, logicalRoleCandidates:[{role,confidence,evidence}],
+  totalCount, nonNullCount, nullCount, invalidCount,
+  distinctCount, uniquenessRatio, examples, unit, parseErrors
+}
+DatasetProfile {
+  schemaVersion, sourceHash, tables:[{tableId,sourceSheet,rowCount,columns}],
+  candidateDomains, candidateKeys, rowGrainHypotheses,
+  relationshipCandidates, qualityIssues, confirmationQuestions
+}
+SemanticDecision {
+  decisionId, tableId, columnIds, role, confidence, evidence,
+  source:'deterministic'|'ai-suggestion'|'user-confirmed',
+  accepted, confirmedBy, decisionTimestamp, schemaFingerprint
+}
+MetricDefinition {
+  metricId, domain, requiredRoles, grain, aggregation,
+  numerator, denominator, eligibility, unit, nullPolicy,
+  sourceTables, lineage, validator, version
+}
+MetricResult {
+  metricId, value, unit, populationCount, excludedCount,
+  filterContext, validationStatus, warnings, sourceTrace
+}
+ChartPlan {
+  chartId, chartType, xRole, yMetricId, groupRole,
+  filterContext, sourceGrain, chartEligibility, title,
+  validationStatus, dataCoverage
+}
+ExportAudit {
+  inputHash, outputHash, engineVersion, profileVersion,
+  metricResults, sourceReconciliations, formulaChecks,
+  chartChecks, unresolvedWarnings, testTimestamp
+}
+
+Enforce runtime schema validation, stable IDs, versioned contracts, no free-form unvalidated metric expressions, and safe serialization. Use existing project conventions for TypeScript, database and services.
+
+================================================================================
+17. PERFORMANCE, COST, PRIVACY AND SAFETY
+================================================================================
+17.1 Benchmark parse, profile, inference, planning, aggregation, chart generation and XLSX export separately.
+17.2 Target approximately 20 seconds for known representative files only after measurement. Set size/complexity-based targets and show progress; never promise universal fixed timing.
+17.3 Use bounded sampling for preliminary inference and full-data validation for metric correctness.
+17.4 Avoid O(rows*columns^2) scans, repeated full dataset copies, huge stringification and synchronous UI blocking.
+17.5 Use workers/streaming/batching where compatible with current product and privacy claims.
+17.6 Do not transmit uploaded files to third parties unless clearly disclosed and user-authorized. Review actual deployment behavior, not marketing assumptions.
+17.7 Guard against ZIP bombs, malformed CSV quoting, enormous sheets, path traversal, formula injection, excessive memory, denial-of-service and unauthorized file retention.
+17.8 Avoid collecting PII in error telemetry. Use anonymous performance counters where permitted.
+17.9 Support cancellation, failure recovery and predictable resource cleanup.
+17.10 Log anonymized semantic decisions and failure categories for debugging; not raw user records.
+
+================================================================================
+18. COMPREHENSIVE AUTOMATED TEST MATRIX
+================================================================================
+GROUP A — INGESTION AND STRUCTURE
+A01 CSV comma/tab/semicolon/pipe detection.
+A02 UTF-8 BOM and supported encoding handling.
+A03 Quoted multiline CSV fields.
+A04 Blank/title/header rows and repeated headers.
+A05 Multiple Excel sheets with unrelated tables.
+A06 Multiple tables in one sheet and footer totals.
+A07 Leading-zero IDs and 16+ digit identifiers preserved.
+A08 Ambiguous date formats trigger confirmation.
+A09 Excel date serial vs integer distinction.
+A10 Formula injection and malformed XLSX safely rejected.
+
+GROUP B — COLUMN TYPE AND MISSINGNESS
+B01 0/1 flag not misread as revenue.
+B02 SLA Limit (hrs) classified as duration threshold.
+B03 Customer Rating 1–5 recognized as rating with missing coverage.
+B04 Finished At blanks remain missing, not zero.
+B05 Literal zero distinct from missing.
+B06 Invalid rating 6 or -1 flagged.
+B07 Mixed numeric/currency formats handled or flagged.
+B08 Postal code/phone numeric-looking ID preserved as text.
+B09 Mixed date/text column produces error evidence.
+B10 Outlier and negative duration warnings.
+
+GROUP C — KEYS, GRAIN, RELATIONSHIPS
+C01 Unique ticket Case Ref recognized as ticket key.
+C02 Repeated Case Ref event log not counted as distinct new tickets.
+C03 Duplicate exact rows handled without silent deletion.
+C04 Inventory snapshots not summed across dates.
+C05 Sales order lines not mistaken for unique orders.
+C06 One-to-many join fan-out detected and blocked.
+C07 Many-to-many relationship requires confirmation.
+C08 Missing foreign keys and orphan rates surfaced.
+
+GROUP D — DOMAIN AND SEMANTIC SAFETY
+D01 Helpdesk classified as ticket operations, not sales.
+D02 Sales fixture retains valid revenue/profit semantics.
+D03 HR dataset does not generate sales KPIs.
+D04 Inventory dataset generates stock metrics only when supported.
+D05 Education dataset generates score analysis, not revenue.
+D06 Survey dataset generates response/rating metrics.
+D07 Unknown dataset safely produces generic data profile.
+D08 Misleading column name does not override value evidence.
+D09 Mixed-domain file supports multiple semantic groups.
+D10 Unconfirmed low-confidence field mapping abstains.
+
+GROUP E — METRIC VALIDITY
+E01 Helpdesk total 8,000, completed 6,199, unresolved 1,801.
+E02 SLA met 2,925, breached 3,274, rate 47.185%.
+E03 Mean completed duration 55.6082 hours.
+E04 Rating responses 4,508; blanks excluded from mean.
+E05 Reopened count reconciles to 0/1 flags.
+E06 No revenue, cost, gross profit or margin in helpdesk export.
+E07 No invented targets, growth, stock or account health.
+E08 Sales reference net sales/profit/margin exact to cent.
+E09 Weighted ratios, not average row percentages.
+E10 Zero denominator -> N/A, not 0%.
+E11 Mixed currency blocked from combined sum.
+E12 Filtering by date/status/team preserves numerator/denominator consistency.
+
+GROUP F — VISUALS AND EXPORT
+F01 Helpdesk charts: time, status, priority, team, issue category, channel, SLA.
+F02 No sales charts for helpdesk.
+F03 Dynamic worksheet titles and structure.
+F04 Top N + Other sums to full source total.
+F05 Chronological month ordering.
+F06 No chart series pointing to fabricated or stale ranges.
+F07 XLSX formulas and cached values checked in Excel.
+F08 No broken cell references or Excel errors.
+F09 All 32 existing compatible templates remain usable.
+F10 Incompatible template explicitly declined or mapped safely.
+F11 Mobile import, preview, export functional.
+F12 Workbook source data preserved, including timestamps.
+
+GROUP G — SCALE, PRIVACY, REGRESSION
+G01 100-row dataset.
+G02 6,000-row sales fixture.
+G03 8,000-row helpdesk fixture.
+G04 20,000-row mixed-domain dataset.
+G05 100,000-row benchmark if within product limits.
+G06 Near-50 MB file behavior measured.
+G07 Sensitive data not logged or sent unexpectedly.
+G08 Repeat generation deterministic for same inputs and choices.
+G09 Schema rename/reorder with confirmed mappings yields equivalent results.
+G10 Re-import exported workbook does not double-count summary rows.
+
+All tests must include expected, actual, source fixture, pass/fail, screenshots or logs, and code revision. Do not mark unexecuted tests PASS.
+
+================================================================================
+19. INDEPENDENT RECONCILIATION REQUIREMENTS
+================================================================================
+19.1 Use an independent reference implementation/test fixture to compare computed metrics; do not validate a metric using the same function that produced it.
+19.2 Reconcile by group: status, priority, resolver team, issue family, intake channel, service site, month. Include missing/unknown groups in population accounting.
+19.3 Validate every KPI's denominator and exclusions.
+19.4 Verify chart data arrays independently against source grouping.
+19.5 Verify source-row checksum and field-level equality after export; transformed fields must have traceable source and formula.
+19.6 Generate a machine-readable audit manifest and user-facing Data Quality sheet.
+19.7 Fail export or remove affected KPI on critical inconsistency; do not silently ship misleading numbers.
+
+================================================================================
+20. ENGINEERING DELIVERY PHASES
+================================================================================
+PHASE 0 — Baseline (required before edits)
+- Inspect repo architecture, current importer, template selector, mapping logic, workbook writer, tests and hosting constraints.
+- Reproduce helpdesk failure and collect screenshots/formula references.
+- Identify source of fixed Sales dashboard choice and fabricated mappings.
+- Document migration plan preserving 32 templates.
+
+PHASE 1 — Structural Data Profiler
+- Safe ingestion, table/header discovery, type profiling, null/invalid analysis, source preservation.
+- Implement schemas and automated A/B tests.
+
+PHASE 2 — Grain, Keys and Relationships
+- Key candidate scoring, duplicate handling, grain hypotheses, join validation, fan-out protection.
+- Implement C tests.
+
+PHASE 3 — Semantic Inference and Confidence
+- Domain classification, role mapping, alias dictionaries, evidence, abstention, user confirmation.
+- Implement D tests.
+
+PHASE 4 — Typed Metric Registry
+- Generic and domain-specific metric definitions; safe formula execution; unit/missingness policy; full reconciliation.
+- Implement E tests and independent reference oracle.
+
+PHASE 5 — Autonomous Dashboard Planner
+- Chart eligibility and scoring; dynamic layout/sheets; compatibility gate for 32 templates.
+- Implement F tests.
+
+PHASE 6 — Export and QA Hardening
+- XLSX fidelity, recalculation, chart ranges, provenance sheets, security, mobile, performance.
+- Implement G tests and real Excel verification.
+
+PHASE 7 — Controlled Release
+- Feature flag new engine, retain legacy fallback ONLY when semantically safe; never fallback to wrong Sales report.
+- Run regression suite, manual acceptance, beta feedback and rollback drill.
+- Release only after owner approval.
+
+================================================================================
+21. ACCEPTANCE CRITERIA — NO EXCEPTIONS
+================================================================================
+[ ] Unknown file does not default to Executive Sales.
+[ ] Column types, roles, null rates and row grain are visible and explainable.
+[ ] Original source values are preserved and auditable.
+[ ] Relationships do not duplicate facts.
+[ ] Domain inference abstains when ambiguous.
+[ ] Every displayed KPI has validated prerequisites and definition.
+[ ] Missing values do not silently become zero.
+[ ] Helpdesk fixture yields correct ticket/SLA metrics and no finance fields.
+[ ] Sales fixture still yields correct financial metrics.
+[ ] Dynamic charts and worksheet composition adapt across at least five domains.
+[ ] 32 existing templates remain available where compatible.
+[ ] All charts, cells, formulas and filters reconcile independently.
+[ ] Excel opens and calculates correctly on claimed platforms.
+[ ] No invented managers, targets, growth, countries, stock or customer attributes.
+[ ] Performance is benchmarked rather than assumed.
+[ ] Security/privacy review completed.
+[ ] Automated tests pass, manual QA signed off, owner approves deploy.
+
+================================================================================
+22. REQUIRED FINAL HANDOFF FROM CODING AGENT
+================================================================================
+Return ONE consolidated implementation report containing:
+1. Root cause analysis with exact file paths/functions causing Sales-template coercion.
+2. Architecture diagram and changed/added modules.
+3. Before/after semantic mappings for Helpdesk and Sales fixtures.
+4. Full metric definitions and sample calculation traces.
+5. Independent source-to-output reconciliation tables.
+6. Screenshots of generated helpdesk and sales dashboards.
+7. Full automated test matrix results (including failures and skipped tests).
+8. Excel desktop/web/mobile interoperability results where actually tested.
+9. Performance timing breakdown and file sizes.
+10. Security/privacy review and any outstanding limitations.
+11. Feature flags, migration and rollback steps.
+12. Clear statement of what was NOT implemented or tested.
+13. Explicit request for owner approval before production deployment.
+
+================================================================================
+23. SINGLE COPY-PASTE IMPLEMENTATION INSTRUCTION
+================================================================================
+'Implement Universal Data Intelligence Engine PRD v5 in the existing excel.dattasable.com codebase. First audit and reproduce the 8,000-ticket Helpdesk dataset being incorrectly transformed into a Sales dashboard. Preserve all current functionality, 32 built-in templates, mobile import/export and the current deployment architecture. Build a source-preserving, type-aware, grain-aware, relationship-aware, confidence-scored semantic pipeline before metric selection. Reject or abstain from unsupported interpretations. Implement deterministic metric definitions, autonomous chart and worksheet selection, full source-to-output reconciliation and the listed test matrix. Do not invent financial values, targets, customers, dates or geography. Do not hardcode fixture values. Provide before/after evidence and independent tests. Do not deploy without my approval.'
+
+END OF PRD

@@ -1,0 +1,24 @@
+{
+  "helpdesk": {
+    "total_tickets": 8000,
+    "completed_tickets": 6199,
+    "in_progress_tickets": 1181,
+    "waiting_on_customer_tickets": 620,
+    "total_unresolved_backlog": 1801,
+    "sla_met_count": 2925,
+    "sla_breached_count": 3274,
+    "sla_compliance_rate": 0.47185029843523146,
+    "mean_resolution_hours_raw": 55.608194870140345,
+    "mean_resolution_hours_ledger": 55.6088853040813,
+    "reopened_count": 415
+  },
+  "sales": {
+    "total_transactions": 6000,
+    "total_net_sales": 339830586.55,
+    "total_gross_profit": 71910440.05,
+    "total_cost": 267920146.5,
+    "overall_profit_margin": 0.21160673257826265,
+    "paid_transactions": 4934,
+    "pending_transactions": 1066
+  }
+}

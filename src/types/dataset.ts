@@ -91,6 +91,56 @@ export interface DatasetSchemaProfile {
   industryConfidence: number;
   totalRecords: number;
   isCustomUpload?: boolean;
+  currencyCode?: string;
+  currencySymbol?: string;
+  detectedDomain?: 'sales' | 'customer_support_ops' | 'generic';
+  hasFinancialMetrics?: boolean;
+  grain?: string;
+  slaLimitColumn?: string;
+  reopenedColumn?: string;
+  ratingColumn?: string;
+  startDateColumn?: string;
+  endDateColumn?: string;
+  priorityColumn?: string;
+  teamColumn?: string;
+  intakeColumn?: string;
+  locationColumn?: string;
+}
+
+export interface HelpdeskMetrics {
+  totalTickets: number;
+  completedTickets: number;
+  unresolvedTickets: number;
+  slaMet: number;
+  slaBreached: number;
+  slaComplianceRate: number;
+  meanResolutionHours: number;
+  reopenedCount: number;
+  ratingCount: number;
+  meanRating: number;
+  monthlyTrend: {
+    monthKey: string;
+    monthLabel: string;
+    ticketCount: number;
+    completedCount: number;
+    slaMetCount: number;
+    complianceRate: number;
+  }[];
+  statusBreakdown: { status: string; count: number; sharePct: number }[];
+  urgencyBreakdown: { urgency: string; count: number; sharePct: number; slaLimit: number }[];
+  resolverBreakdown: {
+    resolver: string;
+    total: number;
+    completed: number;
+    slaMet: number;
+    slaBreached: number;
+    complianceRate: number;
+    avgDurationHours: number;
+  }[];
+  intakeBreakdown: { channel: string; count: number; sharePct: number }[];
+  issueBreakdown: { issue: string; count: number; sharePct: number }[];
+  siteBreakdown: { site: string; count: number; sharePct: number }[];
+  ratingsBreakdown: { rating: number; count: number; sharePct: number }[];
 }
 
 export interface Transaction {
@@ -119,6 +169,9 @@ export interface Transaction {
   marginPct: number;
   paymentTerms: 'Net 30' | 'Net 60' | 'Annual Prepaid' | 'Credit Card / ACH' | string;
   status: 'Completed' | 'Invoiced' | 'Delivered' | string;
+  grossSales?: number;
+  discountAmount?: number;
+  paymentStatus?: string;
   // Dynamic fields from uploaded data
   rawRow?: Record<string, any>;
 }
@@ -133,6 +186,10 @@ export interface ProductCatalogItem {
   leadTimeDays: number;
   stockLevel: number;
   status: 'Active' | 'High Demand' | 'Backorder' | string;
+  unitsSold?: number;
+  realizedRevenue?: number;
+  realizedProfit?: number;
+  realizedMarginPct?: number;
 }
 
 export interface RegionalPerformance {
@@ -147,6 +204,10 @@ export interface RegionalPerformance {
   averageDealSize: number;
   growthRateYoY: number;
   regionalDirector: string;
+  actualUnits?: number;
+  actualCost?: number;
+  marginPct?: number;
+  operatingCities?: string[];
 }
 
 export interface CustomerAccount {
@@ -161,6 +222,11 @@ export interface CustomerAccount {
   contractRenewal: string;
   accountHealth: 'Optimal' | 'Stable' | 'At Risk';
   accountExecutive: string;
+  city?: string;
+  region?: string;
+  totalUnits?: number;
+  marginPct?: number;
+  paymentStatus?: string;
 }
 
 export interface MonthlyTrend {
@@ -211,9 +277,13 @@ export interface AppDataset {
     topRegion: string;
     topCategory: string;
     activeCustomers: number;
+    totalGrossSales?: number;
+    totalDiscountAmount?: number;
+    averageGrossDealSize?: number;
   };
   schemaProfile?: DatasetSchemaProfile;
   rawRows?: Record<string, any>[];
   originalHeaders?: string[];
+  helpdeskMetrics?: HelpdeskMetrics;
 }
 

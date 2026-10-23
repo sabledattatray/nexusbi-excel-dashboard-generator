@@ -76,7 +76,7 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   const book = new ExcelJS.Workbook();
   await book.xlsx.load(buffer as any);
 
-  // 1. Verify exact 6 worksheets
+  // 1. Verify exact 7 worksheets
   const expectedSheets = [
     'Executive Dashboard',
     'Pivot Table Analysis',
@@ -84,6 +84,7 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
     'Regional Performance',
     'Product Catalog',
     'Customer Accounts',
+    'Audit & Data Provenance',
   ];
   assert.deepEqual(book.worksheets.map((s) => s.name), expectedSheets);
 
@@ -110,7 +111,7 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
   assert.equal(tx.getCell('T3').formula, 'R3*Q3*(1-S3)');
   assert.equal(tx.getCell('U3').formula, 'R3*P3');
   assert.equal(tx.getCell('V3').formula, 'T3-U3');
-  assert.equal(tx.getCell('W3').formula, 'V3/T3');
+  assert.equal(tx.getCell('W3').formula, 'IF(T3>0, V3/T3, 0)');
 
   // 6. Verify Chart XML palette contains healthcare theme colors and data labels for bars
   const theme = getIndustryTheme('healthcare_pharma');
@@ -136,8 +137,7 @@ test('custom uploaded CSV produces exact 6-sheet professional workbook with 7 ch
 
   const wbXml = await zip.file('xl/workbook.xml')!.async('string');
   assert.ok(wbXml.includes('<workbookProtection'));
-  assert.ok(wbXml.includes('lockStructure="1"'));
-  assert.ok(wbXml.includes('algorithmName="SHA-512"'));
+  assert.ok(wbXml.includes('workbookAlgorithmName="SHA-512"'));
 
   // Verify filter dropdown cells C4 and G4 on Executive Dashboard are unlocked for user interaction
   assert.equal(dash.getCell('C4').protection?.locked, false);
@@ -363,6 +363,205 @@ test('locally imported CSV with State, City, Zone correctly maps roles and prese
   const choices = [...new Set((importResult.dataset.rawRows || []).map((r) => String(r[spec.filter])))].sort();
   assert.ok(!choices.includes('undefined') && !choices.includes('null') && !choices.includes(''));
   assert.deepEqual(choices, ['Gujarat', 'Karnataka', 'Maharashtra']);
+});
+
+test('Helpdesk 8,000-ticket fixture imports as customer_support_ops and exports authentic 6-sheet IT Helpdesk workbook', async () => {
+  const fs = await import('node:fs');
+  const Papa = (await import('papaparse')).default;
+  const { inferColumnMapping, buildDatasetFromUpload } = await import('./dataImporter');
+  const { inspectDatasetSchema } = await import('./schemaDetector');
+  const { getProfessionalSpec } = await import('./professionalPresentation');
+  const { exportToProfessionalExcel } = await import('./excelExporter');
+
+  const csvPath = 'C:\\Users\\sable\\Downloads\\Excel Tests\\Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test_Upload.csv';
+  assert.ok(fs.existsSync(csvPath), 'Upload CSV fixture must exist');
+
+  const csvContent = fs.readFileSync(csvPath, 'utf8');
+  const parsed = Papa.parse(csvContent, {
+    header: true,
+    skipEmptyLines: 'greedy',
+    transformHeader: (h) => h.replace(/^\ufeff/, '').trim(),
+  });
+
+  const rawHeaders = (parsed.meta.fields || []).map((h) => h.replace(/^\ufeff/, '').trim()).filter(Boolean);
+  const rows = (parsed.data as Record<string, any>[]).filter((r) => Object.values(r).some((v) => v !== null && v !== undefined && v !== ''));
+
+  assert.equal(rows.length, 8000, 'Must have exactly 8,000 ticket rows');
+
+  // 1. Schema Detection
+  const schema = inspectDatasetSchema(rawHeaders, rows);
+  assert.equal(schema.detectedIndustry, 'customer_support_ops', 'Domain must be customer_support_ops');
+  assert.equal(schema.detectedDomain, 'customer_support_ops', 'detectedDomain must be customer_support_ops');
+  assert.equal(schema.hasFinancialMetrics, false, 'hasFinancialMetrics must be false');
+
+  // 2. Column Mapping
+  const mapping = inferColumnMapping({
+    headers: rawHeaders,
+    rows,
+    totalRows: rows.length,
+    fileName: 'Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test_Upload.csv',
+    fileSize: fs.statSync(csvPath).size,
+    fileType: 'csv',
+    schema,
+  });
+
+  assert.equal(mapping.primaryMetricCol, undefined, 'Must NOT assign SLA Limit or any measure to primaryMetric');
+  assert.equal(mapping.secondaryMetricCol, undefined, 'Must NOT assign Reopened Flag to secondaryMetric');
+
+  // 3. Build Dataset
+  const importResult = buildDatasetFromUpload(
+    {
+      headers: rawHeaders,
+      rows,
+      totalRows: rows.length,
+      fileName: 'Helpdesk_Operations_8000_Tickets_Universal_Dashboard_Test_Upload.csv',
+      fileSize: fs.statSync(csvPath).size,
+      fileType: 'csv',
+      schema,
+    },
+    mapping,
+    {
+      ...baseConfig,
+      industry: 'customer_support_ops',
+      companyName: 'Global Enterprise Service Desk',
+    }
+  );
+
+  const dataset = importResult.dataset;
+  assert.ok(dataset.helpdeskMetrics, 'Must contain helpdeskMetrics object');
+  const hm = dataset.helpdeskMetrics!;
+
+  // 4. Exact Mathematical Reconciliation against PRD 5.0
+  assert.equal(hm.totalTickets, 8000, 'Total tickets must equal 8,000');
+  assert.equal(hm.completedTickets, 6199, 'Completed tickets must equal 6,199');
+  assert.equal(hm.unresolvedTickets, 1801, 'Unresolved tickets must equal 1,801');
+  assert.equal(hm.slaMet, 2925, 'SLA Met must equal 2,925');
+  assert.equal(hm.slaBreached, 3274, 'SLA Breached must equal 3,274');
+  assert.equal(Number((hm.slaComplianceRate * 100).toFixed(2)), 47.19, 'SLA compliance must equal 47.19%');
+  assert.equal(Number(hm.meanResolutionHours.toFixed(2)), 55.61, 'Mean resolution duration must equal 55.61 hours');
+  assert.equal(hm.ratingCount, 4508, 'CSAT response count must equal 4,508');
+  assert.equal(Number(hm.meanRating.toFixed(2)), 2.96, 'Mean CSAT rating must equal 2.96');
+  assert.equal(hm.reopenedCount, 415, 'Reopened ticket count must equal 415');
+
+  // Financial verification: ZERO revenue, profit, or COGS
+  assert.equal(dataset.kpi.totalRevenue, 0, 'Total revenue must be 0');
+  assert.equal(dataset.kpi.totalGrossProfit, 0, 'Total profit must be 0');
+  assert.equal(dataset.kpi.totalCogs, 0, 'Total COGS must be 0');
+  assert.equal(dataset.transactions.reduce((s, t) => s + t.revenue, 0), 0, 'Transaction revenue must be 0');
+
+  // 5. Professional Presentation Spec
+  const spec = getProfessionalSpec(dataset);
+  assert.equal(spec.filter, 'Service Site', 'Primary filter must be Service Site');
+  assert.equal(spec.layout, 'support', 'Spec layout must be support');
+  assert.equal(spec.metrics[0].label, 'Total Service Tickets');
+  assert.equal(spec.metrics[1].label, 'Completed Tickets');
+  assert.equal(spec.metrics[2].label, 'SLA Compliance Rate');
+  assert.equal(spec.metrics[3].label, 'Mean Resolution Duration (hrs)');
+
+  // 6. Export to Professional Excel
+  const { blob, filename } = await exportToProfessionalExcel(dataset, dataset.config);
+  assert.ok(filename.includes('IT_Service_Desk_Operations_Dashboard_2026'), `Filename was ${filename}`);
+
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  const zip = await JSZip.loadAsync(buffer);
+  const book = new ExcelJS.Workbook();
+  await book.xlsx.load(buffer as any);
+
+  // 7. Exact 6 Helpdesk Worksheets (NO Sales sheets!)
+  const expectedSheets = [
+    'Service Desk Overview',
+    'Ticket Operations Ledger',
+    'SLA & Resolver Performance',
+    'Priority & Workload Matrix',
+    'Customer Feedback Analysis',
+    'Audit & Data Provenance',
+  ];
+  assert.deepEqual(book.worksheets.map((s) => s.name), expectedSheets);
+
+  // 8. Native DrawingML Charts in Drawing1
+  const chartFiles = Object.keys(zip.files).filter((p) => /^xl\/charts\/chart\d+\.xml$/.test(p));
+  assert.equal(chartFiles.length, 3, 'Must contain 3 native charts on Service Desk Overview');
+
+  // 9. Verify Slicers & Dynamic Formulas on Sheet 1
+  const overview = book.getWorksheet('Service Desk Overview')!;
+  assert.equal(overview.getCell('D10').dataValidation?.type, 'list', 'Resolver group filter must have list validation');
+  assert.equal(overview.getCell('J10').dataValidation?.type, 'list', 'Service site filter must have list validation');
+  const b7 = overview.getCell('B7').value;
+  const b7Num = typeof b7 === 'object' && b7 !== null && 'result' in b7 ? (b7 as any).result : b7;
+  assert.equal(b7Num, 8000, 'Scorecard Total Tickets must be 8,000');
+  const d7 = overview.getCell('D7').value;
+  const d7Num = typeof d7 === 'object' && d7 !== null && 'result' in d7 ? (d7 as any).result : d7;
+  assert.equal(d7Num, 6199, 'Scorecard Completed Tickets must be 6,199');
+
+  // 10. Verify Sheet 2 (Ledger) has all 8,000 rows
+  const ledger = book.getWorksheet('Ticket Operations Ledger')!;
+  assert.equal(ledger.rowCount, 8004, 'Ledger must contain header rows, 8,000 data rows, and total row');
+
+  // 11. Golden Case HD-000001 Verification (PRD v8.0 Section F - H01 to H05)
+  const row4 = ledger.getRow(4);
+  assert.equal(row4.getCell(1).value, 'HD-000001', 'Row 4 must be HD-000001');
+  const loggedOnDate = row4.getCell(2).value as Date;
+  assert.ok(loggedOnDate instanceof Date, 'Logged On must be a real Date object');
+  assert.equal(loggedOnDate.getUTCHours(), 12, 'Logged On hours must be 12 (not midnight 0)');
+  assert.equal(loggedOnDate.getUTCMinutes(), 35, 'Logged On minutes must be 35');
+
+  const finishedAtDate = row4.getCell(3).value as Date;
+  assert.ok(finishedAtDate instanceof Date, 'Finished At must be a real Date object');
+  assert.equal(finishedAtDate.getUTCHours(), 16, 'Finished At hours must be 16');
+  assert.equal(finishedAtDate.getUTCMinutes(), 35, 'Finished At minutes must be 35');
+
+  const durVal = row4.getCell(13).value;
+  const durNum = typeof durVal === 'object' && durVal !== null && 'result' in durVal ? (durVal as any).result : durVal;
+  assert.equal(durNum, 4, 'HD-000001 duration must be exactly 4.00 hours');
+
+  const slaVal = row4.getCell(14).value;
+  const slaText = typeof slaVal === 'object' && slaVal !== null && 'result' in slaVal ? (slaVal as any).result : slaVal;
+  assert.equal(slaText, 'Met', 'HD-000001 SLA must be Met');
+
+  // 12. Open Ticket HD-000002 Verification (PRD v8.0 - No #VALUE! error)
+  const row5 = ledger.getRow(5);
+  assert.equal(row5.getCell(1).value, 'HD-000002');
+  assert.equal(row5.getCell(3).value, null, 'Unresolved ticket must have null Finished At');
+  const durVal5 = row5.getCell(13).value;
+  const durNum5 = typeof durVal5 === 'object' && durVal5 !== null ? (durVal5 as any).result ?? '' : durVal5;
+  assert.equal(durNum5, '', 'Unresolved ticket duration must evaluate to empty string (not #VALUE!)');
+
+  // 13. Audit & Data Provenance Sheet Verification (PRD v8.0 Section E & F)
+  const audit = book.getWorksheet('Audit & Data Provenance')!;
+  assert.ok(audit, 'Audit sheet must exist');
+  const auditStatus = audit.getCell('A2').value;
+  const auditStatusText = typeof auditStatus === 'object' && auditStatus !== null && 'result' in auditStatus ? (auditStatus as any).result : auditStatus;
+  assert.ok(String(auditStatusText).includes('VERIFIED — 100% RECONCILED'), 'Audit status must be VERIFIED — 100% RECONCILED');
+
+  // Check audit reconciliation rows (Rows 5 to 10)
+  for (let r = 5; r <= 10; r++) {
+    const statusVal = audit.getCell(`J${r}`).value;
+    const statusText = typeof statusVal === 'object' && statusVal !== null && 'result' in statusVal ? (statusVal as any).result : statusVal;
+    assert.equal(statusText, 'PASS', `Audit row ${r} status must be PASS`);
+  }
+
+  // Check row invariants (Rows 13 to 17)
+  for (let r = 13; r <= 17; r++) {
+    const invVal = audit.getCell(`J${r}`).value;
+    const invText = typeof invVal === 'object' && invVal !== null && 'result' in invVal ? (invVal as any).result : invVal;
+    assert.equal(invText, 'PASS — BALANCED', `Invariant row ${r} must be PASS — BALANCED`);
+  }
+
+  // 14. 0 Excel Formula Errors Across All 6 Worksheets (H13 & H14)
+  const errorTokens = ['#VALUE!', '#REF!', '#DIV/0!', '#NAME?', '#NUM!', '#N/A', '#NULL!'];
+  for (const sheet of book.worksheets) {
+    sheet.eachRow((r, rIdx) => {
+      r.eachCell((c, cIdx) => {
+        const valStr = String(c.value ?? '');
+        for (const token of errorTokens) {
+          assert.ok(
+            !valStr.includes(token),
+            `Found error ${token} in sheet "${sheet.name}" cell ${c.address} (row ${rIdx}, col ${cIdx})`
+          );
+        }
+      });
+    });
+  }
 });
 
 

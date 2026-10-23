@@ -31,24 +31,25 @@ export async function exportAdaptiveExcel(
   dashboard.mergeCells('B2:O3'); dashboard.getCell('B2').value = config.reportTitle;
   dashboard.getCell('B2').font = { size: 20, bold: true, color: { argb: theme.colors.excel.headerText || 'FFFFFFFF' } };
   dashboard.getCell('B2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: theme.colors.excel.headerFill } };
+  const adaptiveCurrFmt = config.currencySymbol ? `"${config.currencySymbol}"#,##0.00` : '$#,##0.00';
   dashboard.mergeCells('B5:O5'); dashboard.getCell('B5').value = `${analysis.metricLabel} • ${analysis.rows.length} original records • Source units preserved`;
   dashboard.mergeCells('B7:G7'); dashboard.getCell('B7').value = analysis.metricLabel;
   dashboard.mergeCells('B8:G9'); dashboard.getCell('B8').value = analysis.total;
   dashboard.getCell('B8').font = { size: 28, bold: true, color: { argb: theme.colors.excel.border || theme.colors.excel.tabColor } };
-  dashboard.getCell('B8').numFmt = analysis.metric?.dataType === 'percentage' && analysis.aggregation !== 'count' ? '0.00%' : '#,##0.00';
+  dashboard.getCell('B8').numFmt = analysis.metric?.dataType === 'percentage' && analysis.aggregation !== 'count' ? '0.00%' : analysis.metric?.dataType === 'currency' ? adaptiveCurrFmt : '#,##0.00';
   dashboard.mergeCells('I7:O7'); dashboard.getCell('I7').value = 'Missing / invalid measure values';
   dashboard.mergeCells('I8:O9'); dashboard.getCell('I8').value = analysis.missingMetric;
   dashboard.mergeCells('B11:O11'); dashboard.getCell('B11').value = 'No synthetic targets, forecasts, sales channels, or margins. Summary values are a snapshot of the source at export.';
   if (spec) {
     dashboard.getCell('B11').value = 'Illustrative industry sample. KPIs and chart summaries are calculated from Source Data. Export includes every record; dashboard filters are screen only.';
-    dashboard.getCell('B8').numFmt = spec.metrics[0].format === 'percent' ? '0.0%' : '#,##0.00';
+    dashboard.getCell('B8').numFmt = spec.metrics[0].format === 'percent' ? '0.0%' : spec.metrics[0].format === 'currency' ? adaptiveCurrFmt : '#,##0.00';
     const metrics = workbook.addWorksheet('Business Metrics');
     metrics.columns = [{width:34},{width:22},{width:65}];
     metrics.addRow(['Business KPI','Value','Calculation / record grain']);
     spec.metrics.forEach(metric => metrics.addRow([metric.label, metricValue(data.rawRows as Row[], metric), metric.operation === 'ratio' ? `SUM(${metric.field}) / SUM(${metric.denominator})` : `${metric.operation}(${metric.field || 'records'})`]));
     dashboard.getCell('I7').value = spec.metrics[1].label;
     dashboard.getCell('I8').value = metricValue(data.rawRows as Row[], spec.metrics[1]);
-    dashboard.getCell('I8').numFmt = spec.metrics[1].format === 'percent' ? '0.0%' : '#,##0.00';
+    dashboard.getCell('I8').numFmt = spec.metrics[1].format === 'percent' ? '0.0%' : spec.metrics[1].format === 'currency' ? adaptiveCurrFmt : '#,##0.00';
   }
   const source = workbook.addWorksheet('Source Data', { views: [{ state: 'frozen', ySplit: 1 }] });
   const headers = data.originalHeaders || [];
@@ -151,7 +152,7 @@ export async function exportAdaptiveExcel(
       const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
       const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
       if (hash && salt) {
-        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" workbookAlgorithmName="${algo}" workbookHashValue="${hash}" workbookSaltValue="${salt}" workbookSpinCount="${spin}"/>`;
         wbXml = wbXml.replace('<sheets>', `${wbProt}<sheets>`);
         zip.file('xl/workbook.xml', wbXml);
       }

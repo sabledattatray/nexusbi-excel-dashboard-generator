@@ -1385,9 +1385,10 @@ export function getAdaptedKpiLabels(
 
   const cleanLabel = (prefix: string, name?: string) => {
     if (!name) return '';
-    const trimmed = name.trim();
-    if (trimmed.toLowerCase().startsWith(prefix.toLowerCase())) return trimmed;
-    return `${prefix} ${trimmed}`;
+    let clean = name.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    clean = clean.replace(/\s+(INR|USD|EUR|GBP)$/i, '');
+    if (clean.toLowerCase().startsWith(prefix.toLowerCase())) return clean;
+    return `${prefix} ${clean}`;
   };
 
   return {

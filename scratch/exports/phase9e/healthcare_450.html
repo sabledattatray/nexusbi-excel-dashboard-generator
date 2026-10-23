@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Intelligence & Operational Analysis — NexusBI</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #141c2e;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .badge-bar { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; margin-bottom: 12px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-weight: 500;
+    }
+    .badge.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .badge.warn {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .nav-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-top: 16px; }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+    .filter-banner {
+      display: none;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .kpi-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+    .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #fff; margin: 6px 0; }
+    .kpi-formula { font-size: 11px; color: #64748b; font-family: monospace; }
+    .kpi-drawer {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--card-border);
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .chart-title { font-size: 16px; font-weight: 600; color: #fff; }
+    .chart-meta { font-size: 12px; color: var(--text-muted); }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .bar-row:hover { background: rgba(255, 255, 255, 0.05); }
+    .bar-label { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
+    .bar-track { flex: 1; height: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin: 0 12px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent-gradient); border-radius: 4px; }
+    .bar-val { width: 75px; text-align: right; font-weight: 600; font-family: monospace; }
+    .data-table-container { overflow-x: auto; max-height: 400px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    th { background: #0f172a; padding: 10px 12px; font-weight: 600; color: #cbd5e1; position: sticky; top: 0; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); color: #e2e8f0; }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 20px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      header, .kpi-card, .chart-card { background: #fff; border: 1px solid #ccc; color: #000; }
+      .bar-fill { background: #0284c7 !important; }
+      .nav-tabs, .filter-banner { display: none !important; }
+      .tab-section { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dataset Intelligence &amp; Operational Analysis</h1>
+      <div class="badge-bar">
+        <span class="badge">Classification: Universal Dataset Intelligence &amp; Distribution Analysis (0.0%)</span>
+        <span class="badge">Profiling Conf: 94.0%</span>
+        <span class="badge success">Deterministic Parity: Verified</span>
+        <span class="badge">Source Hash: c6d4c2d5</span>
+        <span class="badge">Report Hash: 43ffe56b</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Generated: 2026-10-23T16:31:01.321Z | Records Audited: 450 | Local Single-File Zero-AI Execution
+      </p>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">Executive Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('action-queue')">Action Queue (0)</button>
+        <button class="nav-tab" onclick="switchTab('audit-trail')">Methods & Assumptions</button>
+      </div>
+    </header>
+
+    <div id="filterBanner" class="filter-banner">
+      <span id="filterText">Active Filter</span>
+      <button style="background:none; border:none; color:var(--accent); font-weight:bold; cursor:pointer;" onclick="resetFilter()">✕ Reset Filter</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-section active">
+      <div class="kpi-grid">
+        
+          <div class="kpi-card" onclick="toggleDrawer('total_records')">
+            <div class="kpi-label">Total Records Volume</div>
+            <div class="kpi-value" id="kpi-val-total_records">450</div>
+            <div class="kpi-formula">COUNTROWS</div>
+            <div id="drawer-total_records" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTROWS across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('unique_entities_count')">
+            <div class="kpi-label">Unique Entities (Patient_ID)</div>
+            <div class="kpi-value" id="kpi-val-unique_entities_count">450</div>
+            <div class="kpi-formula">COUNTDISTINCT(Patient_ID)</div>
+            <div id="drawer-unique_entities_count" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTDISTINCT(Patient_ID) across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_total')">
+            <div class="kpi-label">Total Total_Billed_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_total">8,574,775</div>
+            <div class="kpi-formula">SUM(Total_Billed_USD)</div>
+            <div id="drawer-primary_measure_total" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using SUM(Total_Billed_USD) across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_average')">
+            <div class="kpi-label">Mean Total_Billed_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_average">19,055.06</div>
+            <div class="kpi-formula">AVERAGE(Total_Billed_USD)</div>
+            <div id="drawer-primary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Total_Billed_USD) across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_median')">
+            <div class="kpi-label">Median Total_Billed_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_median">18,229.50</div>
+            <div class="kpi-formula">MEDIAN(Total_Billed_USD)</div>
+            <div id="drawer-primary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Total_Billed_USD) across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_average')">
+            <div class="kpi-label">Mean Readmission_Risk_Score</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_average">5.50</div>
+            <div class="kpi-formula">AVERAGE(Readmission_Risk_Score)</div>
+            <div id="drawer-secondary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Readmission_Risk_Score) across 450 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_median')">
+            <div class="kpi-label">Median Readmission_Risk_Score</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_median">5.50</div>
+            <div class="kpi-formula">MEDIAN(Readmission_Risk_Score)</div>
+            <div id="drawer-secondary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Readmission_Risk_Score) across 450 records.</em></p>
+            </div>
+          </div>
+      </div>
+
+      <div class="charts-grid">
+        
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Distribution by Department_Ward</div>
+                  <div class="chart-meta">Department_Ward vs Total Total_Billed_USD</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'Orthopedics')" title="Click to filter by Orthopedics">
+                  <span class="bar-label">Orthopedics</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">14,48,050</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'General Ward')" title="Click to filter by General Ward">
+                  <span class="bar-label">General Ward</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 99%"></div>
+                  </div>
+                  <span class="bar-val">14,39,225</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'Oncology')" title="Click to filter by Oncology">
+                  <span class="bar-label">Oncology</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 99%"></div>
+                  </div>
+                  <span class="bar-val">14,30,700</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'ICU')" title="Click to filter by ICU">
+                  <span class="bar-label">ICU</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 99%"></div>
+                  </div>
+                  <span class="bar-val">14,30,400</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'Pediatrics')" title="Click to filter by Pediatrics">
+                  <span class="bar-label">Pediatrics</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 98%"></div>
+                  </div>
+                  <span class="bar-val">14,21,875</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Department_Ward', 'Cardiology')" title="Click to filter by Cardiology">
+                  <span class="bar-label">Cardiology</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 97%"></div>
+                  </div>
+                  <span class="bar-val">14,04,525</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Activity Trend over Admission_Date</div>
+                  <div class="chart-meta">Month vs Total Total_Billed_USD</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+              <div style="margin-bottom: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 6px; padding: 4px;">
+                <svg viewBox="0 0 440 75" style="width: 100%; height: 65px; display: block;">
+                  <defs>
+                    <linearGradient id="html-grad-chart_temporal_trend" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.01"/>
+                    </linearGradient>
+                  </defs>
+                  <line x1="36" y1="53" x2="426" y2="53" stroke="#334155" stroke-width="1"/>
+                  <path d=" M 36.0 14.3 L 71.5 15.3 L 106.9 14.6 L 142.4 13.9 L 177.8 13.2 L 213.3 14.3 L 248.7 15.5 L 284.2 15.9 L 319.6 15.2 L 355.1 16.3 L 390.5 15.7 L 426.0 15.0 L 426.0 53.0 L 36.0 53.0 Z" fill="url(#html-grad-chart_temporal_trend)"/>
+                  <path d=" M 36.0 14.3 L 71.5 15.3 L 106.9 14.6 L 142.4 13.9 L 177.8 13.2 L 213.3 14.3 L 248.7 15.5 L 284.2 15.9 L 319.6 15.2 L 355.1 16.3 L 390.5 15.7 L 426.0 15.0" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="36.0" cy="14.3" r="2.5" fill="#38bdf8"/><circle cx="71.5" cy="15.3" r="2.5" fill="#38bdf8"/><circle cx="106.9" cy="14.6" r="2.5" fill="#38bdf8"/><circle cx="142.4" cy="13.9" r="2.5" fill="#38bdf8"/><circle cx="177.8" cy="13.2" r="2.5" fill="#38bdf8"/><circle cx="213.3" cy="14.3" r="2.5" fill="#38bdf8"/><circle cx="248.7" cy="15.5" r="2.5" fill="#38bdf8"/><circle cx="284.2" cy="15.9" r="2.5" fill="#38bdf8"/><circle cx="319.6" cy="15.2" r="2.5" fill="#38bdf8"/><circle cx="355.1" cy="16.3" r="2.5" fill="#38bdf8"/><circle cx="390.5" cy="15.7" r="2.5" fill="#38bdf8"/><circle cx="426.0" cy="15.0" r="2.5" fill="#38bdf8"/>
+                  <text x="36" y="66" font-size="7.5" fill="#94a3b8">2024-01-01</text>
+                  <text x="426" y="66" font-size="7.5" fill="#94a3b8" text-anchor="end">2024-12-01</text>
+                </svg>
+              </div>
+                
+                <div class="bar-row" onclick="applyFilter('Month', '2024-01-01')" title="Click to filter by 2024-01-01">
+                  <span class="bar-label">2024-01-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 97%"></div>
+                  </div>
+                  <span class="bar-val">7,26,664</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-02-01')" title="Click to filter by 2024-02-01">
+                  <span class="bar-label">2024-02-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 95%"></div>
+                  </div>
+                  <span class="bar-val">7,07,426</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-03-01')" title="Click to filter by 2024-03-01">
+                  <span class="bar-label">2024-03-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 96%"></div>
+                  </div>
+                  <span class="bar-val">7,20,688</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-04-01')" title="Click to filter by 2024-04-01">
+                  <span class="bar-label">2024-04-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 98%"></div>
+                  </div>
+                  <span class="bar-val">7,33,950</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-05-01')" title="Click to filter by 2024-05-01">
+                  <span class="bar-label">2024-05-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">7,47,212</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-06-01')" title="Click to filter by 2024-06-01">
+                  <span class="bar-label">2024-06-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 97%"></div>
+                  </div>
+                  <span class="bar-val">7,25,474</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-07-01')" title="Click to filter by 2024-07-01">
+                  <span class="bar-label">2024-07-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 94%"></div>
+                  </div>
+                  <span class="bar-val">7,03,736</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-08-01')" title="Click to filter by 2024-08-01">
+                  <span class="bar-label">2024-08-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 93%"></div>
+                  </div>
+                  <span class="bar-val">6,97,099</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-09-01')" title="Click to filter by 2024-09-01">
+                  <span class="bar-label">2024-09-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 95%"></div>
+                  </div>
+                  <span class="bar-val">7,10,012</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-10-01')" title="Click to filter by 2024-10-01">
+                  <span class="bar-label">2024-10-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 92%"></div>
+                  </div>
+                  <span class="bar-val">6,87,925</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-11-01')" title="Click to filter by 2024-11-01">
+                  <span class="bar-label">2024-11-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 94%"></div>
+                  </div>
+                  <span class="bar-val">7,00,838</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Month', '2024-12-01')" title="Click to filter by 2024-12-01">
+                  <span class="bar-label">2024-12-01</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 96%"></div>
+                  </div>
+                  <span class="bar-val">7,13,751</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Breakdown by Patient_Disposition</div>
+                  <div class="chart-meta">Patient_Disposition vs Volume</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Patient_Disposition', 'Discharged')" title="Click to filter by Discharged">
+                  <span class="bar-label">Discharged</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">270</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Patient_Disposition', 'Admitted')" title="Click to filter by Admitted">
+                  <span class="bar-label">Admitted</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 33%"></div>
+                  </div>
+                  <span class="bar-val">90</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Patient_Disposition', 'Transferred')" title="Click to filter by Transferred">
+                  <span class="bar-label">Transferred</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 33%"></div>
+                  </div>
+                  <span class="bar-val">90</span>
+                </div>
+              </div>
+            </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ACTION QUEUE -->
+    <div id="tab-action-queue" class="tab-section">
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Operational Action Queue (Deterministic Source Traceability)</div>
+        
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;">
+          No operational exceptions detected — all audited source records conform to standard operating thresholds with zero overdue or breach conditions.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: METHODS & AUDIT -->
+    <div id="tab-audit-trail" class="tab-section">
+      <div class="chart-card" style="margin-bottom: 20px;">
+        <div class="chart-title" style="margin-bottom: 12px;">Methodological Standards & Aggregation Policy</div>
+        <ul style="list-style: none; space-y: 8px;">
+          
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 1:</strong> All analytical aggregations are computed locally in-browser using full-precision raw IEEE 754 float values.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 2:</strong> No intermediate rounded values are ever re-aggregated across groups, metrics, or export layers.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 3:</strong> Non-additive metrics (ratings, GPA, percentages, unit prices) are aggregated via weighted or arithmetic mean/median only; summation is strictly forbidden.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 4:</strong> Semi-additive metrics (stock on hand, account balances) are point-in-time state indicators and must not be aggregated over time dimensions.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 5:</strong> Missing, null, or empty string values are excluded on a per-metric basis without corrupting adjacent columns.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 6:</strong> Zero AI hallucination guarantee: 100% deterministic code compilation with verified three-way engine parity.
+            </li>
+        </ul>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Metric Dictionary & Additivity Mapping</div>
+        <div class="data-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric Label</th>
+                <th>Formula</th>
+                <th>Additivity Tier</th>
+                <th>Exclusions</th>
+                <th>Canonical Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td style="font-weight: 600;">Total Records Volume</td>
+                  <td style="font-family: monospace;">COUNTROWS</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">450</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Unique Entities (Patient_ID)</td>
+                  <td style="font-family: monospace;">COUNTDISTINCT(Patient_ID)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">450</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Total Total_Billed_USD</td>
+                  <td style="font-family: monospace;">SUM(Total_Billed_USD)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">8,574,775</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Total_Billed_USD</td>
+                  <td style="font-family: monospace;">AVERAGE(Total_Billed_USD)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">19,055.06</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Total_Billed_USD</td>
+                  <td style="font-family: monospace;">MEDIAN(Total_Billed_USD)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">18,229.50</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Readmission_Risk_Score</td>
+                  <td style="font-family: monospace;">AVERAGE(Readmission_Risk_Score)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">5.50</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Readmission_Risk_Score</td>
+                  <td style="font-family: monospace;">MEDIAN(Readmission_Risk_Score)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">5.50</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>Generated by NexusBI Universal Deterministic Analytical Platform</span>
+      <span>Three-Way Parity Guaranteed: Source Math == V8 JS == DuckDB-Wasm</span>
+    </footer>
+  </div>
+
+  <script>
+    // Offline Single-File Interactive Controller (Zero-AI, Zero-Network)
+    var activeFilter = null;
+    var modelData = {"dashboardTitle":"Dataset Intelligence & Operational Analysis","domainClassification":"Universal Dataset Intelligence & Distribution Analysis","isUniversalFallback":true,"domainConfidence":0,"profilingConfidence":0.94,"executiveHeader":{"domain":"Universal Dataset Intelligence & Distribution Analysis","reportTitle":"Dataset Intelligence & Operational Analysis","intakePeriod":"2024-01-01 to 2024-12-28 (362 days)","asOfTimestamp":"2026-10-23T16:31:01.321Z","totalRecords":450,"qualityState":"Optimal","domainConfidence":0,"profilingConfidence":0.94,"dataLocality":"100% In-Browser Memory (Zero-AI, Zero-Telemetry)"},"kpiCards":[{"id":"total_records","label":"Total Records Volume","value":450,"formattedValue":"450","calculationFormula":"COUNTROWS","sourceColumns":[],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using COUNTROWS across 450 records."},{"id":"unique_entities_count","label":"Unique Entities (Patient_ID)","value":450,"formattedValue":"450","calculationFormula":"COUNTDISTINCT(Patient_ID)","sourceColumns":["Patient_ID"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using COUNTDISTINCT(Patient_ID) across 450 records."},{"id":"primary_measure_total","label":"Total Total_Billed_USD","value":8574775,"formattedValue":"8,574,775","calculationFormula":"SUM(Total_Billed_USD)","sourceColumns":["Total_Billed_USD"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using SUM(Total_Billed_USD) across 450 records."},{"id":"primary_measure_average","label":"Mean Total_Billed_USD","value":19055.055555555555,"formattedValue":"19,055.06","calculationFormula":"AVERAGE(Total_Billed_USD)","sourceColumns":["Total_Billed_USD"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using AVERAGE(Total_Billed_USD) across 450 records."},{"id":"primary_measure_median","label":"Median Total_Billed_USD","value":18229.5,"formattedValue":"18,229.50","calculationFormula":"MEDIAN(Total_Billed_USD)","sourceColumns":["Total_Billed_USD"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using MEDIAN(Total_Billed_USD) across 450 records."},{"id":"secondary_measure_average","label":"Mean Readmission_Risk_Score","value":5.5,"formattedValue":"5.50","calculationFormula":"AVERAGE(Readmission_Risk_Score)","sourceColumns":["Readmission_Risk_Score"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using AVERAGE(Readmission_Risk_Score) across 450 records."},{"id":"secondary_measure_median","label":"Median Readmission_Risk_Score","value":5.5,"formattedValue":"5.50","calculationFormula":"MEDIAN(Readmission_Risk_Score)","sourceColumns":["Readmission_Risk_Score"],"missingExclusions":0,"confidence":0.94,"isFinancial":false,"explanation":"Calculated using MEDIAN(Readmission_Risk_Score) across 450 records."}],"charts":[{"id":"chart_primary_category_breakdown","title":"Distribution by Department_Ward","chartType":"bar","dimensionLabel":"Department_Ward","metricLabel":"Total Total_Billed_USD","data":[{"label":"Orthopedics","value":1448050},{"label":"General Ward","value":1439225},{"label":"Oncology","value":1430700},{"label":"ICU","value":1430400},{"label":"Pediatrics","value":1421875},{"label":"Cardiology","value":1404525}],"accessibleSummary":"Distribution by Department_Ward displaying 6 cohorts along Department_Ward. Lead category is 'Orthopedics' with 14,48,050 Total Total_Billed_USD."},{"id":"chart_temporal_trend","title":"Activity Trend over Admission_Date","chartType":"line","dimensionLabel":"Month","metricLabel":"Total Total_Billed_USD","data":[{"label":"2024-01-01","value":726664},{"label":"2024-02-01","value":707426},{"label":"2024-03-01","value":720688},{"label":"2024-04-01","value":733950},{"label":"2024-05-01","value":747212},{"label":"2024-06-01","value":725474},{"label":"2024-07-01","value":703736},{"label":"2024-08-01","value":697099},{"label":"2024-09-01","value":710012},{"label":"2024-10-01","value":687925},{"label":"2024-11-01","value":700838},{"label":"2024-12-01","value":713751}],"accessibleSummary":"Activity Trend over Admission_Date displaying 12 cohorts along Month. Lead category is '2024-01-01' with 7,26,664 Total Total_Billed_USD."},{"id":"chart_status_distribution","title":"Breakdown by Patient_Disposition","chartType":"pie","dimensionLabel":"Patient_Disposition","metricLabel":"Volume","data":[{"label":"Discharged","value":270},{"label":"Admitted","value":90},{"label":"Transferred","value":90}],"accessibleSummary":"Breakdown by Patient_Disposition displaying 3 cohorts along Patient_Disposition. Lead category is 'Discharged' with 270 Volume."}],"actionQueue":[],"decisionBrief":{"headline":"Universal Dataset Intelligence & Distribution Analysis: Executive Operational Brief (450 Records Audited)","executiveBullets":[{"title":"Ingestion & Data Quality Profile","text":"Audited 450 source rows across 7 columns with 100.0% full record completeness. Detected 0 duplicate records in source data."},{"title":"Total Records Volume Benchmark","text":"Total Records Volume stands at 450 calculated via COUNTROWS. Supporting benchmark Mean Total_Billed_USD stands at 19,055.06.","evidenceMetricId":"total_records","evidenceValue":"450"},{"title":"Cohort Concentration (Department_Ward)","text":"Largest volume resides in 'Orthopedics' with 14,48,050 (16.9% of cohort total). Lead cohort exceeds 'Cardiology' by 1.0x."},{"title":"Temporal Trajectory (Month)","text":"Measured from 2024-01-01 (7,26,664) to 2024-12-01 (7,13,751) with -1.8% net trajectory. Peak volume recorded in 2024-05-01 (7,47,212)."}],"recommendedActions":["Review active/unresolved records in the prioritized Action Queue below.","Inspect columns with high null rates to ensure complete source data capture.","Cross-filter by top category cohorts to identify operational bottleneck variance."],"caveats":["Comparisons are strictly descriptive; no causal assertions, predictions or forward forecasts are fabricated.","All metric aggregations reflect verified source data records executed within client-side browser memory.","Missing or invalid values are explicitly excluded from mathematical calculations rather than imputed with synthetic estimates."]},"dataQuality":{"totalRecords":450,"completeRecords":450,"completenessRate":1,"duplicateCount":0,"columnNullRates":{"Patient_ID":0,"Department_Ward":0,"Admission_Date":0,"Length_Of_Stay_Days":0,"Total_Billed_USD":0,"Readmission_Risk_Score":0,"Patient_Disposition":0},"anomalies":[]},"queryPlans":[{"planId":"summary-1792773061318","tableName":"healthcare_450","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"},{"id":"unique_entities_count","label":"Unique Entities (Patient_ID)","operation":"countDistinct","field":"Patient_ID"},{"id":"primary_measure_total","label":"Total Total_Billed_USD","operation":"sum","field":"Total_Billed_USD"},{"id":"primary_measure_average","label":"Mean Total_Billed_USD","operation":"average","field":"Total_Billed_USD"},{"id":"primary_measure_median","label":"Median Total_Billed_USD","operation":"median","field":"Total_Billed_USD"},{"id":"secondary_measure_average","label":"Mean Readmission_Risk_Score","operation":"average","field":"Readmission_Risk_Score"},{"id":"secondary_measure_median","label":"Median Readmission_Risk_Score","operation":"median","field":"Readmission_Risk_Score"}]},{"planId":"chart-chart_primary_category_breakdown-1792773061319","tableName":"healthcare_450","metrics":[{"id":"primary_measure_total","label":"Total Total_Billed_USD","operation":"sum","field":"Total_Billed_USD"}],"groupBy":["Department_Ward"],"topN":{"field":"Department_Ward","metricId":"primary_measure_total","limit":7,"includeOther":true},"sort":[{"field":"primary_measure_total","direction":"desc"}]},{"planId":"chart-chart_temporal_trend-1792773061320","tableName":"healthcare_450","metrics":[{"id":"primary_measure_total","label":"Total Total_Billed_USD","operation":"sum","field":"Total_Billed_USD"}],"groupBy":[{"field":"Admission_Date","timeBucket":"month","alias":"Month"}],"sort":[{"field":"Month","direction":"asc"}],"limit":36},{"planId":"chart-chart_status_distribution-1792773061320","tableName":"healthcare_450","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"}],"groupBy":["Patient_Disposition"],"sort":[{"field":"total_records","direction":"desc"}],"limit":12}],"generatedAt":"2026-10-23T16:31:01.321Z"};
+    var rawData = [{"Patient_ID":"PT-000001","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":2849,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000002","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":3198,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000003","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":3547,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000004","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":3896,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000005","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":4245,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000006","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":4594,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000007","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":4943,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000008","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":5292,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000009","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":5641,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000010","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":5990,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000011","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":6339,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000012","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":6688,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000013","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":7037,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000014","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":7386,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000015","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":7735,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000016","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":8084,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000017","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":8433,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000018","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":8782,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000019","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":9131,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000020","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":9480,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000021","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":9829,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000022","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":10178,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000023","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":10527,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000024","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":10876,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000025","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":11225,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000026","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":11574,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000027","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":11923,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000028","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":12272,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000029","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":12621,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000030","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":12970,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000031","Department_Ward":"Cardiology","Admission_Date":"2024-08-04","Length_Of_Stay_Days":4,"Total_Billed_USD":13319,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000032","Department_Ward":"Oncology","Admission_Date":"2024-09-05","Length_Of_Stay_Days":5,"Total_Billed_USD":13668,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000033","Department_Ward":"Pediatrics","Admission_Date":"2024-10-06","Length_Of_Stay_Days":6,"Total_Billed_USD":14017,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000034","Department_Ward":"Orthopedics","Admission_Date":"2024-11-07","Length_Of_Stay_Days":7,"Total_Billed_USD":14366,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000035","Department_Ward":"General Ward","Admission_Date":"2024-12-08","Length_Of_Stay_Days":8,"Total_Billed_USD":14715,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000036","Department_Ward":"ICU","Admission_Date":"2024-01-09","Length_Of_Stay_Days":9,"Total_Billed_USD":15064,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000037","Department_Ward":"Cardiology","Admission_Date":"2024-02-10","Length_Of_Stay_Days":10,"Total_Billed_USD":15413,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000038","Department_Ward":"Oncology","Admission_Date":"2024-03-11","Length_Of_Stay_Days":11,"Total_Billed_USD":15762,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000039","Department_Ward":"Pediatrics","Admission_Date":"2024-04-12","Length_Of_Stay_Days":12,"Total_Billed_USD":16111,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000040","Department_Ward":"Orthopedics","Admission_Date":"2024-05-13","Length_Of_Stay_Days":13,"Total_Billed_USD":16460,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000041","Department_Ward":"General Ward","Admission_Date":"2024-06-14","Length_Of_Stay_Days":14,"Total_Billed_USD":16809,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000042","Department_Ward":"ICU","Admission_Date":"2024-07-15","Length_Of_Stay_Days":1,"Total_Billed_USD":17158,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000043","Department_Ward":"Cardiology","Admission_Date":"2024-08-16","Length_Of_Stay_Days":2,"Total_Billed_USD":17507,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000044","Department_Ward":"Oncology","Admission_Date":"2024-09-17","Length_Of_Stay_Days":3,"Total_Billed_USD":17856,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000045","Department_Ward":"Pediatrics","Admission_Date":"2024-10-18","Length_Of_Stay_Days":4,"Total_Billed_USD":18205,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000046","Department_Ward":"Orthopedics","Admission_Date":"2024-11-19","Length_Of_Stay_Days":5,"Total_Billed_USD":18554,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000047","Department_Ward":"General Ward","Admission_Date":"2024-12-20","Length_Of_Stay_Days":6,"Total_Billed_USD":18903,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000048","Department_Ward":"ICU","Admission_Date":"2024-01-21","Length_Of_Stay_Days":7,"Total_Billed_USD":19252,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000049","Department_Ward":"Cardiology","Admission_Date":"2024-02-22","Length_Of_Stay_Days":8,"Total_Billed_USD":19601,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000050","Department_Ward":"Oncology","Admission_Date":"2024-03-23","Length_Of_Stay_Days":9,"Total_Billed_USD":19950,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000051","Department_Ward":"Pediatrics","Admission_Date":"2024-04-24","Length_Of_Stay_Days":10,"Total_Billed_USD":20299,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000052","Department_Ward":"Orthopedics","Admission_Date":"2024-05-25","Length_Of_Stay_Days":11,"Total_Billed_USD":20648,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000053","Department_Ward":"General Ward","Admission_Date":"2024-06-26","Length_Of_Stay_Days":12,"Total_Billed_USD":20997,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000054","Department_Ward":"ICU","Admission_Date":"2024-07-27","Length_Of_Stay_Days":13,"Total_Billed_USD":21346,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000055","Department_Ward":"Cardiology","Admission_Date":"2024-08-28","Length_Of_Stay_Days":14,"Total_Billed_USD":21695,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000056","Department_Ward":"Oncology","Admission_Date":"2024-09-01","Length_Of_Stay_Days":1,"Total_Billed_USD":22044,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000057","Department_Ward":"Pediatrics","Admission_Date":"2024-10-02","Length_Of_Stay_Days":2,"Total_Billed_USD":22393,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000058","Department_Ward":"Orthopedics","Admission_Date":"2024-11-03","Length_Of_Stay_Days":3,"Total_Billed_USD":22742,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000059","Department_Ward":"General Ward","Admission_Date":"2024-12-04","Length_Of_Stay_Days":4,"Total_Billed_USD":23091,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000060","Department_Ward":"ICU","Admission_Date":"2024-01-05","Length_Of_Stay_Days":5,"Total_Billed_USD":23440,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000061","Department_Ward":"Cardiology","Admission_Date":"2024-02-06","Length_Of_Stay_Days":6,"Total_Billed_USD":23789,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000062","Department_Ward":"Oncology","Admission_Date":"2024-03-07","Length_Of_Stay_Days":7,"Total_Billed_USD":24138,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000063","Department_Ward":"Pediatrics","Admission_Date":"2024-04-08","Length_Of_Stay_Days":8,"Total_Billed_USD":24487,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000064","Department_Ward":"Orthopedics","Admission_Date":"2024-05-09","Length_Of_Stay_Days":9,"Total_Billed_USD":24836,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000065","Department_Ward":"General Ward","Admission_Date":"2024-06-10","Length_Of_Stay_Days":10,"Total_Billed_USD":25185,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000066","Department_Ward":"ICU","Admission_Date":"2024-07-11","Length_Of_Stay_Days":11,"Total_Billed_USD":25534,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000067","Department_Ward":"Cardiology","Admission_Date":"2024-08-12","Length_Of_Stay_Days":12,"Total_Billed_USD":25883,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000068","Department_Ward":"Oncology","Admission_Date":"2024-09-13","Length_Of_Stay_Days":13,"Total_Billed_USD":26232,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000069","Department_Ward":"Pediatrics","Admission_Date":"2024-10-14","Length_Of_Stay_Days":14,"Total_Billed_USD":26581,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000070","Department_Ward":"Orthopedics","Admission_Date":"2024-11-15","Length_Of_Stay_Days":1,"Total_Billed_USD":26930,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000071","Department_Ward":"General Ward","Admission_Date":"2024-12-16","Length_Of_Stay_Days":2,"Total_Billed_USD":27279,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000072","Department_Ward":"ICU","Admission_Date":"2024-01-17","Length_Of_Stay_Days":3,"Total_Billed_USD":27628,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000073","Department_Ward":"Cardiology","Admission_Date":"2024-02-18","Length_Of_Stay_Days":4,"Total_Billed_USD":27977,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000074","Department_Ward":"Oncology","Admission_Date":"2024-03-19","Length_Of_Stay_Days":5,"Total_Billed_USD":28326,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000075","Department_Ward":"Pediatrics","Admission_Date":"2024-04-20","Length_Of_Stay_Days":6,"Total_Billed_USD":28675,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000076","Department_Ward":"Orthopedics","Admission_Date":"2024-05-21","Length_Of_Stay_Days":7,"Total_Billed_USD":29024,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000077","Department_Ward":"General Ward","Admission_Date":"2024-06-22","Length_Of_Stay_Days":8,"Total_Billed_USD":29373,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000078","Department_Ward":"ICU","Admission_Date":"2024-07-23","Length_Of_Stay_Days":9,"Total_Billed_USD":29722,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000079","Department_Ward":"Cardiology","Admission_Date":"2024-08-24","Length_Of_Stay_Days":10,"Total_Billed_USD":30071,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000080","Department_Ward":"Oncology","Admission_Date":"2024-09-25","Length_Of_Stay_Days":11,"Total_Billed_USD":30420,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000081","Department_Ward":"Pediatrics","Admission_Date":"2024-10-26","Length_Of_Stay_Days":12,"Total_Billed_USD":30769,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000082","Department_Ward":"Orthopedics","Admission_Date":"2024-11-27","Length_Of_Stay_Days":13,"Total_Billed_USD":31118,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000083","Department_Ward":"General Ward","Admission_Date":"2024-12-28","Length_Of_Stay_Days":14,"Total_Billed_USD":31467,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000084","Department_Ward":"ICU","Admission_Date":"2024-01-01","Length_Of_Stay_Days":1,"Total_Billed_USD":31816,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000085","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":32165,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000086","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":32514,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000087","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":32863,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000088","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":33212,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000089","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":33561,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000090","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":33910,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000091","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":34259,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000092","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":34608,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000093","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":34957,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000094","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":35306,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000095","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":35655,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000096","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":36004,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000097","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":36353,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000098","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":36702,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000099","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":37051,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000100","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":37400,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000101","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":2749,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000102","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":3098,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000103","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":3447,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000104","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":3796,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000105","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":4145,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000106","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":4494,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000107","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":4843,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000108","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":5192,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000109","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":5541,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000110","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":5890,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000111","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":6239,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000112","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":6588,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000113","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":6937,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000114","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":7286,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000115","Department_Ward":"Cardiology","Admission_Date":"2024-08-04","Length_Of_Stay_Days":4,"Total_Billed_USD":7635,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000116","Department_Ward":"Oncology","Admission_Date":"2024-09-05","Length_Of_Stay_Days":5,"Total_Billed_USD":7984,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000117","Department_Ward":"Pediatrics","Admission_Date":"2024-10-06","Length_Of_Stay_Days":6,"Total_Billed_USD":8333,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000118","Department_Ward":"Orthopedics","Admission_Date":"2024-11-07","Length_Of_Stay_Days":7,"Total_Billed_USD":8682,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000119","Department_Ward":"General Ward","Admission_Date":"2024-12-08","Length_Of_Stay_Days":8,"Total_Billed_USD":9031,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000120","Department_Ward":"ICU","Admission_Date":"2024-01-09","Length_Of_Stay_Days":9,"Total_Billed_USD":9380,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000121","Department_Ward":"Cardiology","Admission_Date":"2024-02-10","Length_Of_Stay_Days":10,"Total_Billed_USD":9729,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000122","Department_Ward":"Oncology","Admission_Date":"2024-03-11","Length_Of_Stay_Days":11,"Total_Billed_USD":10078,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000123","Department_Ward":"Pediatrics","Admission_Date":"2024-04-12","Length_Of_Stay_Days":12,"Total_Billed_USD":10427,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000124","Department_Ward":"Orthopedics","Admission_Date":"2024-05-13","Length_Of_Stay_Days":13,"Total_Billed_USD":10776,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000125","Department_Ward":"General Ward","Admission_Date":"2024-06-14","Length_Of_Stay_Days":14,"Total_Billed_USD":11125,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000126","Department_Ward":"ICU","Admission_Date":"2024-07-15","Length_Of_Stay_Days":1,"Total_Billed_USD":11474,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000127","Department_Ward":"Cardiology","Admission_Date":"2024-08-16","Length_Of_Stay_Days":2,"Total_Billed_USD":11823,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000128","Department_Ward":"Oncology","Admission_Date":"2024-09-17","Length_Of_Stay_Days":3,"Total_Billed_USD":12172,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000129","Department_Ward":"Pediatrics","Admission_Date":"2024-10-18","Length_Of_Stay_Days":4,"Total_Billed_USD":12521,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000130","Department_Ward":"Orthopedics","Admission_Date":"2024-11-19","Length_Of_Stay_Days":5,"Total_Billed_USD":12870,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000131","Department_Ward":"General Ward","Admission_Date":"2024-12-20","Length_Of_Stay_Days":6,"Total_Billed_USD":13219,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000132","Department_Ward":"ICU","Admission_Date":"2024-01-21","Length_Of_Stay_Days":7,"Total_Billed_USD":13568,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000133","Department_Ward":"Cardiology","Admission_Date":"2024-02-22","Length_Of_Stay_Days":8,"Total_Billed_USD":13917,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000134","Department_Ward":"Oncology","Admission_Date":"2024-03-23","Length_Of_Stay_Days":9,"Total_Billed_USD":14266,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000135","Department_Ward":"Pediatrics","Admission_Date":"2024-04-24","Length_Of_Stay_Days":10,"Total_Billed_USD":14615,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000136","Department_Ward":"Orthopedics","Admission_Date":"2024-05-25","Length_Of_Stay_Days":11,"Total_Billed_USD":14964,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000137","Department_Ward":"General Ward","Admission_Date":"2024-06-26","Length_Of_Stay_Days":12,"Total_Billed_USD":15313,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000138","Department_Ward":"ICU","Admission_Date":"2024-07-27","Length_Of_Stay_Days":13,"Total_Billed_USD":15662,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000139","Department_Ward":"Cardiology","Admission_Date":"2024-08-28","Length_Of_Stay_Days":14,"Total_Billed_USD":16011,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000140","Department_Ward":"Oncology","Admission_Date":"2024-09-01","Length_Of_Stay_Days":1,"Total_Billed_USD":16360,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000141","Department_Ward":"Pediatrics","Admission_Date":"2024-10-02","Length_Of_Stay_Days":2,"Total_Billed_USD":16709,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000142","Department_Ward":"Orthopedics","Admission_Date":"2024-11-03","Length_Of_Stay_Days":3,"Total_Billed_USD":17058,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000143","Department_Ward":"General Ward","Admission_Date":"2024-12-04","Length_Of_Stay_Days":4,"Total_Billed_USD":17407,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000144","Department_Ward":"ICU","Admission_Date":"2024-01-05","Length_Of_Stay_Days":5,"Total_Billed_USD":17756,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000145","Department_Ward":"Cardiology","Admission_Date":"2024-02-06","Length_Of_Stay_Days":6,"Total_Billed_USD":18105,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000146","Department_Ward":"Oncology","Admission_Date":"2024-03-07","Length_Of_Stay_Days":7,"Total_Billed_USD":18454,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000147","Department_Ward":"Pediatrics","Admission_Date":"2024-04-08","Length_Of_Stay_Days":8,"Total_Billed_USD":18803,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000148","Department_Ward":"Orthopedics","Admission_Date":"2024-05-09","Length_Of_Stay_Days":9,"Total_Billed_USD":19152,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000149","Department_Ward":"General Ward","Admission_Date":"2024-06-10","Length_Of_Stay_Days":10,"Total_Billed_USD":19501,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000150","Department_Ward":"ICU","Admission_Date":"2024-07-11","Length_Of_Stay_Days":11,"Total_Billed_USD":19850,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000151","Department_Ward":"Cardiology","Admission_Date":"2024-08-12","Length_Of_Stay_Days":12,"Total_Billed_USD":20199,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000152","Department_Ward":"Oncology","Admission_Date":"2024-09-13","Length_Of_Stay_Days":13,"Total_Billed_USD":20548,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000153","Department_Ward":"Pediatrics","Admission_Date":"2024-10-14","Length_Of_Stay_Days":14,"Total_Billed_USD":20897,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000154","Department_Ward":"Orthopedics","Admission_Date":"2024-11-15","Length_Of_Stay_Days":1,"Total_Billed_USD":21246,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000155","Department_Ward":"General Ward","Admission_Date":"2024-12-16","Length_Of_Stay_Days":2,"Total_Billed_USD":21595,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000156","Department_Ward":"ICU","Admission_Date":"2024-01-17","Length_Of_Stay_Days":3,"Total_Billed_USD":21944,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000157","Department_Ward":"Cardiology","Admission_Date":"2024-02-18","Length_Of_Stay_Days":4,"Total_Billed_USD":22293,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000158","Department_Ward":"Oncology","Admission_Date":"2024-03-19","Length_Of_Stay_Days":5,"Total_Billed_USD":22642,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000159","Department_Ward":"Pediatrics","Admission_Date":"2024-04-20","Length_Of_Stay_Days":6,"Total_Billed_USD":22991,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000160","Department_Ward":"Orthopedics","Admission_Date":"2024-05-21","Length_Of_Stay_Days":7,"Total_Billed_USD":23340,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000161","Department_Ward":"General Ward","Admission_Date":"2024-06-22","Length_Of_Stay_Days":8,"Total_Billed_USD":23689,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000162","Department_Ward":"ICU","Admission_Date":"2024-07-23","Length_Of_Stay_Days":9,"Total_Billed_USD":24038,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000163","Department_Ward":"Cardiology","Admission_Date":"2024-08-24","Length_Of_Stay_Days":10,"Total_Billed_USD":24387,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000164","Department_Ward":"Oncology","Admission_Date":"2024-09-25","Length_Of_Stay_Days":11,"Total_Billed_USD":24736,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000165","Department_Ward":"Pediatrics","Admission_Date":"2024-10-26","Length_Of_Stay_Days":12,"Total_Billed_USD":25085,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000166","Department_Ward":"Orthopedics","Admission_Date":"2024-11-27","Length_Of_Stay_Days":13,"Total_Billed_USD":25434,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000167","Department_Ward":"General Ward","Admission_Date":"2024-12-28","Length_Of_Stay_Days":14,"Total_Billed_USD":25783,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000168","Department_Ward":"ICU","Admission_Date":"2024-01-01","Length_Of_Stay_Days":1,"Total_Billed_USD":26132,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000169","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":26481,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000170","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":26830,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000171","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":27179,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000172","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":27528,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000173","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":27877,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000174","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":28226,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000175","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":28575,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000176","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":28924,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000177","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":29273,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000178","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":29622,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000179","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":29971,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000180","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":30320,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000181","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":30669,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000182","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":31018,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000183","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":31367,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000184","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":31716,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000185","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":32065,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000186","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":32414,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000187","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":32763,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000188","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":33112,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000189","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":33461,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000190","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":33810,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000191","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":34159,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000192","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":34508,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000193","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":34857,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000194","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":35206,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000195","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":35555,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000196","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":35904,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000197","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":36253,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000198","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":36602,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000199","Department_Ward":"Cardiology","Admission_Date":"2024-08-04","Length_Of_Stay_Days":4,"Total_Billed_USD":36951,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000200","Department_Ward":"Oncology","Admission_Date":"2024-09-05","Length_Of_Stay_Days":5,"Total_Billed_USD":37300,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000201","Department_Ward":"Pediatrics","Admission_Date":"2024-10-06","Length_Of_Stay_Days":6,"Total_Billed_USD":2649,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000202","Department_Ward":"Orthopedics","Admission_Date":"2024-11-07","Length_Of_Stay_Days":7,"Total_Billed_USD":2998,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000203","Department_Ward":"General Ward","Admission_Date":"2024-12-08","Length_Of_Stay_Days":8,"Total_Billed_USD":3347,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000204","Department_Ward":"ICU","Admission_Date":"2024-01-09","Length_Of_Stay_Days":9,"Total_Billed_USD":3696,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000205","Department_Ward":"Cardiology","Admission_Date":"2024-02-10","Length_Of_Stay_Days":10,"Total_Billed_USD":4045,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000206","Department_Ward":"Oncology","Admission_Date":"2024-03-11","Length_Of_Stay_Days":11,"Total_Billed_USD":4394,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000207","Department_Ward":"Pediatrics","Admission_Date":"2024-04-12","Length_Of_Stay_Days":12,"Total_Billed_USD":4743,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000208","Department_Ward":"Orthopedics","Admission_Date":"2024-05-13","Length_Of_Stay_Days":13,"Total_Billed_USD":5092,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000209","Department_Ward":"General Ward","Admission_Date":"2024-06-14","Length_Of_Stay_Days":14,"Total_Billed_USD":5441,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000210","Department_Ward":"ICU","Admission_Date":"2024-07-15","Length_Of_Stay_Days":1,"Total_Billed_USD":5790,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000211","Department_Ward":"Cardiology","Admission_Date":"2024-08-16","Length_Of_Stay_Days":2,"Total_Billed_USD":6139,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000212","Department_Ward":"Oncology","Admission_Date":"2024-09-17","Length_Of_Stay_Days":3,"Total_Billed_USD":6488,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000213","Department_Ward":"Pediatrics","Admission_Date":"2024-10-18","Length_Of_Stay_Days":4,"Total_Billed_USD":6837,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000214","Department_Ward":"Orthopedics","Admission_Date":"2024-11-19","Length_Of_Stay_Days":5,"Total_Billed_USD":7186,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000215","Department_Ward":"General Ward","Admission_Date":"2024-12-20","Length_Of_Stay_Days":6,"Total_Billed_USD":7535,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000216","Department_Ward":"ICU","Admission_Date":"2024-01-21","Length_Of_Stay_Days":7,"Total_Billed_USD":7884,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000217","Department_Ward":"Cardiology","Admission_Date":"2024-02-22","Length_Of_Stay_Days":8,"Total_Billed_USD":8233,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000218","Department_Ward":"Oncology","Admission_Date":"2024-03-23","Length_Of_Stay_Days":9,"Total_Billed_USD":8582,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000219","Department_Ward":"Pediatrics","Admission_Date":"2024-04-24","Length_Of_Stay_Days":10,"Total_Billed_USD":8931,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000220","Department_Ward":"Orthopedics","Admission_Date":"2024-05-25","Length_Of_Stay_Days":11,"Total_Billed_USD":9280,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000221","Department_Ward":"General Ward","Admission_Date":"2024-06-26","Length_Of_Stay_Days":12,"Total_Billed_USD":9629,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000222","Department_Ward":"ICU","Admission_Date":"2024-07-27","Length_Of_Stay_Days":13,"Total_Billed_USD":9978,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000223","Department_Ward":"Cardiology","Admission_Date":"2024-08-28","Length_Of_Stay_Days":14,"Total_Billed_USD":10327,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000224","Department_Ward":"Oncology","Admission_Date":"2024-09-01","Length_Of_Stay_Days":1,"Total_Billed_USD":10676,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000225","Department_Ward":"Pediatrics","Admission_Date":"2024-10-02","Length_Of_Stay_Days":2,"Total_Billed_USD":11025,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000226","Department_Ward":"Orthopedics","Admission_Date":"2024-11-03","Length_Of_Stay_Days":3,"Total_Billed_USD":11374,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000227","Department_Ward":"General Ward","Admission_Date":"2024-12-04","Length_Of_Stay_Days":4,"Total_Billed_USD":11723,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000228","Department_Ward":"ICU","Admission_Date":"2024-01-05","Length_Of_Stay_Days":5,"Total_Billed_USD":12072,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000229","Department_Ward":"Cardiology","Admission_Date":"2024-02-06","Length_Of_Stay_Days":6,"Total_Billed_USD":12421,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000230","Department_Ward":"Oncology","Admission_Date":"2024-03-07","Length_Of_Stay_Days":7,"Total_Billed_USD":12770,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000231","Department_Ward":"Pediatrics","Admission_Date":"2024-04-08","Length_Of_Stay_Days":8,"Total_Billed_USD":13119,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000232","Department_Ward":"Orthopedics","Admission_Date":"2024-05-09","Length_Of_Stay_Days":9,"Total_Billed_USD":13468,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000233","Department_Ward":"General Ward","Admission_Date":"2024-06-10","Length_Of_Stay_Days":10,"Total_Billed_USD":13817,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000234","Department_Ward":"ICU","Admission_Date":"2024-07-11","Length_Of_Stay_Days":11,"Total_Billed_USD":14166,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000235","Department_Ward":"Cardiology","Admission_Date":"2024-08-12","Length_Of_Stay_Days":12,"Total_Billed_USD":14515,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000236","Department_Ward":"Oncology","Admission_Date":"2024-09-13","Length_Of_Stay_Days":13,"Total_Billed_USD":14864,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000237","Department_Ward":"Pediatrics","Admission_Date":"2024-10-14","Length_Of_Stay_Days":14,"Total_Billed_USD":15213,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000238","Department_Ward":"Orthopedics","Admission_Date":"2024-11-15","Length_Of_Stay_Days":1,"Total_Billed_USD":15562,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000239","Department_Ward":"General Ward","Admission_Date":"2024-12-16","Length_Of_Stay_Days":2,"Total_Billed_USD":15911,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000240","Department_Ward":"ICU","Admission_Date":"2024-01-17","Length_Of_Stay_Days":3,"Total_Billed_USD":16260,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000241","Department_Ward":"Cardiology","Admission_Date":"2024-02-18","Length_Of_Stay_Days":4,"Total_Billed_USD":16609,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000242","Department_Ward":"Oncology","Admission_Date":"2024-03-19","Length_Of_Stay_Days":5,"Total_Billed_USD":16958,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000243","Department_Ward":"Pediatrics","Admission_Date":"2024-04-20","Length_Of_Stay_Days":6,"Total_Billed_USD":17307,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000244","Department_Ward":"Orthopedics","Admission_Date":"2024-05-21","Length_Of_Stay_Days":7,"Total_Billed_USD":17656,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000245","Department_Ward":"General Ward","Admission_Date":"2024-06-22","Length_Of_Stay_Days":8,"Total_Billed_USD":18005,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000246","Department_Ward":"ICU","Admission_Date":"2024-07-23","Length_Of_Stay_Days":9,"Total_Billed_USD":18354,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000247","Department_Ward":"Cardiology","Admission_Date":"2024-08-24","Length_Of_Stay_Days":10,"Total_Billed_USD":18703,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000248","Department_Ward":"Oncology","Admission_Date":"2024-09-25","Length_Of_Stay_Days":11,"Total_Billed_USD":19052,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000249","Department_Ward":"Pediatrics","Admission_Date":"2024-10-26","Length_Of_Stay_Days":12,"Total_Billed_USD":19401,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000250","Department_Ward":"Orthopedics","Admission_Date":"2024-11-27","Length_Of_Stay_Days":13,"Total_Billed_USD":19750,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000251","Department_Ward":"General Ward","Admission_Date":"2024-12-28","Length_Of_Stay_Days":14,"Total_Billed_USD":20099,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000252","Department_Ward":"ICU","Admission_Date":"2024-01-01","Length_Of_Stay_Days":1,"Total_Billed_USD":20448,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000253","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":20797,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000254","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":21146,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000255","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":21495,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000256","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":21844,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000257","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":22193,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000258","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":22542,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000259","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":22891,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000260","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":23240,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000261","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":23589,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000262","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":23938,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000263","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":24287,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000264","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":24636,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000265","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":24985,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000266","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":25334,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000267","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":25683,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000268","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":26032,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000269","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":26381,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000270","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":26730,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000271","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":27079,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000272","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":27428,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000273","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":27777,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000274","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":28126,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000275","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":28475,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000276","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":28824,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000277","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":29173,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000278","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":29522,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000279","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":29871,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000280","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":30220,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000281","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":30569,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000282","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":30918,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000283","Department_Ward":"Cardiology","Admission_Date":"2024-08-04","Length_Of_Stay_Days":4,"Total_Billed_USD":31267,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000284","Department_Ward":"Oncology","Admission_Date":"2024-09-05","Length_Of_Stay_Days":5,"Total_Billed_USD":31616,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000285","Department_Ward":"Pediatrics","Admission_Date":"2024-10-06","Length_Of_Stay_Days":6,"Total_Billed_USD":31965,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000286","Department_Ward":"Orthopedics","Admission_Date":"2024-11-07","Length_Of_Stay_Days":7,"Total_Billed_USD":32314,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000287","Department_Ward":"General Ward","Admission_Date":"2024-12-08","Length_Of_Stay_Days":8,"Total_Billed_USD":32663,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000288","Department_Ward":"ICU","Admission_Date":"2024-01-09","Length_Of_Stay_Days":9,"Total_Billed_USD":33012,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000289","Department_Ward":"Cardiology","Admission_Date":"2024-02-10","Length_Of_Stay_Days":10,"Total_Billed_USD":33361,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000290","Department_Ward":"Oncology","Admission_Date":"2024-03-11","Length_Of_Stay_Days":11,"Total_Billed_USD":33710,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000291","Department_Ward":"Pediatrics","Admission_Date":"2024-04-12","Length_Of_Stay_Days":12,"Total_Billed_USD":34059,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000292","Department_Ward":"Orthopedics","Admission_Date":"2024-05-13","Length_Of_Stay_Days":13,"Total_Billed_USD":34408,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000293","Department_Ward":"General Ward","Admission_Date":"2024-06-14","Length_Of_Stay_Days":14,"Total_Billed_USD":34757,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000294","Department_Ward":"ICU","Admission_Date":"2024-07-15","Length_Of_Stay_Days":1,"Total_Billed_USD":35106,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000295","Department_Ward":"Cardiology","Admission_Date":"2024-08-16","Length_Of_Stay_Days":2,"Total_Billed_USD":35455,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000296","Department_Ward":"Oncology","Admission_Date":"2024-09-17","Length_Of_Stay_Days":3,"Total_Billed_USD":35804,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000297","Department_Ward":"Pediatrics","Admission_Date":"2024-10-18","Length_Of_Stay_Days":4,"Total_Billed_USD":36153,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000298","Department_Ward":"Orthopedics","Admission_Date":"2024-11-19","Length_Of_Stay_Days":5,"Total_Billed_USD":36502,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000299","Department_Ward":"General Ward","Admission_Date":"2024-12-20","Length_Of_Stay_Days":6,"Total_Billed_USD":36851,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000300","Department_Ward":"ICU","Admission_Date":"2024-01-21","Length_Of_Stay_Days":7,"Total_Billed_USD":37200,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000301","Department_Ward":"Cardiology","Admission_Date":"2024-02-22","Length_Of_Stay_Days":8,"Total_Billed_USD":2549,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000302","Department_Ward":"Oncology","Admission_Date":"2024-03-23","Length_Of_Stay_Days":9,"Total_Billed_USD":2898,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000303","Department_Ward":"Pediatrics","Admission_Date":"2024-04-24","Length_Of_Stay_Days":10,"Total_Billed_USD":3247,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000304","Department_Ward":"Orthopedics","Admission_Date":"2024-05-25","Length_Of_Stay_Days":11,"Total_Billed_USD":3596,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000305","Department_Ward":"General Ward","Admission_Date":"2024-06-26","Length_Of_Stay_Days":12,"Total_Billed_USD":3945,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000306","Department_Ward":"ICU","Admission_Date":"2024-07-27","Length_Of_Stay_Days":13,"Total_Billed_USD":4294,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000307","Department_Ward":"Cardiology","Admission_Date":"2024-08-28","Length_Of_Stay_Days":14,"Total_Billed_USD":4643,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000308","Department_Ward":"Oncology","Admission_Date":"2024-09-01","Length_Of_Stay_Days":1,"Total_Billed_USD":4992,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000309","Department_Ward":"Pediatrics","Admission_Date":"2024-10-02","Length_Of_Stay_Days":2,"Total_Billed_USD":5341,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000310","Department_Ward":"Orthopedics","Admission_Date":"2024-11-03","Length_Of_Stay_Days":3,"Total_Billed_USD":5690,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000311","Department_Ward":"General Ward","Admission_Date":"2024-12-04","Length_Of_Stay_Days":4,"Total_Billed_USD":6039,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000312","Department_Ward":"ICU","Admission_Date":"2024-01-05","Length_Of_Stay_Days":5,"Total_Billed_USD":6388,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000313","Department_Ward":"Cardiology","Admission_Date":"2024-02-06","Length_Of_Stay_Days":6,"Total_Billed_USD":6737,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000314","Department_Ward":"Oncology","Admission_Date":"2024-03-07","Length_Of_Stay_Days":7,"Total_Billed_USD":7086,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000315","Department_Ward":"Pediatrics","Admission_Date":"2024-04-08","Length_Of_Stay_Days":8,"Total_Billed_USD":7435,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000316","Department_Ward":"Orthopedics","Admission_Date":"2024-05-09","Length_Of_Stay_Days":9,"Total_Billed_USD":7784,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000317","Department_Ward":"General Ward","Admission_Date":"2024-06-10","Length_Of_Stay_Days":10,"Total_Billed_USD":8133,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000318","Department_Ward":"ICU","Admission_Date":"2024-07-11","Length_Of_Stay_Days":11,"Total_Billed_USD":8482,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000319","Department_Ward":"Cardiology","Admission_Date":"2024-08-12","Length_Of_Stay_Days":12,"Total_Billed_USD":8831,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000320","Department_Ward":"Oncology","Admission_Date":"2024-09-13","Length_Of_Stay_Days":13,"Total_Billed_USD":9180,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000321","Department_Ward":"Pediatrics","Admission_Date":"2024-10-14","Length_Of_Stay_Days":14,"Total_Billed_USD":9529,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000322","Department_Ward":"Orthopedics","Admission_Date":"2024-11-15","Length_Of_Stay_Days":1,"Total_Billed_USD":9878,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000323","Department_Ward":"General Ward","Admission_Date":"2024-12-16","Length_Of_Stay_Days":2,"Total_Billed_USD":10227,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000324","Department_Ward":"ICU","Admission_Date":"2024-01-17","Length_Of_Stay_Days":3,"Total_Billed_USD":10576,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000325","Department_Ward":"Cardiology","Admission_Date":"2024-02-18","Length_Of_Stay_Days":4,"Total_Billed_USD":10925,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000326","Department_Ward":"Oncology","Admission_Date":"2024-03-19","Length_Of_Stay_Days":5,"Total_Billed_USD":11274,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000327","Department_Ward":"Pediatrics","Admission_Date":"2024-04-20","Length_Of_Stay_Days":6,"Total_Billed_USD":11623,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000328","Department_Ward":"Orthopedics","Admission_Date":"2024-05-21","Length_Of_Stay_Days":7,"Total_Billed_USD":11972,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000329","Department_Ward":"General Ward","Admission_Date":"2024-06-22","Length_Of_Stay_Days":8,"Total_Billed_USD":12321,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000330","Department_Ward":"ICU","Admission_Date":"2024-07-23","Length_Of_Stay_Days":9,"Total_Billed_USD":12670,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000331","Department_Ward":"Cardiology","Admission_Date":"2024-08-24","Length_Of_Stay_Days":10,"Total_Billed_USD":13019,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000332","Department_Ward":"Oncology","Admission_Date":"2024-09-25","Length_Of_Stay_Days":11,"Total_Billed_USD":13368,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000333","Department_Ward":"Pediatrics","Admission_Date":"2024-10-26","Length_Of_Stay_Days":12,"Total_Billed_USD":13717,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000334","Department_Ward":"Orthopedics","Admission_Date":"2024-11-27","Length_Of_Stay_Days":13,"Total_Billed_USD":14066,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000335","Department_Ward":"General Ward","Admission_Date":"2024-12-28","Length_Of_Stay_Days":14,"Total_Billed_USD":14415,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000336","Department_Ward":"ICU","Admission_Date":"2024-01-01","Length_Of_Stay_Days":1,"Total_Billed_USD":14764,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000337","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":15113,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000338","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":15462,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000339","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":15811,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000340","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":16160,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000341","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":16509,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000342","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":16858,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000343","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":17207,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000344","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":17556,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000345","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":17905,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000346","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":18254,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000347","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":18603,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000348","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":18952,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000349","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":19301,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000350","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":19650,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000351","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":19999,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000352","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":20348,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000353","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":20697,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000354","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":21046,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000355","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":21395,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000356","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":21744,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000357","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":22093,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000358","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":22442,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000359","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":22791,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000360","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":23140,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000361","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":23489,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000362","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":23838,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000363","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":24187,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000364","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":24536,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000365","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":24885,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000366","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":25234,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000367","Department_Ward":"Cardiology","Admission_Date":"2024-08-04","Length_Of_Stay_Days":4,"Total_Billed_USD":25583,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000368","Department_Ward":"Oncology","Admission_Date":"2024-09-05","Length_Of_Stay_Days":5,"Total_Billed_USD":25932,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000369","Department_Ward":"Pediatrics","Admission_Date":"2024-10-06","Length_Of_Stay_Days":6,"Total_Billed_USD":26281,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000370","Department_Ward":"Orthopedics","Admission_Date":"2024-11-07","Length_Of_Stay_Days":7,"Total_Billed_USD":26630,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000371","Department_Ward":"General Ward","Admission_Date":"2024-12-08","Length_Of_Stay_Days":8,"Total_Billed_USD":26979,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000372","Department_Ward":"ICU","Admission_Date":"2024-01-09","Length_Of_Stay_Days":9,"Total_Billed_USD":27328,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000373","Department_Ward":"Cardiology","Admission_Date":"2024-02-10","Length_Of_Stay_Days":10,"Total_Billed_USD":27677,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000374","Department_Ward":"Oncology","Admission_Date":"2024-03-11","Length_Of_Stay_Days":11,"Total_Billed_USD":28026,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000375","Department_Ward":"Pediatrics","Admission_Date":"2024-04-12","Length_Of_Stay_Days":12,"Total_Billed_USD":28375,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000376","Department_Ward":"Orthopedics","Admission_Date":"2024-05-13","Length_Of_Stay_Days":13,"Total_Billed_USD":28724,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000377","Department_Ward":"General Ward","Admission_Date":"2024-06-14","Length_Of_Stay_Days":14,"Total_Billed_USD":29073,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000378","Department_Ward":"ICU","Admission_Date":"2024-07-15","Length_Of_Stay_Days":1,"Total_Billed_USD":29422,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000379","Department_Ward":"Cardiology","Admission_Date":"2024-08-16","Length_Of_Stay_Days":2,"Total_Billed_USD":29771,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000380","Department_Ward":"Oncology","Admission_Date":"2024-09-17","Length_Of_Stay_Days":3,"Total_Billed_USD":30120,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000381","Department_Ward":"Pediatrics","Admission_Date":"2024-10-18","Length_Of_Stay_Days":4,"Total_Billed_USD":30469,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000382","Department_Ward":"Orthopedics","Admission_Date":"2024-11-19","Length_Of_Stay_Days":5,"Total_Billed_USD":30818,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000383","Department_Ward":"General Ward","Admission_Date":"2024-12-20","Length_Of_Stay_Days":6,"Total_Billed_USD":31167,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000384","Department_Ward":"ICU","Admission_Date":"2024-01-21","Length_Of_Stay_Days":7,"Total_Billed_USD":31516,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000385","Department_Ward":"Cardiology","Admission_Date":"2024-02-22","Length_Of_Stay_Days":8,"Total_Billed_USD":31865,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000386","Department_Ward":"Oncology","Admission_Date":"2024-03-23","Length_Of_Stay_Days":9,"Total_Billed_USD":32214,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000387","Department_Ward":"Pediatrics","Admission_Date":"2024-04-24","Length_Of_Stay_Days":10,"Total_Billed_USD":32563,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000388","Department_Ward":"Orthopedics","Admission_Date":"2024-05-25","Length_Of_Stay_Days":11,"Total_Billed_USD":32912,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000389","Department_Ward":"General Ward","Admission_Date":"2024-06-26","Length_Of_Stay_Days":12,"Total_Billed_USD":33261,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000390","Department_Ward":"ICU","Admission_Date":"2024-07-27","Length_Of_Stay_Days":13,"Total_Billed_USD":33610,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000391","Department_Ward":"Cardiology","Admission_Date":"2024-08-28","Length_Of_Stay_Days":14,"Total_Billed_USD":33959,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000392","Department_Ward":"Oncology","Admission_Date":"2024-09-01","Length_Of_Stay_Days":1,"Total_Billed_USD":34308,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000393","Department_Ward":"Pediatrics","Admission_Date":"2024-10-02","Length_Of_Stay_Days":2,"Total_Billed_USD":34657,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000394","Department_Ward":"Orthopedics","Admission_Date":"2024-11-03","Length_Of_Stay_Days":3,"Total_Billed_USD":35006,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000395","Department_Ward":"General Ward","Admission_Date":"2024-12-04","Length_Of_Stay_Days":4,"Total_Billed_USD":35355,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000396","Department_Ward":"ICU","Admission_Date":"2024-01-05","Length_Of_Stay_Days":5,"Total_Billed_USD":35704,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000397","Department_Ward":"Cardiology","Admission_Date":"2024-02-06","Length_Of_Stay_Days":6,"Total_Billed_USD":36053,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000398","Department_Ward":"Oncology","Admission_Date":"2024-03-07","Length_Of_Stay_Days":7,"Total_Billed_USD":36402,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000399","Department_Ward":"Pediatrics","Admission_Date":"2024-04-08","Length_Of_Stay_Days":8,"Total_Billed_USD":36751,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000400","Department_Ward":"Orthopedics","Admission_Date":"2024-05-09","Length_Of_Stay_Days":9,"Total_Billed_USD":37100,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000401","Department_Ward":"General Ward","Admission_Date":"2024-06-10","Length_Of_Stay_Days":10,"Total_Billed_USD":37449,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000402","Department_Ward":"ICU","Admission_Date":"2024-07-11","Length_Of_Stay_Days":11,"Total_Billed_USD":2798,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000403","Department_Ward":"Cardiology","Admission_Date":"2024-08-12","Length_Of_Stay_Days":12,"Total_Billed_USD":3147,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000404","Department_Ward":"Oncology","Admission_Date":"2024-09-13","Length_Of_Stay_Days":13,"Total_Billed_USD":3496,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000405","Department_Ward":"Pediatrics","Admission_Date":"2024-10-14","Length_Of_Stay_Days":14,"Total_Billed_USD":3845,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000406","Department_Ward":"Orthopedics","Admission_Date":"2024-11-15","Length_Of_Stay_Days":1,"Total_Billed_USD":4194,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000407","Department_Ward":"General Ward","Admission_Date":"2024-12-16","Length_Of_Stay_Days":2,"Total_Billed_USD":4543,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000408","Department_Ward":"ICU","Admission_Date":"2024-01-17","Length_Of_Stay_Days":3,"Total_Billed_USD":4892,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000409","Department_Ward":"Cardiology","Admission_Date":"2024-02-18","Length_Of_Stay_Days":4,"Total_Billed_USD":5241,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000410","Department_Ward":"Oncology","Admission_Date":"2024-03-19","Length_Of_Stay_Days":5,"Total_Billed_USD":5590,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000411","Department_Ward":"Pediatrics","Admission_Date":"2024-04-20","Length_Of_Stay_Days":6,"Total_Billed_USD":5939,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000412","Department_Ward":"Orthopedics","Admission_Date":"2024-05-21","Length_Of_Stay_Days":7,"Total_Billed_USD":6288,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000413","Department_Ward":"General Ward","Admission_Date":"2024-06-22","Length_Of_Stay_Days":8,"Total_Billed_USD":6637,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000414","Department_Ward":"ICU","Admission_Date":"2024-07-23","Length_Of_Stay_Days":9,"Total_Billed_USD":6986,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000415","Department_Ward":"Cardiology","Admission_Date":"2024-08-24","Length_Of_Stay_Days":10,"Total_Billed_USD":7335,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000416","Department_Ward":"Oncology","Admission_Date":"2024-09-25","Length_Of_Stay_Days":11,"Total_Billed_USD":7684,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000417","Department_Ward":"Pediatrics","Admission_Date":"2024-10-26","Length_Of_Stay_Days":12,"Total_Billed_USD":8033,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000418","Department_Ward":"Orthopedics","Admission_Date":"2024-11-27","Length_Of_Stay_Days":13,"Total_Billed_USD":8382,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000419","Department_Ward":"General Ward","Admission_Date":"2024-12-28","Length_Of_Stay_Days":14,"Total_Billed_USD":8731,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000420","Department_Ward":"ICU","Admission_Date":"2024-01-01","Length_Of_Stay_Days":1,"Total_Billed_USD":9080,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000421","Department_Ward":"Cardiology","Admission_Date":"2024-02-02","Length_Of_Stay_Days":2,"Total_Billed_USD":9429,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000422","Department_Ward":"Oncology","Admission_Date":"2024-03-03","Length_Of_Stay_Days":3,"Total_Billed_USD":9778,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000423","Department_Ward":"Pediatrics","Admission_Date":"2024-04-04","Length_Of_Stay_Days":4,"Total_Billed_USD":10127,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000424","Department_Ward":"Orthopedics","Admission_Date":"2024-05-05","Length_Of_Stay_Days":5,"Total_Billed_USD":10476,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000425","Department_Ward":"General Ward","Admission_Date":"2024-06-06","Length_Of_Stay_Days":6,"Total_Billed_USD":10825,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000426","Department_Ward":"ICU","Admission_Date":"2024-07-07","Length_Of_Stay_Days":7,"Total_Billed_USD":11174,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000427","Department_Ward":"Cardiology","Admission_Date":"2024-08-08","Length_Of_Stay_Days":8,"Total_Billed_USD":11523,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000428","Department_Ward":"Oncology","Admission_Date":"2024-09-09","Length_Of_Stay_Days":9,"Total_Billed_USD":11872,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000429","Department_Ward":"Pediatrics","Admission_Date":"2024-10-10","Length_Of_Stay_Days":10,"Total_Billed_USD":12221,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000430","Department_Ward":"Orthopedics","Admission_Date":"2024-11-11","Length_Of_Stay_Days":11,"Total_Billed_USD":12570,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000431","Department_Ward":"General Ward","Admission_Date":"2024-12-12","Length_Of_Stay_Days":12,"Total_Billed_USD":12919,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000432","Department_Ward":"ICU","Admission_Date":"2024-01-13","Length_Of_Stay_Days":13,"Total_Billed_USD":13268,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000433","Department_Ward":"Cardiology","Admission_Date":"2024-02-14","Length_Of_Stay_Days":14,"Total_Billed_USD":13617,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000434","Department_Ward":"Oncology","Admission_Date":"2024-03-15","Length_Of_Stay_Days":1,"Total_Billed_USD":13966,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000435","Department_Ward":"Pediatrics","Admission_Date":"2024-04-16","Length_Of_Stay_Days":2,"Total_Billed_USD":14315,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000436","Department_Ward":"Orthopedics","Admission_Date":"2024-05-17","Length_Of_Stay_Days":3,"Total_Billed_USD":14664,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000437","Department_Ward":"General Ward","Admission_Date":"2024-06-18","Length_Of_Stay_Days":4,"Total_Billed_USD":15013,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000438","Department_Ward":"ICU","Admission_Date":"2024-07-19","Length_Of_Stay_Days":5,"Total_Billed_USD":15362,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000439","Department_Ward":"Cardiology","Admission_Date":"2024-08-20","Length_Of_Stay_Days":6,"Total_Billed_USD":15711,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000440","Department_Ward":"Oncology","Admission_Date":"2024-09-21","Length_Of_Stay_Days":7,"Total_Billed_USD":16060,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000441","Department_Ward":"Pediatrics","Admission_Date":"2024-10-22","Length_Of_Stay_Days":8,"Total_Billed_USD":16409,"Readmission_Risk_Score":2,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000442","Department_Ward":"Orthopedics","Admission_Date":"2024-11-23","Length_Of_Stay_Days":9,"Total_Billed_USD":16758,"Readmission_Risk_Score":3,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000443","Department_Ward":"General Ward","Admission_Date":"2024-12-24","Length_Of_Stay_Days":10,"Total_Billed_USD":17107,"Readmission_Risk_Score":4,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000444","Department_Ward":"ICU","Admission_Date":"2024-01-25","Length_Of_Stay_Days":11,"Total_Billed_USD":17456,"Readmission_Risk_Score":5,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000445","Department_Ward":"Cardiology","Admission_Date":"2024-02-26","Length_Of_Stay_Days":12,"Total_Billed_USD":17805,"Readmission_Risk_Score":6,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000446","Department_Ward":"Oncology","Admission_Date":"2024-03-27","Length_Of_Stay_Days":13,"Total_Billed_USD":18154,"Readmission_Risk_Score":7,"Patient_Disposition":"Admitted"},{"Patient_ID":"PT-000447","Department_Ward":"Pediatrics","Admission_Date":"2024-04-28","Length_Of_Stay_Days":14,"Total_Billed_USD":18503,"Readmission_Risk_Score":8,"Patient_Disposition":"Transferred"},{"Patient_ID":"PT-000448","Department_Ward":"Orthopedics","Admission_Date":"2024-05-01","Length_Of_Stay_Days":1,"Total_Billed_USD":18852,"Readmission_Risk_Score":9,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000449","Department_Ward":"General Ward","Admission_Date":"2024-06-02","Length_Of_Stay_Days":2,"Total_Billed_USD":19201,"Readmission_Risk_Score":10,"Patient_Disposition":"Discharged"},{"Patient_ID":"PT-000450","Department_Ward":"ICU","Admission_Date":"2024-07-03","Length_Of_Stay_Days":3,"Total_Billed_USD":19550,"Readmission_Risk_Score":1,"Patient_Disposition":"Discharged"}];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-section').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.nav-tab').forEach(function(el) { el.classList.remove('active'); });
+      var target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function toggleDrawer(kpiId) {
+      var d = document.getElementById('drawer-' + kpiId);
+      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applyFilter(field, val) {
+      activeFilter = { field: field, value: val };
+      var banner = document.getElementById('filterBanner');
+      var filterText = document.getElementById('filterText');
+      if (banner && filterText) {
+        var matching = rawData.filter(function(r) { return String(r[field] || '') === val; });
+        filterText.innerText = 'Filtered by ' + field + ' = "' + val + '" (' + matching.length + ' matching records)';
+        banner.style.display = 'flex';
+      }
+    }
+
+    function resetFilter() {
+      activeFilter = null;
+      var banner = document.getElementById('filterBanner');
+      if (banner) banner.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

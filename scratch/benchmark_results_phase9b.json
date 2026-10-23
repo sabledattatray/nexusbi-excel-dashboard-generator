@@ -1,0 +1,157 @@
+{
+  "timestamp": "2026-10-23T12:51:17.734Z",
+  "benchmarks": [
+    {
+      "dataset": "Helpdesk (8,000 Tickets)",
+      "rows": 8000,
+      "metricsCount": 11,
+      "v8": {
+        "coldInitMs": 0.018900000000002137,
+        "ingestionMs": 0.032399999999995543,
+        "coldQueryMs": 10.126499999999993,
+        "warmQueryMeanMs": 5.222459999999993,
+        "warmQueryMinMs": 4.149900000000002,
+        "warmQueryMaxMs": 10.24630000000002,
+        "heapUsedMb": 19.3
+      },
+      "duckdb": {
+        "coldInitMs": 1054.0026,
+        "ingestionMs": 284.8691000000001,
+        "coldQueryMs": 28.604299999999967,
+        "warmQueryMeanMs": 3.675260000000003,
+        "warmQueryMinMs": 3.112899999999854,
+        "warmQueryMaxMs": 4.862899999999854,
+        "heapUsedMb": 85.18
+      },
+      "parity": [
+        {
+          "metric": "total_tickets",
+          "v8": 8000,
+          "duckdb": 8000,
+          "delta": 0
+        },
+        {
+          "metric": "completed_tickets",
+          "v8": 6199,
+          "duckdb": 6199,
+          "delta": 0
+        },
+        {
+          "metric": "in_progress_tickets",
+          "v8": 1181,
+          "duckdb": 1181,
+          "delta": 0
+        },
+        {
+          "metric": "waiting_on_customer_tickets",
+          "v8": 620,
+          "duckdb": 620,
+          "delta": 0
+        },
+        {
+          "metric": "total_unresolved_backlog",
+          "v8": 1801,
+          "duckdb": 1801,
+          "delta": 0
+        },
+        {
+          "metric": "sla_met_count",
+          "v8": 2925,
+          "duckdb": 2925,
+          "delta": 0
+        },
+        {
+          "metric": "sla_breached_count",
+          "v8": 3274,
+          "duckdb": 3274,
+          "delta": 0
+        },
+        {
+          "metric": "sla_compliance_rate",
+          "v8": 0.47185029843523146,
+          "duckdb": 0.47185029843523146,
+          "delta": 0
+        },
+        {
+          "metric": "avg_resolution_hours_raw",
+          "v8": 55.608194870140366,
+          "duckdb": 55.608194870140366,
+          "delta": 0
+        },
+        {
+          "metric": "avg_resolution_hours_ledger",
+          "v8": 55.60888530408114,
+          "duckdb": 55.60888530408114,
+          "delta": 0
+        },
+        {
+          "metric": "reopened_count",
+          "v8": 415,
+          "duckdb": 415,
+          "delta": 0
+        }
+      ]
+    },
+    {
+      "dataset": "Sales MIS Validation (6,000 Transactions)",
+      "rows": 6000,
+      "metricsCount": 6,
+      "v8": {
+        "coldInitMs": 0.005699999999933425,
+        "ingestionMs": 0.010099999999965803,
+        "coldQueryMs": 4.695900000000165,
+        "warmQueryMeanMs": 3.411030000000005,
+        "warmQueryMinMs": 2.238700000000108,
+        "warmQueryMaxMs": 7.174600000000055,
+        "heapUsedMb": 121.67
+      },
+      "duckdb": {
+        "coldInitMs": 630.4874,
+        "ingestionMs": 119.94720000000007,
+        "coldQueryMs": 2.152299999999741,
+        "warmQueryMeanMs": 1.8287599999999202,
+        "warmQueryMinMs": 1.4896999999996297,
+        "warmQueryMaxMs": 2.244000000000142,
+        "heapUsedMb": 193.8
+      },
+      "parity": [
+        {
+          "metric": "total_transactions",
+          "v8": 6000,
+          "duckdb": 6000,
+          "delta": 0
+        },
+        {
+          "metric": "total_net_sales",
+          "v8": 339830586.55000013,
+          "duckdb": 339830586.55000013,
+          "delta": 0
+        },
+        {
+          "metric": "total_gross_profit",
+          "v8": 71910440.04999997,
+          "duckdb": 71910440.04999997,
+          "delta": 0
+        },
+        {
+          "metric": "total_cost",
+          "v8": 267920146.5,
+          "duckdb": 267920146.5,
+          "delta": 0
+        },
+        {
+          "metric": "overall_profit_margin",
+          "v8": 0.2116067325782625,
+          "duckdb": 0.2116067325782625,
+          "delta": 0
+        },
+        {
+          "metric": "paid_transactions",
+          "v8": 4934,
+          "duckdb": 4934,
+          "delta": 0
+        }
+      ]
+    }
+  ]
+}

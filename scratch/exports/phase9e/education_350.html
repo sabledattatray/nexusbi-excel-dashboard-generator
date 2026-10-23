@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Intelligence & Operational Analysis — NexusBI</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #141c2e;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .badge-bar { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; margin-bottom: 12px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-weight: 500;
+    }
+    .badge.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .badge.warn {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .nav-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-top: 16px; }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+    .filter-banner {
+      display: none;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .kpi-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+    .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #fff; margin: 6px 0; }
+    .kpi-formula { font-size: 11px; color: #64748b; font-family: monospace; }
+    .kpi-drawer {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--card-border);
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .chart-title { font-size: 16px; font-weight: 600; color: #fff; }
+    .chart-meta { font-size: 12px; color: var(--text-muted); }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .bar-row:hover { background: rgba(255, 255, 255, 0.05); }
+    .bar-label { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
+    .bar-track { flex: 1; height: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin: 0 12px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent-gradient); border-radius: 4px; }
+    .bar-val { width: 75px; text-align: right; font-weight: 600; font-family: monospace; }
+    .data-table-container { overflow-x: auto; max-height: 400px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    th { background: #0f172a; padding: 10px 12px; font-weight: 600; color: #cbd5e1; position: sticky; top: 0; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); color: #e2e8f0; }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 20px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      header, .kpi-card, .chart-card { background: #fff; border: 1px solid #ccc; color: #000; }
+      .bar-fill { background: #0284c7 !important; }
+      .nav-tabs, .filter-banner { display: none !important; }
+      .tab-section { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dataset Intelligence &amp; Operational Analysis</h1>
+      <div class="badge-bar">
+        <span class="badge">Classification: Universal Dataset Intelligence &amp; Distribution Analysis (0.0%)</span>
+        <span class="badge">Profiling Conf: 89.6%</span>
+        <span class="badge success">Deterministic Parity: Verified</span>
+        <span class="badge">Source Hash: 38d2e9b4</span>
+        <span class="badge">Report Hash: 9157b073</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Generated: 2026-10-23T16:31:01.406Z | Records Audited: 350 | Local Single-File Zero-AI Execution
+      </p>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">Executive Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('action-queue')">Action Queue (15)</button>
+        <button class="nav-tab" onclick="switchTab('audit-trail')">Methods & Assumptions</button>
+      </div>
+    </header>
+
+    <div id="filterBanner" class="filter-banner">
+      <span id="filterText">Active Filter</span>
+      <button style="background:none; border:none; color:var(--accent); font-weight:bold; cursor:pointer;" onclick="resetFilter()">✕ Reset Filter</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-section active">
+      <div class="kpi-grid">
+        
+          <div class="kpi-card" onclick="toggleDrawer('total_records')">
+            <div class="kpi-label">Total Records Volume</div>
+            <div class="kpi-value" id="kpi-val-total_records">350</div>
+            <div class="kpi-formula">COUNTROWS</div>
+            <div id="drawer-total_records" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTROWS across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('unique_entities_count')">
+            <div class="kpi-label">Unique Entities (Student_ID)</div>
+            <div class="kpi-value" id="kpi-val-unique_entities_count">350</div>
+            <div class="kpi-formula">COUNTDISTINCT(Student_ID)</div>
+            <div id="drawer-unique_entities_count" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTDISTINCT(Student_ID) across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_total')">
+            <div class="kpi-label">Total Current Tuition_Balance_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_total">119,712</div>
+            <div class="kpi-formula">SUM(Tuition_Balance_USD)</div>
+            <div id="drawer-primary_measure_total" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using SUM(Tuition_Balance_USD) across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_average')">
+            <div class="kpi-label">Mean Tuition_Balance_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_average">342.03</div>
+            <div class="kpi-formula">AVERAGE(Tuition_Balance_USD)</div>
+            <div id="drawer-primary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Tuition_Balance_USD) across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_median')">
+            <div class="kpi-label">Median Tuition_Balance_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_median">0</div>
+            <div class="kpi-formula">MEDIAN(Tuition_Balance_USD)</div>
+            <div id="drawer-primary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Tuition_Balance_USD) across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_average')">
+            <div class="kpi-label">Mean Cumulative_GPA</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_average">3.06</div>
+            <div class="kpi-formula">AVERAGE(Cumulative_GPA)</div>
+            <div id="drawer-secondary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Cumulative_GPA) across 350 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_median')">
+            <div class="kpi-label">Median Cumulative_GPA</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_median">3.10</div>
+            <div class="kpi-formula">MEDIAN(Cumulative_GPA)</div>
+            <div id="drawer-secondary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Cumulative_GPA) across 350 records.</em></p>
+            </div>
+          </div>
+      </div>
+
+      <div class="charts-grid">
+        
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Distribution by Academic_Major</div>
+                  <div class="chart-meta">Academic_Major vs Total Tuition_Balance_USD</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Academic_Major', 'Biochemistry')" title="Click to filter by Biochemistry">
+                  <span class="bar-label">Biochemistry</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">24,804</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Academic_Major', 'Literature')" title="Click to filter by Literature">
+                  <span class="bar-label">Literature</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">24,732</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Academic_Major', 'Computer Science')" title="Click to filter by Computer Science">
+                  <span class="bar-label">Computer Science</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 95%"></div>
+                  </div>
+                  <span class="bar-val">23,460</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Academic_Major', 'Mechanical Engineering')" title="Click to filter by Mechanical Engineering">
+                  <span class="bar-label">Mechanical Engineering</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 94%"></div>
+                  </div>
+                  <span class="bar-val">23,392</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Academic_Major', 'Economics')" title="Click to filter by Economics">
+                  <span class="bar-label">Economics</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 94%"></div>
+                  </div>
+                  <span class="bar-val">23,324</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Volume by Class_Standing</div>
+                  <div class="chart-meta">Class_Standing vs Volume</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Class_Standing', 'Sophomore')" title="Click to filter by Sophomore">
+                  <span class="bar-label">Sophomore</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">88</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Class_Standing', 'Junior')" title="Click to filter by Junior">
+                  <span class="bar-label">Junior</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">88</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Class_Standing', 'Senior')" title="Click to filter by Senior">
+                  <span class="bar-label">Senior</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 99%"></div>
+                  </div>
+                  <span class="bar-val">87</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Class_Standing', 'Freshman')" title="Click to filter by Freshman">
+                  <span class="bar-label">Freshman</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 99%"></div>
+                  </div>
+                  <span class="bar-val">87</span>
+                </div>
+              </div>
+            </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ACTION QUEUE -->
+    <div id="tab-action-queue" class="tab-section">
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Operational Action Queue (Deterministic Source Traceability)</div>
+        
+        <div class="data-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Entity ID</th>
+                <th>Source Row #</th>
+                <th>Priority</th>
+                <th>Status / State</th>
+                <th>Assignee / Owner</th>
+                <th>Site / Location</th>
+                <th>Urgency Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#1</td>
+                  <td style="font-family: monospace;">STU-000004</td>
+                  <td style="color: var(--text-muted);">Row #4</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,204</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#2</td>
+                  <td style="font-family: monospace;">STU-000008</td>
+                  <td style="color: var(--text-muted);">Row #8</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,208</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#3</td>
+                  <td style="font-family: monospace;">STU-000012</td>
+                  <td style="color: var(--text-muted);">Row #12</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,212</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#4</td>
+                  <td style="font-family: monospace;">STU-000016</td>
+                  <td style="color: var(--text-muted);">Row #16</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,216</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#5</td>
+                  <td style="font-family: monospace;">STU-000020</td>
+                  <td style="color: var(--text-muted);">Row #20</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,220</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#6</td>
+                  <td style="font-family: monospace;">STU-000024</td>
+                  <td style="color: var(--text-muted);">Row #24</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,224</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#7</td>
+                  <td style="font-family: monospace;">STU-000028</td>
+                  <td style="color: var(--text-muted);">Row #28</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,228</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#8</td>
+                  <td style="font-family: monospace;">STU-000032</td>
+                  <td style="color: var(--text-muted);">Row #32</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,232</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#9</td>
+                  <td style="font-family: monospace;">STU-000036</td>
+                  <td style="color: var(--text-muted);">Row #36</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,236</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#10</td>
+                  <td style="font-family: monospace;">STU-000040</td>
+                  <td style="color: var(--text-muted);">Row #40</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,240</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#11</td>
+                  <td style="font-family: monospace;">STU-000044</td>
+                  <td style="color: var(--text-muted);">Row #44</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,244</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#12</td>
+                  <td style="font-family: monospace;">STU-000048</td>
+                  <td style="color: var(--text-muted);">Row #48</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,248</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#13</td>
+                  <td style="font-family: monospace;">STU-000052</td>
+                  <td style="color: var(--text-muted);">Row #52</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,252</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#14</td>
+                  <td style="font-family: monospace;">STU-000056</td>
+                  <td style="color: var(--text-muted);">Row #56</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,256</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: bold; color: var(--accent);">#15</td>
+                  <td style="font-family: monospace;">STU-000060</td>
+                  <td style="color: var(--text-muted);">Row #60</td>
+                  <td><span class="badge ">High</span></td>
+                  <td>Active</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Outstanding Balance: 1,260</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: METHODS & AUDIT -->
+    <div id="tab-audit-trail" class="tab-section">
+      <div class="chart-card" style="margin-bottom: 20px;">
+        <div class="chart-title" style="margin-bottom: 12px;">Methodological Standards & Aggregation Policy</div>
+        <ul style="list-style: none; space-y: 8px;">
+          
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 1:</strong> All analytical aggregations are computed locally in-browser using full-precision raw IEEE 754 float values.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 2:</strong> No intermediate rounded values are ever re-aggregated across groups, metrics, or export layers.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 3:</strong> Non-additive metrics (ratings, GPA, percentages, unit prices) are aggregated via weighted or arithmetic mean/median only; summation is strictly forbidden.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 4:</strong> Semi-additive metrics (stock on hand, account balances) are point-in-time state indicators and must not be aggregated over time dimensions.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 5:</strong> Missing, null, or empty string values are excluded on a per-metric basis without corrupting adjacent columns.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 6:</strong> Zero AI hallucination guarantee: 100% deterministic code compilation with verified three-way engine parity.
+            </li>
+        </ul>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Metric Dictionary & Additivity Mapping</div>
+        <div class="data-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric Label</th>
+                <th>Formula</th>
+                <th>Additivity Tier</th>
+                <th>Exclusions</th>
+                <th>Canonical Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td style="font-weight: 600;">Total Records Volume</td>
+                  <td style="font-family: monospace;">COUNTROWS</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">350</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Unique Entities (Student_ID)</td>
+                  <td style="font-family: monospace;">COUNTDISTINCT(Student_ID)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">350</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Total Current Tuition_Balance_USD</td>
+                  <td style="font-family: monospace;">SUM(Tuition_Balance_USD)</td>
+                  <td><span class="badge">SEMI_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">119,712</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Tuition_Balance_USD</td>
+                  <td style="font-family: monospace;">AVERAGE(Tuition_Balance_USD)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">342.03</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Tuition_Balance_USD</td>
+                  <td style="font-family: monospace;">MEDIAN(Tuition_Balance_USD)</td>
+                  <td><span class="badge">SEMI_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">0</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Cumulative_GPA</td>
+                  <td style="font-family: monospace;">AVERAGE(Cumulative_GPA)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">3.06</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Cumulative_GPA</td>
+                  <td style="font-family: monospace;">MEDIAN(Cumulative_GPA)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">3.10</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>Generated by NexusBI Universal Deterministic Analytical Platform</span>
+      <span>Three-Way Parity Guaranteed: Source Math == V8 JS == DuckDB-Wasm</span>
+    </footer>
+  </div>
+
+  <script>
+    // Offline Single-File Interactive Controller (Zero-AI, Zero-Network)
+    var activeFilter = null;
+    var modelData = {"dashboardTitle":"Dataset Intelligence & Operational Analysis","domainClassification":"Universal Dataset Intelligence & Distribution Analysis","isUniversalFallback":true,"domainConfidence":0,"profilingConfidence":0.8959999999999999,"executiveHeader":{"domain":"Universal Dataset Intelligence & Distribution Analysis","reportTitle":"Dataset Intelligence & Operational Analysis","asOfTimestamp":"2026-10-23T16:31:01.406Z","totalRecords":350,"qualityState":"Optimal","domainConfidence":0,"profilingConfidence":0.8959999999999999,"dataLocality":"100% In-Browser Memory (Zero-AI, Zero-Telemetry)"},"kpiCards":[{"id":"total_records","label":"Total Records Volume","value":350,"formattedValue":"350","calculationFormula":"COUNTROWS","sourceColumns":[],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using COUNTROWS across 350 records."},{"id":"unique_entities_count","label":"Unique Entities (Student_ID)","value":350,"formattedValue":"350","calculationFormula":"COUNTDISTINCT(Student_ID)","sourceColumns":["Student_ID"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using COUNTDISTINCT(Student_ID) across 350 records."},{"id":"primary_measure_total","label":"Total Current Tuition_Balance_USD","value":119712,"formattedValue":"119,712","calculationFormula":"SUM(Tuition_Balance_USD)","sourceColumns":["Tuition_Balance_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using SUM(Tuition_Balance_USD) across 350 records."},{"id":"primary_measure_average","label":"Mean Tuition_Balance_USD","value":342.0342857142857,"formattedValue":"342.03","calculationFormula":"AVERAGE(Tuition_Balance_USD)","sourceColumns":["Tuition_Balance_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using AVERAGE(Tuition_Balance_USD) across 350 records."},{"id":"primary_measure_median","label":"Median Tuition_Balance_USD","value":0,"formattedValue":"0","calculationFormula":"MEDIAN(Tuition_Balance_USD)","sourceColumns":["Tuition_Balance_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using MEDIAN(Tuition_Balance_USD) across 350 records."},{"id":"secondary_measure_average","label":"Mean Cumulative_GPA","value":3.061428571428571,"formattedValue":"3.06","calculationFormula":"AVERAGE(Cumulative_GPA)","sourceColumns":["Cumulative_GPA"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using AVERAGE(Cumulative_GPA) across 350 records."},{"id":"secondary_measure_median","label":"Median Cumulative_GPA","value":3.1,"formattedValue":"3.10","calculationFormula":"MEDIAN(Cumulative_GPA)","sourceColumns":["Cumulative_GPA"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using MEDIAN(Cumulative_GPA) across 350 records."}],"charts":[{"id":"chart_primary_category_breakdown","title":"Distribution by Academic_Major","chartType":"bar","dimensionLabel":"Academic_Major","metricLabel":"Total Tuition_Balance_USD","data":[{"label":"Biochemistry","value":24804},{"label":"Literature","value":24732},{"label":"Computer Science","value":23460},{"label":"Mechanical Engineering","value":23392},{"label":"Economics","value":23324}],"accessibleSummary":"Distribution by Academic_Major displaying 5 cohorts along Academic_Major. Lead category is 'Biochemistry' with 24,804 Total Tuition_Balance_USD."},{"id":"chart_secondary_dimension","title":"Volume by Class_Standing","chartType":"bar","dimensionLabel":"Class_Standing","metricLabel":"Volume","data":[{"label":"Sophomore","value":88},{"label":"Junior","value":88},{"label":"Senior","value":87},{"label":"Freshman","value":87}],"accessibleSummary":"Volume by Class_Standing displaying 4 cohorts along Class_Standing. Lead category is 'Sophomore' with 88 Volume."}],"actionQueue":[{"rank":1,"entityId":"STU-000004","sourceRowIndex":3,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,204","rawDetails":{"Student_ID":"STU-000004","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":58,"Tuition_Balance_USD":1204,"Academic_Probation":"Good Standing"}},{"rank":2,"entityId":"STU-000008","sourceRowIndex":7,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,208","rawDetails":{"Student_ID":"STU-000008","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":86,"Tuition_Balance_USD":1208,"Academic_Probation":"Good Standing"}},{"rank":3,"entityId":"STU-000012","sourceRowIndex":11,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,212","rawDetails":{"Student_ID":"STU-000012","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":114,"Tuition_Balance_USD":1212,"Academic_Probation":"Good Standing"}},{"rank":4,"entityId":"STU-000016","sourceRowIndex":15,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,216","rawDetails":{"Student_ID":"STU-000016","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":47,"Tuition_Balance_USD":1216,"Academic_Probation":"Probation"}},{"rank":5,"entityId":"STU-000020","sourceRowIndex":19,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,220","rawDetails":{"Student_ID":"STU-000020","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":75,"Tuition_Balance_USD":1220,"Academic_Probation":"Good Standing"}},{"rank":6,"entityId":"STU-000024","sourceRowIndex":23,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,224","rawDetails":{"Student_ID":"STU-000024","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":103,"Tuition_Balance_USD":1224,"Academic_Probation":"Good Standing"}},{"rank":7,"entityId":"STU-000028","sourceRowIndex":27,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,228","rawDetails":{"Student_ID":"STU-000028","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":36,"Tuition_Balance_USD":1228,"Academic_Probation":"Good Standing"}},{"rank":8,"entityId":"STU-000032","sourceRowIndex":31,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,232","rawDetails":{"Student_ID":"STU-000032","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":64,"Tuition_Balance_USD":1232,"Academic_Probation":"Good Standing"}},{"rank":9,"entityId":"STU-000036","sourceRowIndex":35,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,236","rawDetails":{"Student_ID":"STU-000036","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":92,"Tuition_Balance_USD":1236,"Academic_Probation":"Probation"}},{"rank":10,"entityId":"STU-000040","sourceRowIndex":39,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,240","rawDetails":{"Student_ID":"STU-000040","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":120,"Tuition_Balance_USD":1240,"Academic_Probation":"Good Standing"}},{"rank":11,"entityId":"STU-000044","sourceRowIndex":43,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,244","rawDetails":{"Student_ID":"STU-000044","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":53,"Tuition_Balance_USD":1244,"Academic_Probation":"Good Standing"}},{"rank":12,"entityId":"STU-000048","sourceRowIndex":47,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,248","rawDetails":{"Student_ID":"STU-000048","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":81,"Tuition_Balance_USD":1248,"Academic_Probation":"Good Standing"}},{"rank":13,"entityId":"STU-000052","sourceRowIndex":51,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,252","rawDetails":{"Student_ID":"STU-000052","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":109,"Tuition_Balance_USD":1252,"Academic_Probation":"Probation"}},{"rank":14,"entityId":"STU-000056","sourceRowIndex":55,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,256","rawDetails":{"Student_ID":"STU-000056","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":42,"Tuition_Balance_USD":1256,"Academic_Probation":"Good Standing"}},{"rank":15,"entityId":"STU-000060","sourceRowIndex":59,"priority":"High","status":"Active","urgencyScore":30,"reason":"Outstanding Balance: 1,260","rawDetails":{"Student_ID":"STU-000060","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":70,"Tuition_Balance_USD":1260,"Academic_Probation":"Good Standing"}}],"decisionBrief":{"headline":"Universal Dataset Intelligence & Distribution Analysis: Executive Operational Brief (350 Records Audited)","executiveBullets":[{"title":"Ingestion & Data Quality Profile","text":"Audited 350 source rows across 7 columns with 100.0% full record completeness. Detected 0 duplicate records in source data."},{"title":"Total Records Volume Benchmark","text":"Total Records Volume stands at 350 calculated via COUNTROWS. Supporting benchmark Mean Tuition_Balance_USD stands at 342.03.","evidenceMetricId":"total_records","evidenceValue":"350"},{"title":"Cohort Concentration (Academic_Major)","text":"Largest volume resides in 'Biochemistry' with 24,804 (20.7% of cohort total). Lead cohort exceeds 'Economics' by 1.1x."},{"title":"Unique Entities (Student_ID) Distribution","text":"Observed Unique Entities (Student_ID) of 350. Denominator rules and null exclusions applied deterministically.","evidenceMetricId":"unique_entities_count","evidenceValue":"350"}],"recommendedActions":["Review active/unresolved records in the prioritized Action Queue below.","Inspect columns with high null rates to ensure complete source data capture.","Cross-filter by top category cohorts to identify operational bottleneck variance."],"caveats":["Comparisons are strictly descriptive; no causal assertions, predictions or forward forecasts are fabricated.","All metric aggregations reflect verified source data records executed within client-side browser memory.","Missing or invalid values are explicitly excluded from mathematical calculations rather than imputed with synthetic estimates."]},"dataQuality":{"totalRecords":350,"completeRecords":350,"completenessRate":1,"duplicateCount":0,"columnNullRates":{"Student_ID":0,"Academic_Major":0,"Class_Standing":0,"Cumulative_GPA":0,"Credits_Completed":0,"Tuition_Balance_USD":0,"Academic_Probation":0},"anomalies":[]},"queryPlans":[{"planId":"summary-1792773061404","tableName":"education_350","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"},{"id":"unique_entities_count","label":"Unique Entities (Student_ID)","operation":"countDistinct","field":"Student_ID"},{"id":"primary_measure_total","label":"Total Current Tuition_Balance_USD","operation":"sum","field":"Tuition_Balance_USD"},{"id":"primary_measure_average","label":"Mean Tuition_Balance_USD","operation":"average","field":"Tuition_Balance_USD"},{"id":"primary_measure_median","label":"Median Tuition_Balance_USD","operation":"median","field":"Tuition_Balance_USD"},{"id":"secondary_measure_average","label":"Mean Cumulative_GPA","operation":"average","field":"Cumulative_GPA"},{"id":"secondary_measure_median","label":"Median Cumulative_GPA","operation":"median","field":"Cumulative_GPA"}]},{"planId":"chart-chart_primary_category_breakdown-1792773061405","tableName":"education_350","metrics":[{"id":"primary_measure_total","label":"Total Current Tuition_Balance_USD","operation":"sum","field":"Tuition_Balance_USD"}],"groupBy":["Academic_Major"],"topN":{"field":"Academic_Major","metricId":"primary_measure_total","limit":7,"includeOther":true},"sort":[{"field":"primary_measure_total","direction":"desc"}]},{"planId":"chart-chart_secondary_dimension-1792773061406","tableName":"education_350","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"}],"groupBy":["Class_Standing"],"topN":{"field":"Class_Standing","metricId":"total_records","limit":6,"includeOther":true},"sort":[{"field":"total_records","direction":"desc"}]}],"generatedAt":"2026-10-23T16:31:01.406Z"};
+    var rawData = [{"Student_ID":"STU-000001","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":37,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000002","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":44,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000003","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":51,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000004","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":58,"Tuition_Balance_USD":1204,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000005","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":65,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000006","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":72,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000007","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":79,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000008","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":86,"Tuition_Balance_USD":1208,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000009","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":93,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000010","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":100,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000011","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":107,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000012","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":114,"Tuition_Balance_USD":1212,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000013","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":121,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000014","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":33,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000015","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":40,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000016","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":47,"Tuition_Balance_USD":1216,"Academic_Probation":"Probation"},{"Student_ID":"STU-000017","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":54,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000018","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":61,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000019","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":68,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000020","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":75,"Tuition_Balance_USD":1220,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000021","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":82,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000022","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":89,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000023","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":96,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000024","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":103,"Tuition_Balance_USD":1224,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000025","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":110,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000026","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":117,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000027","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":124,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000028","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":36,"Tuition_Balance_USD":1228,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000029","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":43,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000030","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":50,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000031","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":57,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000032","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":64,"Tuition_Balance_USD":1232,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000033","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":71,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000034","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":78,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000035","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":85,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000036","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":92,"Tuition_Balance_USD":1236,"Academic_Probation":"Probation"},{"Student_ID":"STU-000037","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":99,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000038","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":106,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000039","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":113,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000040","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":120,"Tuition_Balance_USD":1240,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000041","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":32,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000042","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":39,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000043","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":46,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000044","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":53,"Tuition_Balance_USD":1244,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000045","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":60,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000046","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":67,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000047","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":74,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000048","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":81,"Tuition_Balance_USD":1248,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000049","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":88,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000050","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":95,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000051","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":102,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000052","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":109,"Tuition_Balance_USD":1252,"Academic_Probation":"Probation"},{"Student_ID":"STU-000053","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":116,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000054","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":123,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000055","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":35,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000056","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":42,"Tuition_Balance_USD":1256,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000057","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":49,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000058","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":56,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000059","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":63,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000060","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":70,"Tuition_Balance_USD":1260,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000061","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":77,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000062","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":84,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000063","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":91,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000064","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":98,"Tuition_Balance_USD":1264,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000065","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":105,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000066","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":112,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000067","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":119,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000068","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":31,"Tuition_Balance_USD":1268,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000069","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":38,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000070","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":45,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000071","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":52,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000072","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":59,"Tuition_Balance_USD":1272,"Academic_Probation":"Probation"},{"Student_ID":"STU-000073","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":66,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000074","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":73,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000075","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":80,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000076","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":87,"Tuition_Balance_USD":1276,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000077","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":94,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000078","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":101,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000079","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":108,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000080","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":115,"Tuition_Balance_USD":1280,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000081","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":122,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000082","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":34,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000083","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":41,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000084","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":48,"Tuition_Balance_USD":1284,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000085","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":55,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000086","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":62,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000087","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":69,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000088","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":76,"Tuition_Balance_USD":1288,"Academic_Probation":"Probation"},{"Student_ID":"STU-000089","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":83,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000090","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":90,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000091","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":97,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000092","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":104,"Tuition_Balance_USD":1292,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000093","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":111,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000094","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":118,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000095","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":30,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000096","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":37,"Tuition_Balance_USD":1296,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000097","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":44,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000098","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":51,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000099","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":58,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000100","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":65,"Tuition_Balance_USD":1300,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000101","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":72,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000102","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":79,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000103","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":86,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000104","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":93,"Tuition_Balance_USD":1304,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000105","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":100,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000106","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":107,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000107","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":114,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000108","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":121,"Tuition_Balance_USD":1308,"Academic_Probation":"Probation"},{"Student_ID":"STU-000109","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":33,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000110","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":40,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000111","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":47,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000112","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":54,"Tuition_Balance_USD":1312,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000113","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":61,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000114","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":68,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000115","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":75,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000116","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":82,"Tuition_Balance_USD":1316,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000117","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":89,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000118","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":96,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000119","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":103,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000120","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":110,"Tuition_Balance_USD":1320,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000121","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":117,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000122","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":124,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000123","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":36,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000124","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":43,"Tuition_Balance_USD":1324,"Academic_Probation":"Probation"},{"Student_ID":"STU-000125","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":50,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000126","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":57,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000127","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":64,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000128","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":71,"Tuition_Balance_USD":1328,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000129","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":78,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000130","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":85,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000131","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":92,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000132","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":99,"Tuition_Balance_USD":1332,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000133","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":106,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000134","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":113,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000135","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":120,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000136","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":32,"Tuition_Balance_USD":1336,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000137","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":39,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000138","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":46,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000139","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":53,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000140","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":60,"Tuition_Balance_USD":1340,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000141","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":67,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000142","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":74,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000143","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":81,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000144","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":88,"Tuition_Balance_USD":1344,"Academic_Probation":"Probation"},{"Student_ID":"STU-000145","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":95,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000146","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":102,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000147","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":109,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000148","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":116,"Tuition_Balance_USD":1348,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000149","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":123,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000150","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":35,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000151","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":42,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000152","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":49,"Tuition_Balance_USD":1352,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000153","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":56,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000154","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":63,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000155","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":70,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000156","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":77,"Tuition_Balance_USD":1356,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000157","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":84,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000158","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":91,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000159","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":98,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000160","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":105,"Tuition_Balance_USD":1360,"Academic_Probation":"Probation"},{"Student_ID":"STU-000161","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":112,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000162","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":119,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000163","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":31,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000164","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":38,"Tuition_Balance_USD":1364,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000165","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":45,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000166","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":52,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000167","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":59,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000168","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":66,"Tuition_Balance_USD":1368,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000169","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":73,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000170","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":80,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000171","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":87,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000172","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":94,"Tuition_Balance_USD":1372,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000173","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":101,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000174","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":108,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000175","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":115,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000176","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":122,"Tuition_Balance_USD":1376,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000177","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":34,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000178","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":41,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000179","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":48,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000180","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":55,"Tuition_Balance_USD":1380,"Academic_Probation":"Probation"},{"Student_ID":"STU-000181","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":62,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000182","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":69,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000183","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":76,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000184","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":83,"Tuition_Balance_USD":1384,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000185","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":90,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000186","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":97,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000187","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":104,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000188","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":111,"Tuition_Balance_USD":1388,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000189","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":118,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000190","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":30,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000191","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":37,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000192","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":44,"Tuition_Balance_USD":1392,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000193","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":51,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000194","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":58,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000195","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":65,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000196","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":72,"Tuition_Balance_USD":1396,"Academic_Probation":"Probation"},{"Student_ID":"STU-000197","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":79,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000198","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":86,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000199","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":93,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000200","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":100,"Tuition_Balance_USD":1400,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000201","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":107,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000202","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":114,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000203","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":121,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000204","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":33,"Tuition_Balance_USD":1404,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000205","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":40,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000206","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":47,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000207","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":54,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000208","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":61,"Tuition_Balance_USD":1408,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000209","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":68,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000210","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":75,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000211","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":82,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000212","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":89,"Tuition_Balance_USD":1412,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000213","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":96,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000214","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":103,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000215","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":110,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000216","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":117,"Tuition_Balance_USD":1416,"Academic_Probation":"Probation"},{"Student_ID":"STU-000217","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":124,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000218","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":36,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000219","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":43,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000220","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":50,"Tuition_Balance_USD":1420,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000221","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":57,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000222","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":64,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000223","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":71,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000224","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":78,"Tuition_Balance_USD":1424,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000225","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":85,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000226","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":92,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000227","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":99,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000228","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":106,"Tuition_Balance_USD":1428,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000229","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":113,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000230","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":120,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000231","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":32,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000232","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":39,"Tuition_Balance_USD":1432,"Academic_Probation":"Probation"},{"Student_ID":"STU-000233","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":46,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000234","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":53,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000235","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":60,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000236","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":67,"Tuition_Balance_USD":1436,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000237","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":74,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000238","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":81,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000239","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":88,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000240","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":95,"Tuition_Balance_USD":1440,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000241","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":102,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000242","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":109,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000243","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":116,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000244","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":123,"Tuition_Balance_USD":1444,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000245","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":35,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000246","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":42,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000247","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":49,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000248","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":56,"Tuition_Balance_USD":1448,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000249","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":63,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000250","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":70,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000251","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":77,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000252","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":84,"Tuition_Balance_USD":1452,"Academic_Probation":"Probation"},{"Student_ID":"STU-000253","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":91,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000254","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":98,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000255","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":105,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000256","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":112,"Tuition_Balance_USD":1456,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000257","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":119,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000258","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":31,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000259","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":38,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000260","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":45,"Tuition_Balance_USD":1460,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000261","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":52,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000262","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":59,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000263","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":66,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000264","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":73,"Tuition_Balance_USD":1464,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000265","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":80,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000266","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":87,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000267","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":94,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000268","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":101,"Tuition_Balance_USD":1468,"Academic_Probation":"Probation"},{"Student_ID":"STU-000269","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":108,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000270","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":115,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000271","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":122,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000272","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":34,"Tuition_Balance_USD":1472,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000273","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":41,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000274","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":48,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000275","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":55,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000276","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":62,"Tuition_Balance_USD":1476,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000277","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":69,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000278","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":76,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000279","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":83,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000280","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":90,"Tuition_Balance_USD":1480,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000281","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":97,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000282","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":104,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000283","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":111,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000284","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":118,"Tuition_Balance_USD":1484,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000285","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":30,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000286","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":37,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000287","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":44,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000288","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":51,"Tuition_Balance_USD":1488,"Academic_Probation":"Probation"},{"Student_ID":"STU-000289","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":58,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000290","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":65,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000291","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":72,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000292","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":79,"Tuition_Balance_USD":1492,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000293","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":86,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000294","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":93,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000295","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":100,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000296","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":107,"Tuition_Balance_USD":1496,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000297","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":114,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000298","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":121,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000299","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":33,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000300","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":40,"Tuition_Balance_USD":1500,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000301","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":47,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000302","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":54,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000303","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":61,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000304","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":68,"Tuition_Balance_USD":1504,"Academic_Probation":"Probation"},{"Student_ID":"STU-000305","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":75,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000306","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":82,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000307","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":89,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000308","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":96,"Tuition_Balance_USD":1508,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000309","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":103,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000310","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":110,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000311","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":117,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000312","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":124,"Tuition_Balance_USD":1512,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000313","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":36,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000314","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":43,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000315","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":3.1,"Credits_Completed":50,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000316","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":3,"Credits_Completed":57,"Tuition_Balance_USD":1516,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000317","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.9,"Credits_Completed":64,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000318","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.8,"Credits_Completed":71,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000319","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.7,"Credits_Completed":78,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000320","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.6,"Credits_Completed":85,"Tuition_Balance_USD":1520,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000321","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.5,"Credits_Completed":92,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000322","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.4,"Credits_Completed":99,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000323","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":2.3,"Credits_Completed":106,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000324","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":2.2,"Credits_Completed":113,"Tuition_Balance_USD":1524,"Academic_Probation":"Probation"},{"Student_ID":"STU-000325","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.9,"Credits_Completed":120,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000326","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.8,"Credits_Completed":32,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000327","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.7,"Credits_Completed":39,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000328","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.6,"Credits_Completed":46,"Tuition_Balance_USD":1528,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000329","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.5,"Credits_Completed":53,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000330","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.4,"Credits_Completed":60,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000331","Academic_Major":"Mechanical Engineering","Class_Standing":"Senior","Cumulative_GPA":3.3,"Credits_Completed":67,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000332","Academic_Major":"Economics","Class_Standing":"Freshman","Cumulative_GPA":3.2,"Credits_Completed":74,"Tuition_Balance_USD":1532,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000333","Academic_Major":"Biochemistry","Class_Standing":"Sophomore","Cumulative_GPA":3.1,"Credits_Completed":81,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000334","Academic_Major":"Literature","Class_Standing":"Junior","Cumulative_GPA":3,"Credits_Completed":88,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000335","Academic_Major":"Computer Science","Class_Standing":"Senior","Cumulative_GPA":2.9,"Credits_Completed":95,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000336","Academic_Major":"Mechanical Engineering","Class_Standing":"Freshman","Cumulative_GPA":2.8,"Credits_Completed":102,"Tuition_Balance_USD":1536,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000337","Academic_Major":"Economics","Class_Standing":"Sophomore","Cumulative_GPA":2.7,"Credits_Completed":109,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000338","Academic_Major":"Biochemistry","Class_Standing":"Junior","Cumulative_GPA":2.6,"Credits_Completed":116,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000339","Academic_Major":"Literature","Class_Standing":"Senior","Cumulative_GPA":2.5,"Credits_Completed":123,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000340","Academic_Major":"Computer Science","Class_Standing":"Freshman","Cumulative_GPA":2.4,"Credits_Completed":35,"Tuition_Balance_USD":1540,"Academic_Probation":"Probation"},{"Student_ID":"STU-000341","Academic_Major":"Mechanical Engineering","Class_Standing":"Sophomore","Cumulative_GPA":2.3,"Credits_Completed":42,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000342","Academic_Major":"Economics","Class_Standing":"Junior","Cumulative_GPA":2.2,"Credits_Completed":49,"Tuition_Balance_USD":0,"Academic_Probation":"Probation"},{"Student_ID":"STU-000343","Academic_Major":"Biochemistry","Class_Standing":"Senior","Cumulative_GPA":3.9,"Credits_Completed":56,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000344","Academic_Major":"Literature","Class_Standing":"Freshman","Cumulative_GPA":3.8,"Credits_Completed":63,"Tuition_Balance_USD":1544,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000345","Academic_Major":"Computer Science","Class_Standing":"Sophomore","Cumulative_GPA":3.7,"Credits_Completed":70,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000346","Academic_Major":"Mechanical Engineering","Class_Standing":"Junior","Cumulative_GPA":3.6,"Credits_Completed":77,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000347","Academic_Major":"Economics","Class_Standing":"Senior","Cumulative_GPA":3.5,"Credits_Completed":84,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000348","Academic_Major":"Biochemistry","Class_Standing":"Freshman","Cumulative_GPA":3.4,"Credits_Completed":91,"Tuition_Balance_USD":1548,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000349","Academic_Major":"Literature","Class_Standing":"Sophomore","Cumulative_GPA":3.3,"Credits_Completed":98,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"},{"Student_ID":"STU-000350","Academic_Major":"Computer Science","Class_Standing":"Junior","Cumulative_GPA":3.2,"Credits_Completed":105,"Tuition_Balance_USD":0,"Academic_Probation":"Good Standing"}];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-section').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.nav-tab').forEach(function(el) { el.classList.remove('active'); });
+      var target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function toggleDrawer(kpiId) {
+      var d = document.getElementById('drawer-' + kpiId);
+      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applyFilter(field, val) {
+      activeFilter = { field: field, value: val };
+      var banner = document.getElementById('filterBanner');
+      var filterText = document.getElementById('filterText');
+      if (banner && filterText) {
+        var matching = rawData.filter(function(r) { return String(r[field] || '') === val; });
+        filterText.innerText = 'Filtered by ' + field + ' = "' + val + '" (' + matching.length + ' matching records)';
+        banner.style.display = 'flex';
+      }
+    }
+
+    function resetFilter() {
+      activeFilter = null;
+      var banner = document.getElementById('filterBanner');
+      if (banner) banner.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

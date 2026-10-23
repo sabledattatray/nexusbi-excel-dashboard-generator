@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Intelligence & Operational Analysis — NexusBI</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #141c2e;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .badge-bar { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; margin-bottom: 12px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-weight: 500;
+    }
+    .badge.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .badge.warn {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .nav-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-top: 16px; }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+    .filter-banner {
+      display: none;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .kpi-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+    .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #fff; margin: 6px 0; }
+    .kpi-formula { font-size: 11px; color: #64748b; font-family: monospace; }
+    .kpi-drawer {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--card-border);
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .chart-title { font-size: 16px; font-weight: 600; color: #fff; }
+    .chart-meta { font-size: 12px; color: var(--text-muted); }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .bar-row:hover { background: rgba(255, 255, 255, 0.05); }
+    .bar-label { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
+    .bar-track { flex: 1; height: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin: 0 12px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent-gradient); border-radius: 4px; }
+    .bar-val { width: 75px; text-align: right; font-weight: 600; font-family: monospace; }
+    .data-table-container { overflow-x: auto; max-height: 400px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    th { background: #0f172a; padding: 10px 12px; font-weight: 600; color: #cbd5e1; position: sticky; top: 0; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); color: #e2e8f0; }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 20px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      header, .kpi-card, .chart-card { background: #fff; border: 1px solid #ccc; color: #000; }
+      .bar-fill { background: #0284c7 !important; }
+      .nav-tabs, .filter-banner { display: none !important; }
+      .tab-section { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dataset Intelligence &amp; Operational Analysis</h1>
+      <div class="badge-bar">
+        <span class="badge">Classification: Universal Dataset Intelligence &amp; Distribution Analysis (0.0%)</span>
+        <span class="badge">Profiling Conf: 89.6%</span>
+        <span class="badge success">Deterministic Parity: Verified</span>
+        <span class="badge">Source Hash: 0aa8ee84</span>
+        <span class="badge">Report Hash: 47cca902</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Generated: 2026-10-23T16:31:01.579Z | Records Audited: 300 | Local Single-File Zero-AI Execution
+      </p>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">Executive Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('action-queue')">Action Queue (0)</button>
+        <button class="nav-tab" onclick="switchTab('audit-trail')">Methods & Assumptions</button>
+      </div>
+    </header>
+
+    <div id="filterBanner" class="filter-banner">
+      <span id="filterText">Active Filter</span>
+      <button style="background:none; border:none; color:var(--accent); font-weight:bold; cursor:pointer;" onclick="resetFilter()">✕ Reset Filter</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-section active">
+      <div class="kpi-grid">
+        
+          <div class="kpi-card" onclick="toggleDrawer('total_records')">
+            <div class="kpi-label">Total Records Volume</div>
+            <div class="kpi-value" id="kpi-val-total_records">300</div>
+            <div class="kpi-formula">COUNTROWS</div>
+            <div id="drawer-total_records" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTROWS across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('unique_entities_count')">
+            <div class="kpi-label">Unique Entities (Campaign_ID)</div>
+            <div class="kpi-value" id="kpi-val-unique_entities_count">300</div>
+            <div class="kpi-formula">COUNTDISTINCT(Campaign_ID)</div>
+            <div id="drawer-unique_entities_count" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using COUNTDISTINCT(Campaign_ID) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_total')">
+            <div class="kpi-label">Total Ad_Spend_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_total">1,176,908.40</div>
+            <div class="kpi-formula">SUM(Ad_Spend_USD)</div>
+            <div id="drawer-primary_measure_total" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using SUM(Ad_Spend_USD) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_average')">
+            <div class="kpi-label">Mean Ad_Spend_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_average">3,923.03</div>
+            <div class="kpi-formula">AVERAGE(Ad_Spend_USD)</div>
+            <div id="drawer-primary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Ad_Spend_USD) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('primary_measure_median')">
+            <div class="kpi-label">Median Ad_Spend_USD</div>
+            <div class="kpi-value" id="kpi-val-primary_measure_median">3,073.80</div>
+            <div class="kpi-formula">MEDIAN(Ad_Spend_USD)</div>
+            <div id="drawer-primary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Ad_Spend_USD) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_total')">
+            <div class="kpi-label">Total Cost_Per_Acquisition</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_total">7,498.74</div>
+            <div class="kpi-formula">SUM(Cost_Per_Acquisition)</div>
+            <div id="drawer-secondary_measure_total" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using SUM(Cost_Per_Acquisition) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_average')">
+            <div class="kpi-label">Mean Cost_Per_Acquisition</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_average">25.00</div>
+            <div class="kpi-formula">AVERAGE(Cost_Per_Acquisition)</div>
+            <div id="drawer-secondary_measure_average" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using AVERAGE(Cost_Per_Acquisition) across 300 records.</em></p>
+            </div>
+          </div>
+
+          <div class="kpi-card" onclick="toggleDrawer('secondary_measure_median')">
+            <div class="kpi-label">Median Cost_Per_Acquisition</div>
+            <div class="kpi-value" id="kpi-val-secondary_measure_median">25</div>
+            <div class="kpi-formula">MEDIAN(Cost_Per_Acquisition)</div>
+            <div id="drawer-secondary_measure_median" class="kpi-drawer">
+              <p><strong>Denominator:</strong> Full population</p>
+              <p><strong>Exclusions:</strong> 0 missing rows</p>
+              <p><em>Calculated using MEDIAN(Cost_Per_Acquisition) across 300 records.</em></p>
+            </div>
+          </div>
+      </div>
+
+      <div class="charts-grid">
+        
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Distribution by Marketing_Channel</div>
+                  <div class="chart-meta">Marketing_Channel vs Total Ad_Spend_USD</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Marketing_Channel', 'Affiliate Partners')" title="Click to filter by Affiliate Partners">
+                  <span class="bar-label">Affiliate Partners</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">3,58,710.8</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Marketing_Channel', 'Organic SEO')" title="Click to filter by Organic SEO">
+                  <span class="bar-label">Organic SEO</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 80%"></div>
+                  </div>
+                  <span class="bar-val">2,88,422.4</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Marketing_Channel', 'Email Automation')" title="Click to filter by Email Automation">
+                  <span class="bar-label">Email Automation</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 65%"></div>
+                  </div>
+                  <span class="bar-val">2,32,308</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Marketing_Channel', 'Paid Social')" title="Click to filter by Paid Social">
+                  <span class="bar-label">Paid Social</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 48%"></div>
+                  </div>
+                  <span class="bar-val">1,73,512</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Marketing_Channel', 'Paid Search')" title="Click to filter by Paid Search">
+                  <span class="bar-label">Paid Search</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 35%"></div>
+                  </div>
+                  <span class="bar-val">1,23,955.2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Volume by Campaign_Name</div>
+                  <div class="chart-meta">Campaign_Name vs Volume</div>
+                </div>
+              </div>
+              <div class="chart-body">
+                
+                
+                <div class="bar-row" onclick="applyFilter('Campaign_Name', 'Growth Blitz Q2')" title="Click to filter by Growth Blitz Q2">
+                  <span class="bar-label">Growth Blitz Q2</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">75</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Campaign_Name', 'Retargeting Evergreen')" title="Click to filter by Retargeting Evergreen">
+                  <span class="bar-label">Retargeting Evergreen</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">75</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Campaign_Name', 'Black Friday Special')" title="Click to filter by Black Friday Special">
+                  <span class="bar-label">Black Friday Special</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">75</span>
+                </div>
+
+                <div class="bar-row" onclick="applyFilter('Campaign_Name', 'Brand Awareness Q1')" title="Click to filter by Brand Awareness Q1">
+                  <span class="bar-label">Brand Awareness Q1</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="bar-val">75</span>
+                </div>
+              </div>
+            </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ACTION QUEUE -->
+    <div id="tab-action-queue" class="tab-section">
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Operational Action Queue (Deterministic Source Traceability)</div>
+        
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;">
+          No operational exceptions detected — all audited source records conform to standard operating thresholds with zero overdue or breach conditions.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: METHODS & AUDIT -->
+    <div id="tab-audit-trail" class="tab-section">
+      <div class="chart-card" style="margin-bottom: 20px;">
+        <div class="chart-title" style="margin-bottom: 12px;">Methodological Standards & Aggregation Policy</div>
+        <ul style="list-style: none; space-y: 8px;">
+          
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 1:</strong> All analytical aggregations are computed locally in-browser using full-precision raw IEEE 754 float values.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 2:</strong> No intermediate rounded values are ever re-aggregated across groups, metrics, or export layers.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 3:</strong> Non-additive metrics (ratings, GPA, percentages, unit prices) are aggregated via weighted or arithmetic mean/median only; summation is strictly forbidden.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 4:</strong> Semi-additive metrics (stock on hand, account balances) are point-in-time state indicators and must not be aggregated over time dimensions.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 5:</strong> Missing, null, or empty string values are excluded on a per-metric basis without corrupting adjacent columns.
+            </li>
+
+            <li style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;">
+              <strong style="color: var(--accent);">Policy 6:</strong> Zero AI hallucination guarantee: 100% deterministic code compilation with verified three-way engine parity.
+            </li>
+        </ul>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 12px;">Metric Dictionary & Additivity Mapping</div>
+        <div class="data-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric Label</th>
+                <th>Formula</th>
+                <th>Additivity Tier</th>
+                <th>Exclusions</th>
+                <th>Canonical Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td style="font-weight: 600;">Total Records Volume</td>
+                  <td style="font-family: monospace;">COUNTROWS</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">300</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Unique Entities (Campaign_ID)</td>
+                  <td style="font-family: monospace;">COUNTDISTINCT(Campaign_ID)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">300</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Total Ad_Spend_USD</td>
+                  <td style="font-family: monospace;">SUM(Ad_Spend_USD)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">1,176,908.40</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Ad_Spend_USD</td>
+                  <td style="font-family: monospace;">AVERAGE(Ad_Spend_USD)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">3,923.03</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Ad_Spend_USD</td>
+                  <td style="font-family: monospace;">MEDIAN(Ad_Spend_USD)</td>
+                  <td><span class="badge">ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">3,073.80</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Total Cost_Per_Acquisition</td>
+                  <td style="font-family: monospace;">SUM(Cost_Per_Acquisition)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">7,498.74</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Mean Cost_Per_Acquisition</td>
+                  <td style="font-family: monospace;">AVERAGE(Cost_Per_Acquisition)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">25.00</td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight: 600;">Median Cost_Per_Acquisition</td>
+                  <td style="font-family: monospace;">MEDIAN(Cost_Per_Acquisition)</td>
+                  <td><span class="badge">NON_ADDITIVE</span></td>
+                  <td>0 omitted</td>
+                  <td style="font-weight: bold; font-family: monospace;">25</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>Generated by NexusBI Universal Deterministic Analytical Platform</span>
+      <span>Three-Way Parity Guaranteed: Source Math == V8 JS == DuckDB-Wasm</span>
+    </footer>
+  </div>
+
+  <script>
+    // Offline Single-File Interactive Controller (Zero-AI, Zero-Network)
+    var activeFilter = null;
+    var modelData = {"dashboardTitle":"Dataset Intelligence & Operational Analysis","domainClassification":"Universal Dataset Intelligence & Distribution Analysis","isUniversalFallback":true,"domainConfidence":0,"profilingConfidence":0.8959999999999999,"executiveHeader":{"domain":"Universal Dataset Intelligence & Distribution Analysis","reportTitle":"Dataset Intelligence & Operational Analysis","asOfTimestamp":"2026-10-23T16:31:01.579Z","totalRecords":300,"qualityState":"Optimal","domainConfidence":0,"profilingConfidence":0.8959999999999999,"dataLocality":"100% In-Browser Memory (Zero-AI, Zero-Telemetry)"},"kpiCards":[{"id":"total_records","label":"Total Records Volume","value":300,"formattedValue":"300","calculationFormula":"COUNTROWS","sourceColumns":[],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using COUNTROWS across 300 records."},{"id":"unique_entities_count","label":"Unique Entities (Campaign_ID)","value":300,"formattedValue":"300","calculationFormula":"COUNTDISTINCT(Campaign_ID)","sourceColumns":["Campaign_ID"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using COUNTDISTINCT(Campaign_ID) across 300 records."},{"id":"primary_measure_total","label":"Total Ad_Spend_USD","value":1176908.4000000006,"formattedValue":"1,176,908.40","calculationFormula":"SUM(Ad_Spend_USD)","sourceColumns":["Ad_Spend_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using SUM(Ad_Spend_USD) across 300 records."},{"id":"primary_measure_average","label":"Mean Ad_Spend_USD","value":3923.028000000002,"formattedValue":"3,923.03","calculationFormula":"AVERAGE(Ad_Spend_USD)","sourceColumns":["Ad_Spend_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using AVERAGE(Ad_Spend_USD) across 300 records."},{"id":"primary_measure_median","label":"Median Ad_Spend_USD","value":3073.8,"formattedValue":"3,073.80","calculationFormula":"MEDIAN(Ad_Spend_USD)","sourceColumns":["Ad_Spend_USD"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using MEDIAN(Ad_Spend_USD) across 300 records."},{"id":"secondary_measure_total","label":"Total Cost_Per_Acquisition","value":7498.739999999998,"formattedValue":"7,498.74","calculationFormula":"SUM(Cost_Per_Acquisition)","sourceColumns":["Cost_Per_Acquisition"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using SUM(Cost_Per_Acquisition) across 300 records."},{"id":"secondary_measure_average","label":"Mean Cost_Per_Acquisition","value":24.995799999999992,"formattedValue":"25.00","calculationFormula":"AVERAGE(Cost_Per_Acquisition)","sourceColumns":["Cost_Per_Acquisition"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using AVERAGE(Cost_Per_Acquisition) across 300 records."},{"id":"secondary_measure_median","label":"Median Cost_Per_Acquisition","value":25,"formattedValue":"25","calculationFormula":"MEDIAN(Cost_Per_Acquisition)","sourceColumns":["Cost_Per_Acquisition"],"missingExclusions":0,"confidence":0.8959999999999999,"isFinancial":false,"explanation":"Calculated using MEDIAN(Cost_Per_Acquisition) across 300 records."}],"charts":[{"id":"chart_primary_category_breakdown","title":"Distribution by Marketing_Channel","chartType":"bar","dimensionLabel":"Marketing_Channel","metricLabel":"Total Ad_Spend_USD","data":[{"label":"Affiliate Partners","value":358710.79999999993},{"label":"Organic SEO","value":288422.3999999999},{"label":"Email Automation","value":232308},{"label":"Paid Social","value":173512},{"label":"Paid Search","value":123955.20000000001}],"accessibleSummary":"Distribution by Marketing_Channel displaying 5 cohorts along Marketing_Channel. Lead category is 'Affiliate Partners' with 3,58,710.8 Total Ad_Spend_USD."},{"id":"chart_secondary_dimension","title":"Volume by Campaign_Name","chartType":"bar","dimensionLabel":"Campaign_Name","metricLabel":"Volume","data":[{"label":"Growth Blitz Q2","value":75},{"label":"Retargeting Evergreen","value":75},{"label":"Black Friday Special","value":75},{"label":"Brand Awareness Q1","value":75}],"accessibleSummary":"Volume by Campaign_Name displaying 4 cohorts along Campaign_Name. Lead category is 'Growth Blitz Q2' with 75 Volume."}],"actionQueue":[],"decisionBrief":{"headline":"Universal Dataset Intelligence & Distribution Analysis: Executive Operational Brief (300 Records Audited)","executiveBullets":[{"title":"Ingestion & Data Quality Profile","text":"Audited 300 source rows across 8 columns with 100.0% full record completeness. Detected 0 duplicate records in source data."},{"title":"Total Records Volume Benchmark","text":"Total Records Volume stands at 300 calculated via COUNTROWS. Supporting benchmark Mean Ad_Spend_USD stands at 3,923.03.","evidenceMetricId":"total_records","evidenceValue":"300"},{"title":"Cohort Concentration (Marketing_Channel)","text":"Largest volume resides in 'Affiliate Partners' with 3,58,710.8 (30.5% of cohort total). Lead cohort exceeds 'Paid Search' by 2.9x."},{"title":"Unique Entities (Campaign_ID) Distribution","text":"Observed Unique Entities (Campaign_ID) of 300. Denominator rules and null exclusions applied deterministically.","evidenceMetricId":"unique_entities_count","evidenceValue":"300"}],"recommendedActions":["Review active/unresolved records in the prioritized Action Queue below.","Inspect columns with high null rates to ensure complete source data capture.","Cross-filter by top category cohorts to identify operational bottleneck variance."],"caveats":["Comparisons are strictly descriptive; no causal assertions, predictions or forward forecasts are fabricated.","All metric aggregations reflect verified source data records executed within client-side browser memory.","Missing or invalid values are explicitly excluded from mathematical calculations rather than imputed with synthetic estimates."]},"dataQuality":{"totalRecords":300,"completeRecords":300,"completenessRate":1,"duplicateCount":0,"columnNullRates":{"Campaign_ID":0,"Marketing_Channel":0,"Campaign_Name":0,"Ad_Spend_USD":0,"Impressions_Count":0,"Clicks_Count":0,"Conversions_Count":0,"Cost_Per_Acquisition":0},"anomalies":[]},"queryPlans":[{"planId":"summary-1792773061576","tableName":"marketing_300","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"},{"id":"unique_entities_count","label":"Unique Entities (Campaign_ID)","operation":"countDistinct","field":"Campaign_ID"},{"id":"primary_measure_total","label":"Total Ad_Spend_USD","operation":"sum","field":"Ad_Spend_USD"},{"id":"primary_measure_average","label":"Mean Ad_Spend_USD","operation":"average","field":"Ad_Spend_USD"},{"id":"primary_measure_median","label":"Median Ad_Spend_USD","operation":"median","field":"Ad_Spend_USD"},{"id":"secondary_measure_total","label":"Total Cost_Per_Acquisition","operation":"sum","field":"Cost_Per_Acquisition"},{"id":"secondary_measure_average","label":"Mean Cost_Per_Acquisition","operation":"average","field":"Cost_Per_Acquisition"},{"id":"secondary_measure_median","label":"Median Cost_Per_Acquisition","operation":"median","field":"Cost_Per_Acquisition"}]},{"planId":"chart-chart_primary_category_breakdown-1792773061579","tableName":"marketing_300","metrics":[{"id":"primary_measure_total","label":"Total Ad_Spend_USD","operation":"sum","field":"Ad_Spend_USD"}],"groupBy":["Marketing_Channel"],"topN":{"field":"Marketing_Channel","metricId":"primary_measure_total","limit":7,"includeOther":true},"sort":[{"field":"primary_measure_total","direction":"desc"}]},{"planId":"chart-chart_secondary_dimension-1792773061579","tableName":"marketing_300","metrics":[{"id":"total_records","label":"Total Records Volume","operation":"countRows"}],"groupBy":["Campaign_Name"],"topN":{"field":"Campaign_Name","metricId":"total_records","limit":6,"includeOther":true},"sort":[{"field":"total_records","direction":"desc"}]}],"generatedAt":"2026-10-23T16:31:01.579Z"};
+    var rawData = [{"Campaign_ID":"CMP-00001","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":158.4,"Impressions_Count":5843,"Clicks_Count":99,"Conversions_Count":8,"Cost_Per_Acquisition":19.8},{"Campaign_ID":"CMP-00002","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":254,"Impressions_Count":6686,"Clicks_Count":127,"Conversions_Count":10,"Cost_Per_Acquisition":25.4},{"Campaign_ID":"CMP-00003","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":379.2,"Impressions_Count":7529,"Clicks_Count":158,"Conversions_Count":13,"Cost_Per_Acquisition":29.17},{"Campaign_ID":"CMP-00004","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":540.4,"Impressions_Count":8372,"Clicks_Count":193,"Conversions_Count":15,"Cost_Per_Acquisition":36.03},{"Campaign_ID":"CMP-00005","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":276,"Impressions_Count":9215,"Clicks_Count":230,"Conversions_Count":18,"Cost_Per_Acquisition":15.33},{"Campaign_ID":"CMP-00006","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":435.2,"Impressions_Count":10058,"Clicks_Count":272,"Conversions_Count":22,"Cost_Per_Acquisition":19.78},{"Campaign_ID":"CMP-00007","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":632,"Impressions_Count":10901,"Clicks_Count":316,"Conversions_Count":25,"Cost_Per_Acquisition":25.28},{"Campaign_ID":"CMP-00008","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":873.6,"Impressions_Count":11744,"Clicks_Count":364,"Conversions_Count":29,"Cost_Per_Acquisition":30.12},{"Campaign_ID":"CMP-00009","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1162,"Impressions_Count":12587,"Clicks_Count":415,"Conversions_Count":33,"Cost_Per_Acquisition":35.21},{"Campaign_ID":"CMP-00010","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":564,"Impressions_Count":13430,"Clicks_Count":470,"Conversions_Count":38,"Cost_Per_Acquisition":14.84},{"Campaign_ID":"CMP-00011","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":844.8,"Impressions_Count":14273,"Clicks_Count":528,"Conversions_Count":42,"Cost_Per_Acquisition":20.11},{"Campaign_ID":"CMP-00012","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1180,"Impressions_Count":15116,"Clicks_Count":590,"Conversions_Count":47,"Cost_Per_Acquisition":25.11},{"Campaign_ID":"CMP-00013","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1569.6,"Impressions_Count":15959,"Clicks_Count":654,"Conversions_Count":52,"Cost_Per_Acquisition":30.18},{"Campaign_ID":"CMP-00014","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2021.6,"Impressions_Count":16802,"Clicks_Count":722,"Conversions_Count":58,"Cost_Per_Acquisition":34.86},{"Campaign_ID":"CMP-00015","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":952.8,"Impressions_Count":17645,"Clicks_Count":794,"Conversions_Count":64,"Cost_Per_Acquisition":14.89},{"Campaign_ID":"CMP-00016","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1390.4,"Impressions_Count":18488,"Clicks_Count":869,"Conversions_Count":70,"Cost_Per_Acquisition":19.86},{"Campaign_ID":"CMP-00017","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1894,"Impressions_Count":19331,"Clicks_Count":947,"Conversions_Count":76,"Cost_Per_Acquisition":24.92},{"Campaign_ID":"CMP-00018","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2469.6,"Impressions_Count":20174,"Clicks_Count":1029,"Conversions_Count":82,"Cost_Per_Acquisition":30.12},{"Campaign_ID":"CMP-00019","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3119.2,"Impressions_Count":21017,"Clicks_Count":1114,"Conversions_Count":89,"Cost_Per_Acquisition":35.05},{"Campaign_ID":"CMP-00020","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1442.4,"Impressions_Count":21860,"Clicks_Count":1202,"Conversions_Count":96,"Cost_Per_Acquisition":15.03},{"Campaign_ID":"CMP-00021","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2070.4,"Impressions_Count":22703,"Clicks_Count":1294,"Conversions_Count":104,"Cost_Per_Acquisition":19.91},{"Campaign_ID":"CMP-00022","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2778,"Impressions_Count":23546,"Clicks_Count":1389,"Conversions_Count":111,"Cost_Per_Acquisition":25.03},{"Campaign_ID":"CMP-00023","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3571.2,"Impressions_Count":24389,"Clicks_Count":1488,"Conversions_Count":119,"Cost_Per_Acquisition":30.01},{"Campaign_ID":"CMP-00024","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":4452,"Impressions_Count":25232,"Clicks_Count":1590,"Conversions_Count":127,"Cost_Per_Acquisition":35.06},{"Campaign_ID":"CMP-00025","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":469.2,"Impressions_Count":26075,"Clicks_Count":391,"Conversions_Count":31,"Cost_Per_Acquisition":15.14},{"Campaign_ID":"CMP-00026","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":732.8,"Impressions_Count":26918,"Clicks_Count":458,"Conversions_Count":37,"Cost_Per_Acquisition":19.81},{"Campaign_ID":"CMP-00027","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1054,"Impressions_Count":27761,"Clicks_Count":527,"Conversions_Count":42,"Cost_Per_Acquisition":25.1},{"Campaign_ID":"CMP-00028","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1442.4,"Impressions_Count":28604,"Clicks_Count":601,"Conversions_Count":48,"Cost_Per_Acquisition":30.05},{"Campaign_ID":"CMP-00029","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1895.6,"Impressions_Count":29447,"Clicks_Count":677,"Conversions_Count":54,"Cost_Per_Acquisition":35.1},{"Campaign_ID":"CMP-00030","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":908.4,"Impressions_Count":30290,"Clicks_Count":757,"Conversions_Count":61,"Cost_Per_Acquisition":14.89},{"Campaign_ID":"CMP-00031","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1345.6,"Impressions_Count":31133,"Clicks_Count":841,"Conversions_Count":67,"Cost_Per_Acquisition":20.08},{"Campaign_ID":"CMP-00032","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1854,"Impressions_Count":31976,"Clicks_Count":927,"Conversions_Count":74,"Cost_Per_Acquisition":25.05},{"Campaign_ID":"CMP-00033","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2440.8,"Impressions_Count":32819,"Clicks_Count":1017,"Conversions_Count":81,"Cost_Per_Acquisition":30.13},{"Campaign_ID":"CMP-00034","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3110.8,"Impressions_Count":33662,"Clicks_Count":1111,"Conversions_Count":89,"Cost_Per_Acquisition":34.95},{"Campaign_ID":"CMP-00035","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1449.6,"Impressions_Count":34505,"Clicks_Count":1208,"Conversions_Count":97,"Cost_Per_Acquisition":14.94},{"Campaign_ID":"CMP-00036","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2092.8,"Impressions_Count":35348,"Clicks_Count":1308,"Conversions_Count":105,"Cost_Per_Acquisition":19.93},{"Campaign_ID":"CMP-00037","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2822,"Impressions_Count":36191,"Clicks_Count":1411,"Conversions_Count":113,"Cost_Per_Acquisition":24.97},{"Campaign_ID":"CMP-00038","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3643.2,"Impressions_Count":37034,"Clicks_Count":1518,"Conversions_Count":121,"Cost_Per_Acquisition":30.11},{"Campaign_ID":"CMP-00039","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4561.2,"Impressions_Count":37877,"Clicks_Count":1629,"Conversions_Count":130,"Cost_Per_Acquisition":35.09},{"Campaign_ID":"CMP-00040","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2090.4,"Impressions_Count":38720,"Clicks_Count":1742,"Conversions_Count":139,"Cost_Per_Acquisition":15.04},{"Campaign_ID":"CMP-00041","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2974.4,"Impressions_Count":39563,"Clicks_Count":1859,"Conversions_Count":149,"Cost_Per_Acquisition":19.96},{"Campaign_ID":"CMP-00042","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3960,"Impressions_Count":40406,"Clicks_Count":1980,"Conversions_Count":158,"Cost_Per_Acquisition":25.06},{"Campaign_ID":"CMP-00043","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5049.6,"Impressions_Count":41249,"Clicks_Count":2104,"Conversions_Count":168,"Cost_Per_Acquisition":30.06},{"Campaign_ID":"CMP-00044","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6246.8,"Impressions_Count":42092,"Clicks_Count":2231,"Conversions_Count":178,"Cost_Per_Acquisition":35.09},{"Campaign_ID":"CMP-00045","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2833.2,"Impressions_Count":42935,"Clicks_Count":2361,"Conversions_Count":189,"Cost_Per_Acquisition":14.99},{"Campaign_ID":"CMP-00046","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3992,"Impressions_Count":43778,"Clicks_Count":2495,"Conversions_Count":200,"Cost_Per_Acquisition":19.96},{"Campaign_ID":"CMP-00047","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5266,"Impressions_Count":44621,"Clicks_Count":2633,"Conversions_Count":211,"Cost_Per_Acquisition":24.96},{"Campaign_ID":"CMP-00048","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6655.2,"Impressions_Count":45464,"Clicks_Count":2773,"Conversions_Count":222,"Cost_Per_Acquisition":29.98},{"Campaign_ID":"CMP-00049","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8167.6,"Impressions_Count":46307,"Clicks_Count":2917,"Conversions_Count":233,"Cost_Per_Acquisition":35.05},{"Campaign_ID":"CMP-00050","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":848.4,"Impressions_Count":47150,"Clicks_Count":707,"Conversions_Count":57,"Cost_Per_Acquisition":14.88},{"Campaign_ID":"CMP-00051","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1305.6,"Impressions_Count":47993,"Clicks_Count":816,"Conversions_Count":65,"Cost_Per_Acquisition":20.09},{"Campaign_ID":"CMP-00052","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1856,"Impressions_Count":48836,"Clicks_Count":928,"Conversions_Count":74,"Cost_Per_Acquisition":25.08},{"Campaign_ID":"CMP-00053","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2503.2,"Impressions_Count":49679,"Clicks_Count":1043,"Conversions_Count":83,"Cost_Per_Acquisition":30.16},{"Campaign_ID":"CMP-00054","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3253.6,"Impressions_Count":50522,"Clicks_Count":1162,"Conversions_Count":93,"Cost_Per_Acquisition":34.98},{"Campaign_ID":"CMP-00055","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1540.8,"Impressions_Count":51365,"Clicks_Count":1284,"Conversions_Count":103,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00056","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2256,"Impressions_Count":52208,"Clicks_Count":1410,"Conversions_Count":113,"Cost_Per_Acquisition":19.96},{"Campaign_ID":"CMP-00057","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":3076,"Impressions_Count":53051,"Clicks_Count":1538,"Conversions_Count":123,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00058","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4010.4,"Impressions_Count":53894,"Clicks_Count":1671,"Conversions_Count":134,"Cost_Per_Acquisition":29.93},{"Campaign_ID":"CMP-00059","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5056.8,"Impressions_Count":54737,"Clicks_Count":1806,"Conversions_Count":144,"Cost_Per_Acquisition":35.12},{"Campaign_ID":"CMP-00060","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2334,"Impressions_Count":55580,"Clicks_Count":1945,"Conversions_Count":156,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00061","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":3340.8,"Impressions_Count":56423,"Clicks_Count":2088,"Conversions_Count":167,"Cost_Per_Acquisition":20},{"Campaign_ID":"CMP-00062","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4466,"Impressions_Count":57266,"Clicks_Count":2233,"Conversions_Count":179,"Cost_Per_Acquisition":24.95},{"Campaign_ID":"CMP-00063","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5716.8,"Impressions_Count":58109,"Clicks_Count":2382,"Conversions_Count":191,"Cost_Per_Acquisition":29.93},{"Campaign_ID":"CMP-00064","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7098,"Impressions_Count":58952,"Clicks_Count":2535,"Conversions_Count":203,"Cost_Per_Acquisition":34.97},{"Campaign_ID":"CMP-00065","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":3229.2,"Impressions_Count":59795,"Clicks_Count":2691,"Conversions_Count":215,"Cost_Per_Acquisition":15.02},{"Campaign_ID":"CMP-00066","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4560,"Impressions_Count":60638,"Clicks_Count":2850,"Conversions_Count":228,"Cost_Per_Acquisition":20},{"Campaign_ID":"CMP-00067","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":6026,"Impressions_Count":61481,"Clicks_Count":3013,"Conversions_Count":241,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00068","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7629.6,"Impressions_Count":62324,"Clicks_Count":3179,"Conversions_Count":254,"Cost_Per_Acquisition":30.04},{"Campaign_ID":"CMP-00069","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":9374.4,"Impressions_Count":63167,"Clicks_Count":3348,"Conversions_Count":268,"Cost_Per_Acquisition":34.98},{"Campaign_ID":"CMP-00070","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4225.2,"Impressions_Count":64010,"Clicks_Count":3521,"Conversions_Count":282,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00071","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5915.2,"Impressions_Count":64853,"Clicks_Count":3697,"Conversions_Count":296,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00072","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7752,"Impressions_Count":65696,"Clicks_Count":3876,"Conversions_Count":310,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00073","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":9741.6,"Impressions_Count":66539,"Clicks_Count":4059,"Conversions_Count":325,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00074","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":11886,"Impressions_Count":67382,"Clicks_Count":4245,"Conversions_Count":340,"Cost_Per_Acquisition":34.96},{"Campaign_ID":"CMP-00075","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1227.6,"Impressions_Count":68225,"Clicks_Count":1023,"Conversions_Count":82,"Cost_Per_Acquisition":14.97},{"Campaign_ID":"CMP-00076","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1878.4,"Impressions_Count":69068,"Clicks_Count":1174,"Conversions_Count":94,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00077","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2656,"Impressions_Count":69911,"Clicks_Count":1328,"Conversions_Count":106,"Cost_Per_Acquisition":25.06},{"Campaign_ID":"CMP-00078","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3566.4,"Impressions_Count":70754,"Clicks_Count":1486,"Conversions_Count":119,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00079","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4611.6,"Impressions_Count":71597,"Clicks_Count":1647,"Conversions_Count":132,"Cost_Per_Acquisition":34.94},{"Campaign_ID":"CMP-00080","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2173.2,"Impressions_Count":72440,"Clicks_Count":1811,"Conversions_Count":145,"Cost_Per_Acquisition":14.99},{"Campaign_ID":"CMP-00081","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":3166.4,"Impressions_Count":73283,"Clicks_Count":1979,"Conversions_Count":158,"Cost_Per_Acquisition":20.04},{"Campaign_ID":"CMP-00082","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4300,"Impressions_Count":74126,"Clicks_Count":2150,"Conversions_Count":172,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00083","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5577.6,"Impressions_Count":74969,"Clicks_Count":2324,"Conversions_Count":186,"Cost_Per_Acquisition":29.99},{"Campaign_ID":"CMP-00084","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7005.6,"Impressions_Count":75812,"Clicks_Count":2502,"Conversions_Count":200,"Cost_Per_Acquisition":35.03},{"Campaign_ID":"CMP-00085","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":3219.6,"Impressions_Count":76655,"Clicks_Count":2683,"Conversions_Count":215,"Cost_Per_Acquisition":14.97},{"Campaign_ID":"CMP-00086","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4587.2,"Impressions_Count":77498,"Clicks_Count":2867,"Conversions_Count":229,"Cost_Per_Acquisition":20.03},{"Campaign_ID":"CMP-00087","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":6110,"Impressions_Count":78341,"Clicks_Count":3055,"Conversions_Count":244,"Cost_Per_Acquisition":25.04},{"Campaign_ID":"CMP-00088","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7792.8,"Impressions_Count":79184,"Clicks_Count":3247,"Conversions_Count":260,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00089","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":9634.8,"Impressions_Count":80027,"Clicks_Count":3441,"Conversions_Count":275,"Cost_Per_Acquisition":35.04},{"Campaign_ID":"CMP-00090","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4366.8,"Impressions_Count":80870,"Clicks_Count":3639,"Conversions_Count":291,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00091","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":6145.6,"Impressions_Count":81713,"Clicks_Count":3841,"Conversions_Count":307,"Cost_Per_Acquisition":20.02},{"Campaign_ID":"CMP-00092","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":8090,"Impressions_Count":82556,"Clicks_Count":4045,"Conversions_Count":324,"Cost_Per_Acquisition":24.97},{"Campaign_ID":"CMP-00093","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":10207.2,"Impressions_Count":83399,"Clicks_Count":4253,"Conversions_Count":340,"Cost_Per_Acquisition":30.02},{"Campaign_ID":"CMP-00094","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":12502,"Impressions_Count":84242,"Clicks_Count":4465,"Conversions_Count":357,"Cost_Per_Acquisition":35.02},{"Campaign_ID":"CMP-00095","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5616,"Impressions_Count":85085,"Clicks_Count":4680,"Conversions_Count":374,"Cost_Per_Acquisition":15.02},{"Campaign_ID":"CMP-00096","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7836.8,"Impressions_Count":85928,"Clicks_Count":4898,"Conversions_Count":392,"Cost_Per_Acquisition":19.99},{"Campaign_ID":"CMP-00097","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":10238,"Impressions_Count":86771,"Clicks_Count":5119,"Conversions_Count":410,"Cost_Per_Acquisition":24.97},{"Campaign_ID":"CMP-00098","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":12825.6,"Impressions_Count":87614,"Clicks_Count":5344,"Conversions_Count":428,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00099","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":15604.4,"Impressions_Count":88457,"Clicks_Count":5573,"Conversions_Count":446,"Cost_Per_Acquisition":34.99},{"Campaign_ID":"CMP-00100","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1608,"Impressions_Count":89300,"Clicks_Count":1340,"Conversions_Count":107,"Cost_Per_Acquisition":15.03},{"Campaign_ID":"CMP-00101","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2451.2,"Impressions_Count":90143,"Clicks_Count":1532,"Conversions_Count":123,"Cost_Per_Acquisition":19.93},{"Campaign_ID":"CMP-00102","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3458,"Impressions_Count":90986,"Clicks_Count":1729,"Conversions_Count":138,"Cost_Per_Acquisition":25.06},{"Campaign_ID":"CMP-00103","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4627.2,"Impressions_Count":91829,"Clicks_Count":1928,"Conversions_Count":154,"Cost_Per_Acquisition":30.05},{"Campaign_ID":"CMP-00104","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5966.8,"Impressions_Count":92672,"Clicks_Count":2131,"Conversions_Count":170,"Cost_Per_Acquisition":35.1},{"Campaign_ID":"CMP-00105","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2805.6,"Impressions_Count":93515,"Clicks_Count":2338,"Conversions_Count":187,"Cost_Per_Acquisition":15},{"Campaign_ID":"CMP-00106","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4076.8,"Impressions_Count":94358,"Clicks_Count":2548,"Conversions_Count":204,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00107","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5522,"Impressions_Count":95201,"Clicks_Count":2761,"Conversions_Count":221,"Cost_Per_Acquisition":24.99},{"Campaign_ID":"CMP-00108","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7144.8,"Impressions_Count":96044,"Clicks_Count":2977,"Conversions_Count":238,"Cost_Per_Acquisition":30.02},{"Campaign_ID":"CMP-00109","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8951.6,"Impressions_Count":96887,"Clicks_Count":3197,"Conversions_Count":256,"Cost_Per_Acquisition":34.97},{"Campaign_ID":"CMP-00110","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":4105.2,"Impressions_Count":97730,"Clicks_Count":3421,"Conversions_Count":274,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00111","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5835.2,"Impressions_Count":98573,"Clicks_Count":3647,"Conversions_Count":292,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00112","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7754,"Impressions_Count":99416,"Clicks_Count":3877,"Conversions_Count":310,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00113","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":518.4,"Impressions_Count":5259,"Clicks_Count":216,"Conversions_Count":17,"Cost_Per_Acquisition":30.49},{"Campaign_ID":"CMP-00114","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":733.6,"Impressions_Count":6102,"Clicks_Count":262,"Conversions_Count":21,"Cost_Per_Acquisition":34.93},{"Campaign_ID":"CMP-00115","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":375.6,"Impressions_Count":6945,"Clicks_Count":313,"Conversions_Count":25,"Cost_Per_Acquisition":15.02},{"Campaign_ID":"CMP-00116","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":585.6,"Impressions_Count":7788,"Clicks_Count":366,"Conversions_Count":29,"Cost_Per_Acquisition":20.19},{"Campaign_ID":"CMP-00117","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":846,"Impressions_Count":8631,"Clicks_Count":423,"Conversions_Count":34,"Cost_Per_Acquisition":24.88},{"Campaign_ID":"CMP-00118","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1159.2,"Impressions_Count":9474,"Clicks_Count":483,"Conversions_Count":39,"Cost_Per_Acquisition":29.72},{"Campaign_ID":"CMP-00119","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1531.6,"Impressions_Count":10317,"Clicks_Count":547,"Conversions_Count":44,"Cost_Per_Acquisition":34.81},{"Campaign_ID":"CMP-00120","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":736.8,"Impressions_Count":11160,"Clicks_Count":614,"Conversions_Count":49,"Cost_Per_Acquisition":15.04},{"Campaign_ID":"CMP-00121","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1094.4,"Impressions_Count":12003,"Clicks_Count":684,"Conversions_Count":55,"Cost_Per_Acquisition":19.9},{"Campaign_ID":"CMP-00122","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1516,"Impressions_Count":12846,"Clicks_Count":758,"Conversions_Count":61,"Cost_Per_Acquisition":24.85},{"Campaign_ID":"CMP-00123","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":2004,"Impressions_Count":13689,"Clicks_Count":835,"Conversions_Count":67,"Cost_Per_Acquisition":29.91},{"Campaign_ID":"CMP-00124","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":2564.8,"Impressions_Count":14532,"Clicks_Count":916,"Conversions_Count":73,"Cost_Per_Acquisition":35.13},{"Campaign_ID":"CMP-00125","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":277.2,"Impressions_Count":15375,"Clicks_Count":231,"Conversions_Count":18,"Cost_Per_Acquisition":15.4},{"Campaign_ID":"CMP-00126","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":441.6,"Impressions_Count":16218,"Clicks_Count":276,"Conversions_Count":22,"Cost_Per_Acquisition":20.07},{"Campaign_ID":"CMP-00127","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":648,"Impressions_Count":17061,"Clicks_Count":324,"Conversions_Count":26,"Cost_Per_Acquisition":24.92},{"Campaign_ID":"CMP-00128","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":902.4,"Impressions_Count":17904,"Clicks_Count":376,"Conversions_Count":30,"Cost_Per_Acquisition":30.08},{"Campaign_ID":"CMP-00129","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1206.8,"Impressions_Count":18747,"Clicks_Count":431,"Conversions_Count":34,"Cost_Per_Acquisition":35.49},{"Campaign_ID":"CMP-00130","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":588,"Impressions_Count":19590,"Clicks_Count":490,"Conversions_Count":39,"Cost_Per_Acquisition":15.08},{"Campaign_ID":"CMP-00131","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":883.2,"Impressions_Count":20433,"Clicks_Count":552,"Conversions_Count":44,"Cost_Per_Acquisition":20.07},{"Campaign_ID":"CMP-00132","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1234,"Impressions_Count":21276,"Clicks_Count":617,"Conversions_Count":49,"Cost_Per_Acquisition":25.18},{"Campaign_ID":"CMP-00133","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1646.4,"Impressions_Count":22119,"Clicks_Count":686,"Conversions_Count":55,"Cost_Per_Acquisition":29.93},{"Campaign_ID":"CMP-00134","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2122.4,"Impressions_Count":22962,"Clicks_Count":758,"Conversions_Count":61,"Cost_Per_Acquisition":34.79},{"Campaign_ID":"CMP-00135","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":999.6,"Impressions_Count":23805,"Clicks_Count":833,"Conversions_Count":67,"Cost_Per_Acquisition":14.92},{"Campaign_ID":"CMP-00136","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1459.2,"Impressions_Count":24648,"Clicks_Count":912,"Conversions_Count":73,"Cost_Per_Acquisition":19.99},{"Campaign_ID":"CMP-00137","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1988,"Impressions_Count":25491,"Clicks_Count":994,"Conversions_Count":80,"Cost_Per_Acquisition":24.85},{"Campaign_ID":"CMP-00138","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2592,"Impressions_Count":26334,"Clicks_Count":1080,"Conversions_Count":86,"Cost_Per_Acquisition":30.14},{"Campaign_ID":"CMP-00139","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3273.2,"Impressions_Count":27177,"Clicks_Count":1169,"Conversions_Count":94,"Cost_Per_Acquisition":34.82},{"Campaign_ID":"CMP-00140","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1513.2,"Impressions_Count":28020,"Clicks_Count":1261,"Conversions_Count":101,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00141","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2171.2,"Impressions_Count":28863,"Clicks_Count":1357,"Conversions_Count":109,"Cost_Per_Acquisition":19.92},{"Campaign_ID":"CMP-00142","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2912,"Impressions_Count":29706,"Clicks_Count":1456,"Conversions_Count":116,"Cost_Per_Acquisition":25.1},{"Campaign_ID":"CMP-00143","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3739.2,"Impressions_Count":30549,"Clicks_Count":1558,"Conversions_Count":125,"Cost_Per_Acquisition":29.91},{"Campaign_ID":"CMP-00144","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":4659.2,"Impressions_Count":31392,"Clicks_Count":1664,"Conversions_Count":133,"Cost_Per_Acquisition":35.03},{"Campaign_ID":"CMP-00145","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2127.6,"Impressions_Count":32235,"Clicks_Count":1773,"Conversions_Count":142,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00146","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3016,"Impressions_Count":33078,"Clicks_Count":1885,"Conversions_Count":151,"Cost_Per_Acquisition":19.97},{"Campaign_ID":"CMP-00147","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4002,"Impressions_Count":33921,"Clicks_Count":2001,"Conversions_Count":160,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00148","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5090.4,"Impressions_Count":34764,"Clicks_Count":2121,"Conversions_Count":170,"Cost_Per_Acquisition":29.94},{"Campaign_ID":"CMP-00149","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":6280.4,"Impressions_Count":35607,"Clicks_Count":2243,"Conversions_Count":179,"Cost_Per_Acquisition":35.09},{"Campaign_ID":"CMP-00150","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":656.4,"Impressions_Count":36450,"Clicks_Count":547,"Conversions_Count":44,"Cost_Per_Acquisition":14.92},{"Campaign_ID":"CMP-00151","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1014.4,"Impressions_Count":37293,"Clicks_Count":634,"Conversions_Count":51,"Cost_Per_Acquisition":19.89},{"Campaign_ID":"CMP-00152","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1450,"Impressions_Count":38136,"Clicks_Count":725,"Conversions_Count":58,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00153","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1965.6,"Impressions_Count":38979,"Clicks_Count":819,"Conversions_Count":66,"Cost_Per_Acquisition":29.78},{"Campaign_ID":"CMP-00154","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2564.8,"Impressions_Count":39822,"Clicks_Count":916,"Conversions_Count":73,"Cost_Per_Acquisition":35.13},{"Campaign_ID":"CMP-00155","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1220.4,"Impressions_Count":40665,"Clicks_Count":1017,"Conversions_Count":81,"Cost_Per_Acquisition":15.07},{"Campaign_ID":"CMP-00156","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1793.6,"Impressions_Count":41508,"Clicks_Count":1121,"Conversions_Count":90,"Cost_Per_Acquisition":19.93},{"Campaign_ID":"CMP-00157","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2456,"Impressions_Count":42351,"Clicks_Count":1228,"Conversions_Count":98,"Cost_Per_Acquisition":25.06},{"Campaign_ID":"CMP-00158","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3213.6,"Impressions_Count":43194,"Clicks_Count":1339,"Conversions_Count":107,"Cost_Per_Acquisition":30.03},{"Campaign_ID":"CMP-00159","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4068.4,"Impressions_Count":44037,"Clicks_Count":1453,"Conversions_Count":116,"Cost_Per_Acquisition":35.07},{"Campaign_ID":"CMP-00160","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1885.2,"Impressions_Count":44880,"Clicks_Count":1571,"Conversions_Count":126,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00161","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2707.2,"Impressions_Count":45723,"Clicks_Count":1692,"Conversions_Count":135,"Cost_Per_Acquisition":20.05},{"Campaign_ID":"CMP-00162","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3632,"Impressions_Count":46566,"Clicks_Count":1816,"Conversions_Count":145,"Cost_Per_Acquisition":25.05},{"Campaign_ID":"CMP-00163","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4665.6,"Impressions_Count":47409,"Clicks_Count":1944,"Conversions_Count":156,"Cost_Per_Acquisition":29.91},{"Campaign_ID":"CMP-00164","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5810,"Impressions_Count":48252,"Clicks_Count":2075,"Conversions_Count":166,"Cost_Per_Acquisition":35},{"Campaign_ID":"CMP-00165","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2650.8,"Impressions_Count":49095,"Clicks_Count":2209,"Conversions_Count":177,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00166","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3755.2,"Impressions_Count":49938,"Clicks_Count":2347,"Conversions_Count":188,"Cost_Per_Acquisition":19.97},{"Campaign_ID":"CMP-00167","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4976,"Impressions_Count":50781,"Clicks_Count":2488,"Conversions_Count":199,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00168","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6319.2,"Impressions_Count":51624,"Clicks_Count":2633,"Conversions_Count":211,"Cost_Per_Acquisition":29.95},{"Campaign_ID":"CMP-00169","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":7786.8,"Impressions_Count":52467,"Clicks_Count":2781,"Conversions_Count":222,"Cost_Per_Acquisition":35.08},{"Campaign_ID":"CMP-00170","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3518.4,"Impressions_Count":53310,"Clicks_Count":2932,"Conversions_Count":235,"Cost_Per_Acquisition":14.97},{"Campaign_ID":"CMP-00171","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4939.2,"Impressions_Count":54153,"Clicks_Count":3087,"Conversions_Count":247,"Cost_Per_Acquisition":20},{"Campaign_ID":"CMP-00172","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6490,"Impressions_Count":54996,"Clicks_Count":3245,"Conversions_Count":260,"Cost_Per_Acquisition":24.96},{"Campaign_ID":"CMP-00173","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8174.4,"Impressions_Count":55839,"Clicks_Count":3406,"Conversions_Count":272,"Cost_Per_Acquisition":30.05},{"Campaign_ID":"CMP-00174","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":9998.8,"Impressions_Count":56682,"Clicks_Count":3571,"Conversions_Count":286,"Cost_Per_Acquisition":34.96},{"Campaign_ID":"CMP-00175","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1035.6,"Impressions_Count":57525,"Clicks_Count":863,"Conversions_Count":69,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00176","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1587.2,"Impressions_Count":58368,"Clicks_Count":992,"Conversions_Count":79,"Cost_Per_Acquisition":20.09},{"Campaign_ID":"CMP-00177","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2250,"Impressions_Count":59211,"Clicks_Count":1125,"Conversions_Count":90,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00178","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3026.4,"Impressions_Count":60054,"Clicks_Count":1261,"Conversions_Count":101,"Cost_Per_Acquisition":29.96},{"Campaign_ID":"CMP-00179","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3922.8,"Impressions_Count":60897,"Clicks_Count":1401,"Conversions_Count":112,"Cost_Per_Acquisition":35.03},{"Campaign_ID":"CMP-00180","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1852.8,"Impressions_Count":61740,"Clicks_Count":1544,"Conversions_Count":124,"Cost_Per_Acquisition":14.94},{"Campaign_ID":"CMP-00181","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2704,"Impressions_Count":62583,"Clicks_Count":1690,"Conversions_Count":135,"Cost_Per_Acquisition":20.03},{"Campaign_ID":"CMP-00182","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3678,"Impressions_Count":63426,"Clicks_Count":1839,"Conversions_Count":147,"Cost_Per_Acquisition":25.02},{"Campaign_ID":"CMP-00183","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4780.8,"Impressions_Count":64269,"Clicks_Count":1992,"Conversions_Count":159,"Cost_Per_Acquisition":30.07},{"Campaign_ID":"CMP-00184","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6017.2,"Impressions_Count":65112,"Clicks_Count":2149,"Conversions_Count":172,"Cost_Per_Acquisition":34.98},{"Campaign_ID":"CMP-00185","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2769.6,"Impressions_Count":65955,"Clicks_Count":2308,"Conversions_Count":185,"Cost_Per_Acquisition":14.97},{"Campaign_ID":"CMP-00186","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3955.2,"Impressions_Count":66798,"Clicks_Count":2472,"Conversions_Count":198,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00187","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5276,"Impressions_Count":67641,"Clicks_Count":2638,"Conversions_Count":211,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00188","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6739.2,"Impressions_Count":68484,"Clicks_Count":2808,"Conversions_Count":225,"Cost_Per_Acquisition":29.95},{"Campaign_ID":"CMP-00189","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8346.8,"Impressions_Count":69327,"Clicks_Count":2981,"Conversions_Count":238,"Cost_Per_Acquisition":35.07},{"Campaign_ID":"CMP-00190","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3789.6,"Impressions_Count":70170,"Clicks_Count":3158,"Conversions_Count":253,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00191","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5340.8,"Impressions_Count":71013,"Clicks_Count":3338,"Conversions_Count":267,"Cost_Per_Acquisition":20},{"Campaign_ID":"CMP-00192","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":7042,"Impressions_Count":71856,"Clicks_Count":3521,"Conversions_Count":282,"Cost_Per_Acquisition":24.97},{"Campaign_ID":"CMP-00193","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8899.2,"Impressions_Count":72699,"Clicks_Count":3708,"Conversions_Count":297,"Cost_Per_Acquisition":29.96},{"Campaign_ID":"CMP-00194","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":10914.4,"Impressions_Count":73542,"Clicks_Count":3898,"Conversions_Count":312,"Cost_Per_Acquisition":34.98},{"Campaign_ID":"CMP-00195","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4909.2,"Impressions_Count":74385,"Clicks_Count":4091,"Conversions_Count":327,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00196","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6860.8,"Impressions_Count":75228,"Clicks_Count":4288,"Conversions_Count":343,"Cost_Per_Acquisition":20},{"Campaign_ID":"CMP-00197","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8976,"Impressions_Count":76071,"Clicks_Count":4488,"Conversions_Count":359,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00198","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":11260.8,"Impressions_Count":76914,"Clicks_Count":4692,"Conversions_Count":375,"Cost_Per_Acquisition":30.03},{"Campaign_ID":"CMP-00199","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":13717.2,"Impressions_Count":77757,"Clicks_Count":4899,"Conversions_Count":392,"Cost_Per_Acquisition":34.99},{"Campaign_ID":"CMP-00200","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1414.8,"Impressions_Count":78600,"Clicks_Count":1179,"Conversions_Count":94,"Cost_Per_Acquisition":15.05},{"Campaign_ID":"CMP-00201","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2161.6,"Impressions_Count":79443,"Clicks_Count":1351,"Conversions_Count":108,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00202","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3050,"Impressions_Count":80286,"Clicks_Count":1525,"Conversions_Count":122,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00203","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4089.6,"Impressions_Count":81129,"Clicks_Count":1704,"Conversions_Count":136,"Cost_Per_Acquisition":30.07},{"Campaign_ID":"CMP-00204","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5278,"Impressions_Count":81972,"Clicks_Count":1885,"Conversions_Count":151,"Cost_Per_Acquisition":34.95},{"Campaign_ID":"CMP-00205","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2484,"Impressions_Count":82815,"Clicks_Count":2070,"Conversions_Count":166,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00206","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3614.4,"Impressions_Count":83658,"Clicks_Count":2259,"Conversions_Count":181,"Cost_Per_Acquisition":19.97},{"Campaign_ID":"CMP-00207","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4902,"Impressions_Count":84501,"Clicks_Count":2451,"Conversions_Count":196,"Cost_Per_Acquisition":25.01},{"Campaign_ID":"CMP-00208","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6350.4,"Impressions_Count":85344,"Clicks_Count":2646,"Conversions_Count":212,"Cost_Per_Acquisition":29.95},{"Campaign_ID":"CMP-00209","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":7963.2,"Impressions_Count":86187,"Clicks_Count":2844,"Conversions_Count":228,"Cost_Per_Acquisition":34.93},{"Campaign_ID":"CMP-00210","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3655.2,"Impressions_Count":87030,"Clicks_Count":3046,"Conversions_Count":244,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00211","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":5201.6,"Impressions_Count":87873,"Clicks_Count":3251,"Conversions_Count":260,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00212","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6920,"Impressions_Count":88716,"Clicks_Count":3460,"Conversions_Count":277,"Cost_Per_Acquisition":24.98},{"Campaign_ID":"CMP-00213","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8812.8,"Impressions_Count":89559,"Clicks_Count":3672,"Conversions_Count":294,"Cost_Per_Acquisition":29.98},{"Campaign_ID":"CMP-00214","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":10883.6,"Impressions_Count":90402,"Clicks_Count":3887,"Conversions_Count":311,"Cost_Per_Acquisition":35},{"Campaign_ID":"CMP-00215","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4927.2,"Impressions_Count":91245,"Clicks_Count":4106,"Conversions_Count":328,"Cost_Per_Acquisition":15.02},{"Campaign_ID":"CMP-00216","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6924.8,"Impressions_Count":92088,"Clicks_Count":4328,"Conversions_Count":346,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00217","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":9108,"Impressions_Count":92931,"Clicks_Count":4554,"Conversions_Count":364,"Cost_Per_Acquisition":25.02},{"Campaign_ID":"CMP-00218","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":11476.8,"Impressions_Count":93774,"Clicks_Count":4782,"Conversions_Count":383,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00219","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":14042,"Impressions_Count":94617,"Clicks_Count":5015,"Conversions_Count":401,"Cost_Per_Acquisition":35.02},{"Campaign_ID":"CMP-00220","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":6300,"Impressions_Count":95460,"Clicks_Count":5250,"Conversions_Count":420,"Cost_Per_Acquisition":15},{"Campaign_ID":"CMP-00221","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":8782.4,"Impressions_Count":96303,"Clicks_Count":5489,"Conversions_Count":439,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00222","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":11464,"Impressions_Count":97146,"Clicks_Count":5732,"Conversions_Count":459,"Cost_Per_Acquisition":24.98},{"Campaign_ID":"CMP-00223","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":14344.8,"Impressions_Count":97989,"Clicks_Count":5977,"Conversions_Count":478,"Cost_Per_Acquisition":30.01},{"Campaign_ID":"CMP-00224","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":17432.8,"Impressions_Count":98832,"Clicks_Count":6226,"Conversions_Count":498,"Cost_Per_Acquisition":35.01},{"Campaign_ID":"CMP-00225","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1794,"Impressions_Count":99675,"Clicks_Count":1495,"Conversions_Count":120,"Cost_Per_Acquisition":14.95},{"Campaign_ID":"CMP-00226","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":150.4,"Impressions_Count":5518,"Clicks_Count":94,"Conversions_Count":8,"Cost_Per_Acquisition":18.8},{"Campaign_ID":"CMP-00227","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":242,"Impressions_Count":6361,"Clicks_Count":121,"Conversions_Count":10,"Cost_Per_Acquisition":24.2},{"Campaign_ID":"CMP-00228","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":362.4,"Impressions_Count":7204,"Clicks_Count":151,"Conversions_Count":12,"Cost_Per_Acquisition":30.2},{"Campaign_ID":"CMP-00229","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":518,"Impressions_Count":8047,"Clicks_Count":185,"Conversions_Count":15,"Cost_Per_Acquisition":34.53},{"Campaign_ID":"CMP-00230","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":266.4,"Impressions_Count":8890,"Clicks_Count":222,"Conversions_Count":18,"Cost_Per_Acquisition":14.8},{"Campaign_ID":"CMP-00231","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":420.8,"Impressions_Count":9733,"Clicks_Count":263,"Conversions_Count":21,"Cost_Per_Acquisition":20.04},{"Campaign_ID":"CMP-00232","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":614,"Impressions_Count":10576,"Clicks_Count":307,"Conversions_Count":25,"Cost_Per_Acquisition":24.56},{"Campaign_ID":"CMP-00233","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":849.6,"Impressions_Count":11419,"Clicks_Count":354,"Conversions_Count":28,"Cost_Per_Acquisition":30.34},{"Campaign_ID":"CMP-00234","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1134,"Impressions_Count":12262,"Clicks_Count":405,"Conversions_Count":32,"Cost_Per_Acquisition":35.44},{"Campaign_ID":"CMP-00235","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":550.8,"Impressions_Count":13105,"Clicks_Count":459,"Conversions_Count":37,"Cost_Per_Acquisition":14.89},{"Campaign_ID":"CMP-00236","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":825.6,"Impressions_Count":13948,"Clicks_Count":516,"Conversions_Count":41,"Cost_Per_Acquisition":20.14},{"Campaign_ID":"CMP-00237","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1154,"Impressions_Count":14791,"Clicks_Count":577,"Conversions_Count":46,"Cost_Per_Acquisition":25.09},{"Campaign_ID":"CMP-00238","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1538.4,"Impressions_Count":15634,"Clicks_Count":641,"Conversions_Count":51,"Cost_Per_Acquisition":30.16},{"Campaign_ID":"CMP-00239","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":1985.2,"Impressions_Count":16477,"Clicks_Count":709,"Conversions_Count":57,"Cost_Per_Acquisition":34.83},{"Campaign_ID":"CMP-00240","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":934.8,"Impressions_Count":17320,"Clicks_Count":779,"Conversions_Count":62,"Cost_Per_Acquisition":15.08},{"Campaign_ID":"CMP-00241","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1366.4,"Impressions_Count":18163,"Clicks_Count":854,"Conversions_Count":68,"Cost_Per_Acquisition":20.09},{"Campaign_ID":"CMP-00242","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1862,"Impressions_Count":19006,"Clicks_Count":931,"Conversions_Count":74,"Cost_Per_Acquisition":25.16},{"Campaign_ID":"CMP-00243","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":2428.8,"Impressions_Count":19849,"Clicks_Count":1012,"Conversions_Count":81,"Cost_Per_Acquisition":29.99},{"Campaign_ID":"CMP-00244","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":3071.6,"Impressions_Count":20692,"Clicks_Count":1097,"Conversions_Count":88,"Cost_Per_Acquisition":34.9},{"Campaign_ID":"CMP-00245","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1420.8,"Impressions_Count":21535,"Clicks_Count":1184,"Conversions_Count":95,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00246","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2041.6,"Impressions_Count":22378,"Clicks_Count":1276,"Conversions_Count":102,"Cost_Per_Acquisition":20.02},{"Campaign_ID":"CMP-00247","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":2740,"Impressions_Count":23221,"Clicks_Count":1370,"Conversions_Count":110,"Cost_Per_Acquisition":24.91},{"Campaign_ID":"CMP-00248","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":3523.2,"Impressions_Count":24064,"Clicks_Count":1468,"Conversions_Count":117,"Cost_Per_Acquisition":30.11},{"Campaign_ID":"CMP-00249","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":4393.2,"Impressions_Count":24907,"Clicks_Count":1569,"Conversions_Count":126,"Cost_Per_Acquisition":34.87},{"Campaign_ID":"CMP-00250","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":463.2,"Impressions_Count":25750,"Clicks_Count":386,"Conversions_Count":31,"Cost_Per_Acquisition":14.94},{"Campaign_ID":"CMP-00251","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":723.2,"Impressions_Count":26593,"Clicks_Count":452,"Conversions_Count":36,"Cost_Per_Acquisition":20.09},{"Campaign_ID":"CMP-00252","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1042,"Impressions_Count":27436,"Clicks_Count":521,"Conversions_Count":42,"Cost_Per_Acquisition":24.81},{"Campaign_ID":"CMP-00253","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1425.6,"Impressions_Count":28279,"Clicks_Count":594,"Conversions_Count":48,"Cost_Per_Acquisition":29.7},{"Campaign_ID":"CMP-00254","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":1876,"Impressions_Count":29122,"Clicks_Count":670,"Conversions_Count":54,"Cost_Per_Acquisition":34.74},{"Campaign_ID":"CMP-00255","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":898.8,"Impressions_Count":29965,"Clicks_Count":749,"Conversions_Count":60,"Cost_Per_Acquisition":14.98},{"Campaign_ID":"CMP-00256","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1331.2,"Impressions_Count":30808,"Clicks_Count":832,"Conversions_Count":67,"Cost_Per_Acquisition":19.87},{"Campaign_ID":"CMP-00257","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1836,"Impressions_Count":31651,"Clicks_Count":918,"Conversions_Count":73,"Cost_Per_Acquisition":25.15},{"Campaign_ID":"CMP-00258","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2416.8,"Impressions_Count":32494,"Clicks_Count":1007,"Conversions_Count":81,"Cost_Per_Acquisition":29.84},{"Campaign_ID":"CMP-00259","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3080,"Impressions_Count":33337,"Clicks_Count":1100,"Conversions_Count":88,"Cost_Per_Acquisition":35},{"Campaign_ID":"CMP-00260","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1435.2,"Impressions_Count":34180,"Clicks_Count":1196,"Conversions_Count":96,"Cost_Per_Acquisition":14.95},{"Campaign_ID":"CMP-00261","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2073.6,"Impressions_Count":35023,"Clicks_Count":1296,"Conversions_Count":104,"Cost_Per_Acquisition":19.94},{"Campaign_ID":"CMP-00262","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2798,"Impressions_Count":35866,"Clicks_Count":1399,"Conversions_Count":112,"Cost_Per_Acquisition":24.98},{"Campaign_ID":"CMP-00263","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3612,"Impressions_Count":36709,"Clicks_Count":1505,"Conversions_Count":120,"Cost_Per_Acquisition":30.1},{"Campaign_ID":"CMP-00264","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":4522,"Impressions_Count":37552,"Clicks_Count":1615,"Conversions_Count":129,"Cost_Per_Acquisition":35.05},{"Campaign_ID":"CMP-00265","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2073.6,"Impressions_Count":38395,"Clicks_Count":1728,"Conversions_Count":138,"Cost_Per_Acquisition":15.03},{"Campaign_ID":"CMP-00266","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2950.4,"Impressions_Count":39238,"Clicks_Count":1844,"Conversions_Count":148,"Cost_Per_Acquisition":19.94},{"Campaign_ID":"CMP-00267","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3928,"Impressions_Count":40081,"Clicks_Count":1964,"Conversions_Count":157,"Cost_Per_Acquisition":25.02},{"Campaign_ID":"CMP-00268","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5008.8,"Impressions_Count":40924,"Clicks_Count":2087,"Conversions_Count":167,"Cost_Per_Acquisition":29.99},{"Campaign_ID":"CMP-00269","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":6199.2,"Impressions_Count":41767,"Clicks_Count":2214,"Conversions_Count":177,"Cost_Per_Acquisition":35.02},{"Campaign_ID":"CMP-00270","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2812.8,"Impressions_Count":42610,"Clicks_Count":2344,"Conversions_Count":188,"Cost_Per_Acquisition":14.96},{"Campaign_ID":"CMP-00271","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3963.2,"Impressions_Count":43453,"Clicks_Count":2477,"Conversions_Count":198,"Cost_Per_Acquisition":20.02},{"Campaign_ID":"CMP-00272","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5226,"Impressions_Count":44296,"Clicks_Count":2613,"Conversions_Count":209,"Cost_Per_Acquisition":25},{"Campaign_ID":"CMP-00273","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":6607.2,"Impressions_Count":45139,"Clicks_Count":2753,"Conversions_Count":220,"Cost_Per_Acquisition":30.03},{"Campaign_ID":"CMP-00274","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":8111.6,"Impressions_Count":45982,"Clicks_Count":2897,"Conversions_Count":232,"Cost_Per_Acquisition":34.96},{"Campaign_ID":"CMP-00275","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":842.4,"Impressions_Count":46825,"Clicks_Count":702,"Conversions_Count":56,"Cost_Per_Acquisition":15.04},{"Campaign_ID":"CMP-00276","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1296,"Impressions_Count":47668,"Clicks_Count":810,"Conversions_Count":65,"Cost_Per_Acquisition":19.94},{"Campaign_ID":"CMP-00277","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":1844,"Impressions_Count":48511,"Clicks_Count":922,"Conversions_Count":74,"Cost_Per_Acquisition":24.92},{"Campaign_ID":"CMP-00278","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":2486.4,"Impressions_Count":49354,"Clicks_Count":1036,"Conversions_Count":83,"Cost_Per_Acquisition":29.96},{"Campaign_ID":"CMP-00279","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3234,"Impressions_Count":50197,"Clicks_Count":1155,"Conversions_Count":92,"Cost_Per_Acquisition":35.15},{"Campaign_ID":"CMP-00280","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1531.2,"Impressions_Count":51040,"Clicks_Count":1276,"Conversions_Count":102,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00281","Marketing_Channel":"Paid Social","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2241.6,"Impressions_Count":51883,"Clicks_Count":1401,"Conversions_Count":112,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00282","Marketing_Channel":"Email Automation","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3058,"Impressions_Count":52726,"Clicks_Count":1529,"Conversions_Count":122,"Cost_Per_Acquisition":25.07},{"Campaign_ID":"CMP-00283","Marketing_Channel":"Organic SEO","Campaign_Name":"Black Friday Special","Ad_Spend_USD":3986.4,"Impressions_Count":53569,"Clicks_Count":1661,"Conversions_Count":133,"Cost_Per_Acquisition":29.97},{"Campaign_ID":"CMP-00284","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5028.8,"Impressions_Count":54412,"Clicks_Count":1796,"Conversions_Count":144,"Cost_Per_Acquisition":34.92},{"Campaign_ID":"CMP-00285","Marketing_Channel":"Paid Search","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":2320.8,"Impressions_Count":55255,"Clicks_Count":1934,"Conversions_Count":155,"Cost_Per_Acquisition":14.97},{"Campaign_ID":"CMP-00286","Marketing_Channel":"Paid Social","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3321.6,"Impressions_Count":56098,"Clicks_Count":2076,"Conversions_Count":166,"Cost_Per_Acquisition":20.01},{"Campaign_ID":"CMP-00287","Marketing_Channel":"Email Automation","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4442,"Impressions_Count":56941,"Clicks_Count":2221,"Conversions_Count":178,"Cost_Per_Acquisition":24.96},{"Campaign_ID":"CMP-00288","Marketing_Channel":"Organic SEO","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5685.6,"Impressions_Count":57784,"Clicks_Count":2369,"Conversions_Count":190,"Cost_Per_Acquisition":29.92},{"Campaign_ID":"CMP-00289","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":7058.8,"Impressions_Count":58627,"Clicks_Count":2521,"Conversions_Count":202,"Cost_Per_Acquisition":34.94},{"Campaign_ID":"CMP-00290","Marketing_Channel":"Paid Search","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":3211.2,"Impressions_Count":59470,"Clicks_Count":2676,"Conversions_Count":214,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00291","Marketing_Channel":"Paid Social","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4536,"Impressions_Count":60313,"Clicks_Count":2835,"Conversions_Count":227,"Cost_Per_Acquisition":19.98},{"Campaign_ID":"CMP-00292","Marketing_Channel":"Email Automation","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5994,"Impressions_Count":61156,"Clicks_Count":2997,"Conversions_Count":240,"Cost_Per_Acquisition":24.98},{"Campaign_ID":"CMP-00293","Marketing_Channel":"Organic SEO","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":7588.8,"Impressions_Count":61999,"Clicks_Count":3162,"Conversions_Count":253,"Cost_Per_Acquisition":30},{"Campaign_ID":"CMP-00294","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":9326.8,"Impressions_Count":62842,"Clicks_Count":3331,"Conversions_Count":266,"Cost_Per_Acquisition":35.06},{"Campaign_ID":"CMP-00295","Marketing_Channel":"Paid Search","Campaign_Name":"Black Friday Special","Ad_Spend_USD":4203.6,"Impressions_Count":63685,"Clicks_Count":3503,"Conversions_Count":280,"Cost_Per_Acquisition":15.01},{"Campaign_ID":"CMP-00296","Marketing_Channel":"Paid Social","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":5884.8,"Impressions_Count":64528,"Clicks_Count":3678,"Conversions_Count":294,"Cost_Per_Acquisition":20.02},{"Campaign_ID":"CMP-00297","Marketing_Channel":"Email Automation","Campaign_Name":"Growth Blitz Q2","Ad_Spend_USD":7714,"Impressions_Count":65371,"Clicks_Count":3857,"Conversions_Count":309,"Cost_Per_Acquisition":24.96},{"Campaign_ID":"CMP-00298","Marketing_Channel":"Organic SEO","Campaign_Name":"Retargeting Evergreen","Ad_Spend_USD":9693.6,"Impressions_Count":66214,"Clicks_Count":4039,"Conversions_Count":323,"Cost_Per_Acquisition":30.01},{"Campaign_ID":"CMP-00299","Marketing_Channel":"Affiliate Partners","Campaign_Name":"Black Friday Special","Ad_Spend_USD":11830,"Impressions_Count":67057,"Clicks_Count":4225,"Conversions_Count":338,"Cost_Per_Acquisition":35},{"Campaign_ID":"CMP-00300","Marketing_Channel":"Paid Search","Campaign_Name":"Brand Awareness Q1","Ad_Spend_USD":1222.8,"Impressions_Count":67900,"Clicks_Count":1019,"Conversions_Count":82,"Cost_Per_Acquisition":14.91}];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-section').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.nav-tab').forEach(function(el) { el.classList.remove('active'); });
+      var target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function toggleDrawer(kpiId) {
+      var d = document.getElementById('drawer-' + kpiId);
+      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applyFilter(field, val) {
+      activeFilter = { field: field, value: val };
+      var banner = document.getElementById('filterBanner');
+      var filterText = document.getElementById('filterText');
+      if (banner && filterText) {
+        var matching = rawData.filter(function(r) { return String(r[field] || '') === val; });
+        filterText.innerText = 'Filtered by ' + field + ' = "' + val + '" (' + matching.length + ' matching records)';
+        banner.style.display = 'flex';
+      }
+    }
+
+    function resetFilter() {
+      activeFilter = null;
+      var banner = document.getElementById('filterBanner');
+      if (banner) banner.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

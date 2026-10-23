@@ -38,6 +38,7 @@ const DataUploadModal = lazy(() => import('./components/DataUploadModal').then((
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })));
 const LegalPage = lazy(() => import('./components/LegalPage').then((m) => ({ default: m.LegalPage })));
 const AmazonStandalonePage = lazy(() => import('./components/AmazonStandalonePage').then((m) => ({ default: m.AmazonStandalonePage })));
+const UniversalAnalyticsView = lazy(() => import('./components/UniversalAnalyticsView').then((m) => ({ default: m.UniversalAnalyticsView })));
 import type { LegalRoute } from './components/LegalPage';
 import { trackEvent, trackPageView } from './utils/analytics';
 
@@ -60,7 +61,7 @@ const getInitialRouteState = (initialPath?: string) => {
   }
   const path = (initialPath || window.location.pathname).toLowerCase();
   let legalRoute: LegalRoute | null = null;
-  let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' = 'home';
+  let tab: 'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' | 'universal-analytics' = 'home';
   let ind: keyof typeof INDUSTRY_PRESETS = 'enterprise_tech';
 
   if (path.includes('disclaimer')) { legalRoute = 'disclaimer'; }
@@ -70,7 +71,9 @@ const getInitialRouteState = (initialPath?: string) => {
   else if (path.includes('contact')) { legalRoute = 'contact'; }
   else if (path.includes('about')) { legalRoute = 'about'; }
 
-  if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
+  if (path.includes('universal-analytics') || path.includes('julius')) {
+    tab = 'universal-analytics';
+  } else if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
     tab = 'amazon-sales';
   } else if (path.includes('sales-dashboard')) {
     tab = 'dashboard';
@@ -110,7 +113,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
   // Active Worksheet View Tab
   const [activeTab, setActiveTab] = useState<
-    'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales'
+    'home' | 'dashboard' | 'excel-preview' | 'pivot' | 'transactions' | 'regions' | 'products' | 'customers' | 'amazon-sales' | 'universal-analytics'
   >(initialRoute.tab);
 
   // Randomization Seed offset to allow "Refresh Data"
@@ -183,7 +186,9 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       } else {
         setActiveLegalRoute(null);
         document.title = 'Free Excel Dashboard Generator | Automated KPI Reports';
-        if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
+        if (path.includes('universal-analytics') || path.includes('julius')) {
+          setActiveTab('universal-analytics');
+        } else if (path.includes('amazon-sales-dashboard') || path.includes('amazon-dashboard')) {
           setActiveTab('amazon-sales');
         } else if (path.includes('sales-dashboard') || path.includes('hr-dashboard') || path.includes('financial-dashboard') || path.includes('kpi-dashboard')) {
           setActiveTab('dashboard');
@@ -374,8 +379,8 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       />
 
       {/* Main Content Area */}
-      <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''}`}>
-        {!activeLegalRoute && activeTab !== 'home' && activeTab !== 'amazon-sales' && <header className="report-section-heading"><div><div className="eyebrow">Interactive workbook practice</div><h1>{activeTab === 'excel-preview' ? 'Excel workbook generator and preview' : 'Business dashboard: explore and verify your data'}</h1><p>Use simulated sample data or import a permitted file. Verify totals and formulas before relying on an exported workbook.</p></div></header>}
+      <main id="main-content" className={`workspace-main space-y-7 ${activeTab === 'excel-preview' ? 'excel-preview-main' : ''} ${activeTab === 'universal-analytics' ? 'p-0 max-w-none bg-slate-950 rounded-2xl overflow-hidden shadow-2xl' : ''}`}>
+        {!activeLegalRoute && activeTab !== 'home' && activeTab !== 'amazon-sales' && activeTab !== 'universal-analytics' && <header className="report-section-heading"><div><div className="eyebrow">Interactive workbook practice</div><h1>{activeTab === 'excel-preview' ? 'Excel workbook generator and preview' : 'Business dashboard: explore and verify your data'}</h1><p>Use simulated sample data or import a permitted file. Verify totals and formulas before relying on an exported workbook.</p></div></header>}
         {activeLegalRoute ? (
           <Suspense fallback={<WorkspaceLoader />}>
             <LegalPage
@@ -383,6 +388,10 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
               onNavigate={handleNavigateToLegal}
               onBackToApp={handleBackToApp}
             />
+          </Suspense>
+        ) : activeTab === 'universal-analytics' ? (
+          <Suspense fallback={<WorkspaceLoader />}>
+            <UniversalAnalyticsView onBackToApp={handleBackToApp} />
           </Suspense>
         ) : activeTab === 'amazon-sales' ? (
           <Suspense fallback={<WorkspaceLoader />}>

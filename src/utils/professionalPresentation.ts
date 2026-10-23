@@ -43,6 +43,70 @@ const subjects:Record<IndustryType,[string,string,string]>={
   customer_support_ops:['Customer support operations performance','Helpdesk ticket resolution, contact handling duration and customer satisfaction.','Support channel']
 };
 export function getProfessionalSpec(data:AppDataset):DomainSpec {
+ if (data.helpdeskMetrics || (data.schemaProfile?.detectedDomain === 'customer_support_ops' && data.schemaProfile?.hasFinancialMetrics === false)) {
+  const orig = DOMAIN_SPECS.customer_support_ops;
+  const filter1 = data.schemaProfile?.secondaryCategoryLabel || 'Resolver Group';
+  const primaryCat = data.schemaProfile?.primaryCategoryLabel || 'Issue Family';
+  const recCount = data.rawRows?.length ?? data.transactions?.length ?? 0;
+  const title = data.config.reportTitle || 'IT Service Desk & Helpdesk Operations';
+  const subtitle = `${recCount.toLocaleString()} verified service tickets · Multi-dimensional incident analytics`;
+
+  const metrics: Metric[] = [
+   { label: 'Total Service Tickets', operation: 'count' },
+   { label: 'Completed Tickets', field: 'Is Completed', operation: 'sum' },
+   { label: 'SLA Compliance Rate', field: 'Is SLA Met', denominator: 'Is Completed', operation: 'ratio', format: 'percent' },
+   { label: 'Mean Resolution Duration (hrs)', field: 'Resolution Duration (hrs)', operation: 'average' },
+  ];
+
+  const charts = [
+   {
+    kind: 'line' as const,
+    title: 'Ticket volume by month',
+    dimension: 'Logged On',
+    metric: { label: 'Tickets', operation: 'count' as const },
+    question: 'How is incident volume trending across the operational calendar?',
+    wide: true,
+   },
+   {
+    kind: 'columns' as const,
+    title: 'Tickets by resolver group',
+    dimension: 'Resolver Group',
+    metric: { label: 'Tickets', operation: 'count' as const },
+    question: 'Which support tiers and resolver teams handle the largest incident workload?',
+   },
+   {
+    kind: 'treemap' as const,
+    title: 'Incident distribution by issue family',
+    dimension: primaryCat,
+    metric: { label: 'Tickets', operation: 'count' as const },
+    question: 'Where are incident concentrations by technical domain?',
+   },
+   {
+    kind: 'bars' as const,
+    title: 'Tickets by urgency band',
+    dimension: 'Urgency Band',
+    metric: { label: 'Tickets', operation: 'count' as const },
+    question: 'What is the volume distribution across severity priorities?',
+   },
+  ];
+
+  return {
+   ...orig,
+   title,
+   subtitle,
+   grain: 'One service desk incident / ticket',
+   color: '#0d9488',
+   tint: '#ccfbf1',
+   layout: 'support',
+   filter: filter1,
+   date: 'Logged On',
+   primary: 'Total Tickets',
+   category: primaryCat,
+   metrics,
+   charts,
+  };
+ }
+
  const original=DOMAIN_SPECS[data.config.industry];
  if(!data.transactions.length)return original;
  const [title,subtitle,category]=subjects[data.config.industry] || subjects.general_business;

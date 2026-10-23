@@ -33,17 +33,19 @@ export async function injectNativeExcelCharts(
   const startRegRow = 46; // Aligned with Table Block 1: I46:O49
   const endRegRow = startRegRow + rCount - 1; // 46 to 49
 
-  // Channels for Donut Chart
-  const totalRev = kpi.totalRevenue;
-  const channelList = [
-    { name: 'Direct Enterprise', rev: Math.round(totalRev * 0.42), color: hexColors[0] || '0284C7' },
-    { name: 'Partner Ecosystem', rev: Math.round(totalRev * 0.28), color: hexColors[1] || '10B981' },
-    { name: 'Inside Sales', rev: Math.round(totalRev * 0.18), color: hexColors[2] || '6366F1' },
-    { name: 'Online Enterprise', rev: Math.round(totalRev * 0.12), color: hexColors[3] || 'F59E0B' },
-  ];
+  // Channels for Donut Chart & Pivot Charts (strictly from transaction records)
+  const actualChannels = Array.from(new Set(dataset.transactions.map((t) => t.salesChannel).filter(Boolean)));
+  const channelNames = actualChannels.length > 0 ? actualChannels.slice(0, 4) : ['Online', 'B2B Direct', 'Retail Store'];
+  const channelList = channelNames.map((name, i) => {
+    const rev = Math.round(dataset.transactions.filter((t) => t.salesChannel === name).reduce((s, t) => s + t.revenue, 0) * 100) / 100;
+    return { name, rev, color: hexColors[i % hexColors.length] || '0284C7' };
+  });
 
   const pieColors = hexColors && hexColors.length >= 5 ? hexColors : ['10B981', '0284C7', '6366F1', '8B5CF6', 'F59E0B'];
-  const quartersList = ['Q1-2024', 'Q2-2024', 'Q3-2024', 'Q4-2024'];
+  const distinctQuarters = Array.from(new Set(dataset.transactions.map((t) => t.quarter).filter(Boolean)));
+  const dominantYear = dataset.transactions[0]?.orderDate ? dataset.transactions[0].orderDate.slice(0, 4) : '2025';
+  const defaultQuarters = [`Q1-${dominantYear}`, `Q2-${dominantYear}`, `Q3-${dominantYear}`, `Q4-${dominantYear}`];
+  const quartersList = distinctQuarters.length >= 4 ? distinctQuarters.slice(0, 4) : defaultQuarters;
 
   // =============================================================
   // SHEET 1 CHARTS (chart1.xml to chart4.xml)
@@ -303,7 +305,7 @@ export async function injectNativeExcelCharts(
             <a:pPr><a:defRPr b="1" sz="1200"/></a:pPr>
             <a:r>
               <a:rPr b="1" sz="1200"><a:solidFill><a:srgbClr val="0F172A"/></a:solidFill></a:rPr>
-              <a:t>${escapeXml(labels.dimensionLabel)} Quota Attainment (Actual vs Target)</a:t>
+              <a:t>${escapeXml(labels.dimensionLabel)} Performance (${escapeXml(labels.metric1)} &amp; ${escapeXml(labels.metric2)})</a:t>
             </a:r>
           </a:p>
         </c:rich>
@@ -323,7 +325,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Executive Dashboard'!$K$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Actual ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
@@ -355,13 +357,13 @@ export async function injectNativeExcelCharts(
           <c:order val="1"/>
           <c:tx>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$L$45</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Target ${escapeXml(labels.metric1)}</c:v></c:pt></c:strCache>
+              <c:f>'Executive Dashboard'!$N$45</c:f>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(labels.metric2)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
-            <a:solidFill><a:srgbClr val="94A3B8"/></a:solidFill>
-            <a:ln w="9525"><a:solidFill><a:srgbClr val="64748B"/></a:solidFill></a:ln>
+            <a:solidFill><a:srgbClr val="${hexColors[1] || '10B981'}"/></a:solidFill>
+            <a:ln w="9525"><a:solidFill><a:srgbClr val="${hexColors[1] || '10B981'}"/></a:solidFill></a:ln>
           </c:spPr>
           <c:cat>
             <c:strRef>
@@ -374,11 +376,11 @@ export async function injectNativeExcelCharts(
           </c:cat>
           <c:val>
             <c:numRef>
-              <c:f>'Executive Dashboard'!$L$${startRegRow}:$L$${endRegRow}</c:f>
+              <c:f>'Executive Dashboard'!$N$${startRegRow}:$N$${endRegRow}</c:f>
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="${rCount}"/>
-                ${regions.map((r, i) => `<c:pt idx="${i}"><c:v>${r.targetRevenue}</c:v></c:pt>`).join('')}
+                ${regions.map((r, i) => `<c:pt idx="${i}"><c:v>${r.actualProfit}</c:v></c:pt>`).join('')}
               </c:numCache>
             </c:numRef>
           </c:val>
@@ -485,19 +487,19 @@ export async function injectNativeExcelCharts(
           </c:dPt>`).join('')}
           <c:cat>
             <c:strRef>
-              <c:f>'Executive Dashboard'!$I$62:$I$65</c:f>
+              <c:f>'Executive Dashboard'!$I$62:$I$${61 + channelList.length}</c:f>
               <c:strCache>
-                <c:ptCount val="4"/>
+                <c:ptCount val="${channelList.length}"/>
                 ${channelList.map((ch, i) => `<c:pt idx="${i}"><c:v>${escapeXml(ch.name)}</c:v></c:pt>`).join('')}
               </c:strCache>
             </c:strRef>
           </c:cat>
           <c:val>
             <c:numRef>
-              <c:f>'Executive Dashboard'!$K$62:$K$65</c:f>
+              <c:f>'Executive Dashboard'!$K$62:$K$${61 + channelList.length}</c:f>
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
-                <c:ptCount val="4"/>
+                <c:ptCount val="${channelList.length}"/>
                 ${channelList.map((ch, i) => `<c:pt idx="${i}"><c:v>${ch.rev}</c:v></c:pt>`).join('')}
               </c:numCache>
             </c:numRef>
@@ -560,7 +562,7 @@ export async function injectNativeExcelCharts(
         <c:barDir val="col"/>
         <c:grouping val="clustered"/>
         <c:varyColors val="0"/>
-        ${['Direct Enterprise', 'Partner Ecosystem', 'Inside Sales', 'Online Enterprise'].map((ch, idx) => {
+        ${channelList.map((ch, idx) => {
           const colLetter = ['C', 'D', 'E', 'F'][idx];
           const colorHex = hexColors[idx % hexColors.length];
           return `
@@ -570,7 +572,7 @@ export async function injectNativeExcelCharts(
           <c:tx>
             <c:strRef>
               <c:f>'Pivot Table Analysis'!$${colLetter}$6</c:f>
-              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(ch)}</c:v></c:pt></c:strCache>
+              <c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>${escapeXml(ch.name)}</c:v></c:pt></c:strCache>
             </c:strRef>
           </c:tx>
           <c:spPr>
@@ -592,7 +594,10 @@ export async function injectNativeExcelCharts(
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="4"/>
-                ${regions.map((r, i) => `<c:pt idx="${i}"><c:v>${Math.round(r.actualRevenue * [0.42, 0.28, 0.18, 0.12][idx])}</c:v></c:pt>`).join('')}
+                ${regions.map((r, i) => {
+                  const rChRev = Math.round(dataset.transactions.filter(t => t.region === r.region && t.salesChannel === ch.name).reduce((s, t) => s + t.revenue, 0) * 100) / 100;
+                  return `<c:pt idx="${i}"><c:v>${rChRev}</c:v></c:pt>`;
+                }).join('')}
               </c:numCache>
             </c:numRef>
           </c:val>
@@ -789,7 +794,11 @@ export async function injectNativeExcelCharts(
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="4"/>
-                ${quartersList.map((q, i) => `<c:pt idx="${i}"><c:v>${Math.round(totalRev * 0.25)}</c:v></c:pt>`).join('')}
+                ${quartersList.map((q, i) => {
+                  const qTx = dataset.transactions.filter(t => t.quarter === q);
+                  const qRev = Math.round(qTx.reduce((s, t) => s + t.revenue, 0) * 100) / 100;
+                  return `<c:pt idx="${i}"><c:v>${qRev}</c:v></c:pt>`;
+                }).join('')}
               </c:numCache>
             </c:numRef>
           </c:val>
@@ -822,7 +831,11 @@ export async function injectNativeExcelCharts(
               <c:numCache>
                 <c:formatCode>$#,##0</c:formatCode>
                 <c:ptCount val="4"/>
-                ${quartersList.map((q, i) => `<c:pt idx="${i}"><c:v>${Math.round(kpi.totalGrossProfit * 0.25)}</c:v></c:pt>`).join('')}
+                ${quartersList.map((q, i) => {
+                  const qTx = dataset.transactions.filter(t => t.quarter === q);
+                  const qProf = Math.round(qTx.reduce((s, t) => s + t.grossProfit, 0) * 100) / 100;
+                  return `<c:pt idx="${i}"><c:v>${qProf}</c:v></c:pt>`;
+                }).join('')}
               </c:numCache>
             </c:numRef>
           </c:val>
@@ -1245,7 +1258,7 @@ export async function injectNativeExcelCharts(
       const salt = sheet1ForProt.match(/saltValue="([^"]+)"/)?.[1] || '';
       const spin = sheet1ForProt.match(/spinCount="([^"]+)"/)?.[1] || '100000';
       if (hash && salt) {
-        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" algorithmName="${algo}" hashValue="${hash}" saltValue="${salt}" spinCount="${spin}"/>`;
+        const wbProt = `<workbookProtection lockStructure="1" lockWindows="0" workbookAlgorithmName="${algo}" workbookHashValue="${hash}" workbookSaltValue="${salt}" workbookSpinCount="${spin}"/>`;
         workbookXml = workbookXml.replace('<sheets>', `${wbProt}<sheets>`);
         zip.file('xl/workbook.xml', workbookXml);
       }
