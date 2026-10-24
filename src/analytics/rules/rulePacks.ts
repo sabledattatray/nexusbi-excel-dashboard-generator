@@ -11,15 +11,47 @@ import { DatasetProfile } from '../profiler/datasetProfiler';
 import { DetectedSemanticModel } from '../profiler/semanticDetector';
 import { MetricQuery, GroupBySpec, TopNSpec } from '../types';
 
+export function cleanFieldTitle(name: string): string {
+  if (!name) return '';
+  return name
+    .replace(/_/g, ' ')
+    .replace(/\b([a-z])/g, (_, char) => char.toUpperCase())
+    .trim();
+}
+
+export type ChartType =
+  | 'bar'
+  | 'horizontal_bar'
+  | 'line'
+  | 'area'
+  | 'donut'
+  | 'pie'
+  | 'treemap'
+  | 'waterfall'
+  | 'combo'
+  | 'stacked_column'
+  | 'scatter'
+  | 'heatmap'
+  | 'matrix';
+
 export interface ChartProposal {
   id: string;
   title: string;
-  type: 'bar' | 'line' | 'pie' | 'scatter' | 'matrix';
+  type: ChartType;
   dimension: string | GroupBySpec;
   metricId: string;
   metricLabel: string;
+  secondaryMetricId?: string;
+  secondaryMetricLabel?: string;
+  tertiaryMetricId?: string;
+  tertiaryMetricLabel?: string;
+  stackDimension?: string;
   topN?: TopNSpec;
   sortDirection?: 'asc' | 'desc';
+  section?: 'overview' | 'revenue' | 'customers_regions' | 'products_ops';
+  unit?: string;
+  selectionReason?: string;
+  allowedAlternativeTypes?: ChartType[];
 }
 
 export interface RulePackEvaluation {
@@ -173,7 +205,7 @@ export class UniversalFallbackRulePack implements DomainRulePack {
     if (semantics.primaryDimension) {
       charts.push({
         id: 'chart_primary_category_breakdown',
-        title: `Distribution by ${semantics.primaryDimension}`,
+        title: `Distribution by ${cleanFieldTitle(semantics.primaryDimension)}`,
         type: 'bar',
         dimension: semantics.primaryDimension,
         metricId: defaultMetricId,
@@ -187,7 +219,7 @@ export class UniversalFallbackRulePack implements DomainRulePack {
     if (semantics.primaryDate) {
       charts.push({
         id: 'chart_temporal_trend',
-        title: `Activity Trend over ${semantics.primaryDate}`,
+        title: `Activity Trend over ${cleanFieldTitle(semantics.primaryDate)}`,
         type: 'line',
         dimension: { field: semantics.primaryDate, timeBucket: 'month', alias: 'Month' },
         metricId: defaultMetricId,
@@ -200,7 +232,7 @@ export class UniversalFallbackRulePack implements DomainRulePack {
     if (semantics.statusColumn) {
       charts.push({
         id: 'chart_status_distribution',
-        title: `Breakdown by ${semantics.statusColumn}`,
+        title: `Breakdown by ${cleanFieldTitle(semantics.statusColumn)}`,
         type: 'pie',
         dimension: semantics.statusColumn,
         metricId: 'total_records',
@@ -214,7 +246,7 @@ export class UniversalFallbackRulePack implements DomainRulePack {
     if (secDim) {
       charts.push({
         id: 'chart_secondary_dimension',
-        title: `Volume by ${secDim}`,
+        title: `Volume by ${cleanFieldTitle(secDim)}`,
         type: 'bar',
         dimension: secDim,
         metricId: 'total_records',
@@ -347,42 +379,196 @@ export class SalesDomainRulePack implements DomainRulePack {
 
   buildCharts(profile: DatasetProfile, semantics: DetectedSemanticModel): ChartProposal[] {
     const charts: ChartProposal[] = [];
-    if (semantics.primaryDimension) {
-      charts.push({
-        id: 'sales_by_category',
-        title: `Net Sales by ${semantics.primaryDimension}`,
-        type: 'bar',
-        dimension: semantics.primaryDimension,
-        metricId: 'total_net_sales',
-        metricLabel: 'Net Sales',
-        topN: { field: semantics.primaryDimension, metricId: 'total_net_sales', limit: 6, includeOther: true },
-        sortDirection: 'desc',
-      });
-    }
-    if (semantics.primaryDate) {
+    const isNum = (c: any) => ['currency', 'float', 'integer'].includes(c.dataType);
+
+    const dateCol = semantics.primaryDate || profile.columns.find((c) => /order_date|date|period/i.test(c.name))?.name;
+    const segmentCol = profile.columns.find((c) => /customer_segment|segment/i.test(c.name))?.name || semantics.primaryDimension;
+    const regionCol = profile.columns.find((c) => /region|territory|zone/i.test(c.name))?.name;
+    const catCol = profile.columns.find((c) => /^(category|product_category|department)$/i.test(c.name))?.name ||
+      profile.columns.find((c) => /category/i.test(c.name) && c.name !== segmentCol && c.name !== regionCol)?.name;
+    const channelCol = profile.columns.find((c) => /sales_channel|channel/i.test(c.name))?.name;
+    const statusCol = profile.columns.find((c) => /order_status|status|state/i.test(c.name))?.name;
+    const productCol = profile.columns.find((c) => /^(product|product_name|item_name|sku)$/i.test(c.name))?.name;
+
+    const hasGrossSales = profile.columns.some((c) => isNum(c) && /gross_sales/i.test(c.name));
+    const hasNetSales = profile.columns.some((c) => isNum(c) && /net_sales/i.test(c.name));
+    const hasProfit = profile.columns.some((c) => isNum(c) && /profit/i.test(c.name));
+    const hasCost = profile.columns.some((c) => isNum(c) && /total_cost|cogs/i.test(c.name));
+
+    // 1. Net Sales Over Time (Area Chart)
+    if (dateCol) {
       charts.push({
         id: 'sales_trend_over_time',
-        title: `Monthly Revenue Trajectory over ${semantics.primaryDate}`,
-        type: 'line',
-        dimension: { field: semantics.primaryDate, timeBucket: 'month', alias: 'Month' },
+        title: `Net Sales Trajectory over ${cleanFieldTitle(dateCol)}`,
+        type: 'area',
+        dimension: { field: dateCol, timeBucket: 'month', alias: 'Month' },
         metricId: 'total_net_sales',
         metricLabel: 'Net Sales',
         sortDirection: 'asc',
+        section: 'overview',
+        allowedAlternativeTypes: ['area', 'line', 'bar'],
+        selectionReason: 'Temporal trajectory with continuous monthly area fill',
       });
     }
-    const channelCol = profile.columns.find((c) => /channel|region|tier|segment/i.test(c.name) && c.name !== semantics.primaryDimension)?.name;
+
+    // 2. Customer Segment Share (Donut Chart)
+    if (segmentCol) {
+      const distinctCount = profile.columnMap.get(segmentCol)?.distinctCount || 3;
+      charts.push({
+        id: 'segment_share',
+        title: `${cleanFieldTitle(segmentCol)} Market Share`,
+        type: distinctCount <= 6 ? 'donut' : 'horizontal_bar',
+        dimension: segmentCol,
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        topN: { field: segmentCol, metricId: 'total_net_sales', limit: 6, includeOther: true },
+        sortDirection: 'desc',
+        section: 'overview',
+        allowedAlternativeTypes: ['donut', 'horizontal_bar', 'bar'],
+        selectionReason: 'Small categorical share (<=6 groups) with central total',
+      });
+    }
+
+    // 3. Regional Sales (Ranked Horizontal Bar)
+    if (regionCol) {
+      charts.push({
+        id: 'sales_by_region',
+        title: `Regional Revenue Performance (${cleanFieldTitle(regionCol)})`,
+        type: 'horizontal_bar',
+        dimension: regionCol,
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        topN: { field: regionCol, metricId: 'total_net_sales', limit: 8, includeOther: true },
+        sortDirection: 'desc',
+        section: 'overview',
+        allowedAlternativeTypes: ['horizontal_bar', 'donut', 'bar'],
+        selectionReason: 'Sorted geographical distribution with contribution percentages',
+      });
+    }
+
+    // 4. Financial Bridge Waterfall (Gross Sales -> Discounts -> Net Sales -> COGS -> Gross Profit)
+    if (hasGrossSales && (hasNetSales || hasProfit) && hasCost) {
+      charts.push({
+        id: 'financial_waterfall',
+        title: 'Commercial Financial Bridge (Gross to Net to Profit)',
+        type: 'waterfall',
+        dimension: 'Financial_Bridge_Step',
+        metricId: 'total_gross_sales',
+        metricLabel: 'Amount',
+        section: 'overview',
+        allowedAlternativeTypes: ['waterfall', 'bar'],
+        selectionReason: 'Sequential commercial bridge mathematics from Gross Sales through Deductions and COGS to Gross Profit',
+      });
+    }
+
+    // 5. Product Category Mix (Treemap sized by Net Sales, colored by profit)
+    if (catCol) {
+      charts.push({
+        id: 'category_mix',
+        title: `Product Category Revenue & Margin Treemap`,
+        type: 'treemap',
+        dimension: catCol,
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        secondaryMetricId: 'total_gross_profit',
+        secondaryMetricLabel: 'Gross Profit',
+        topN: { field: catCol, metricId: 'total_net_sales', limit: 8, includeOther: true },
+        sortDirection: 'desc',
+        section: 'products_ops',
+        allowedAlternativeTypes: ['treemap', 'bar', 'horizontal_bar'],
+        selectionReason: 'Hierarchical category volume breakdown sized by Net Sales',
+      });
+    }
+
+    // 6. Sales Channel Mix (Donut Chart)
     if (channelCol) {
       charts.push({
-        id: 'sales_by_channel',
-        title: `Revenue Distribution by ${channelCol}`,
-        type: 'bar',
+        id: 'channel_mix',
+        title: `Sales Channel Volume & Contribution`,
+        type: 'donut',
         dimension: channelCol,
         metricId: 'total_net_sales',
         metricLabel: 'Net Sales',
-        topN: { field: channelCol, metricId: 'total_net_sales', limit: 5, includeOther: true },
+        topN: { field: channelCol, metricId: 'total_net_sales', limit: 6, includeOther: true },
         sortDirection: 'desc',
+        section: 'customers_regions',
+        allowedAlternativeTypes: ['donut', 'horizontal_bar', 'bar'],
+        selectionReason: 'Channel acquisition contribution split',
       });
     }
+
+    // 7. Monthly Revenue & Profit Combo (Dual Axis: Bars for Net Sales, Line for Profit)
+    if (dateCol && hasProfit) {
+      charts.push({
+        id: 'monthly_revenue_profit_combo',
+        title: `Monthly Revenue vs Gross Profit Bridge`,
+        type: 'combo',
+        dimension: { field: dateCol, timeBucket: 'month', alias: 'Month' },
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        secondaryMetricId: 'total_gross_profit',
+        secondaryMetricLabel: 'Gross Profit',
+        sortDirection: 'asc',
+        section: 'revenue',
+        allowedAlternativeTypes: ['combo', 'line', 'bar'],
+        selectionReason: 'Dual series tracking revenue scale (bars) against profitability trajectory (line)',
+      });
+    }
+
+    // 8. Order Status by Channel (Stacked Column)
+    if (channelCol && statusCol) {
+      charts.push({
+        id: 'status_by_channel',
+        title: `Fulfillment Status by Sales Channel`,
+        type: 'stacked_column',
+        dimension: channelCol,
+        stackDimension: statusCol,
+        metricId: 'total_transactions',
+        metricLabel: 'Orders',
+        unit: 'orders',
+        section: 'customers_regions',
+        allowedAlternativeTypes: ['stacked_column', 'bar'],
+        selectionReason: 'Operational delivery pipeline state across acquisition channels',
+      });
+    }
+
+    // 9. Product Revenue vs Margin Scatter / Bubble
+    if (productCol && hasProfit) {
+      charts.push({
+        id: 'product_performance_scatter',
+        title: `Top Products: Revenue Scale vs Margin %`,
+        type: 'scatter',
+        dimension: productCol,
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        secondaryMetricId: 'gross_profit_margin',
+        secondaryMetricLabel: 'Profit Margin %',
+        tertiaryMetricId: 'total_units_sold',
+        tertiaryMetricLabel: 'Units Sold',
+        topN: { field: productCol, metricId: 'total_net_sales', limit: 15, includeOther: false },
+        sortDirection: 'desc',
+        section: 'products_ops',
+        allowedAlternativeTypes: ['scatter', 'horizontal_bar'],
+        selectionReason: 'Two-dimensional profitability matrix (Volume vs Margin Ratio) with bubble unit scale',
+      });
+    }
+
+    // 10. Revenue Calendar Heatmap (Month vs Region)
+    if (dateCol && regionCol) {
+      charts.push({
+        id: 'revenue_calendar_heatmap',
+        title: `Regional Revenue Heatmap (Month vs Region)`,
+        type: 'heatmap',
+        dimension: { field: dateCol, timeBucket: 'month', alias: 'Month' },
+        stackDimension: regionCol,
+        metricId: 'total_net_sales',
+        metricLabel: 'Net Sales',
+        section: 'revenue',
+        allowedAlternativeTypes: ['heatmap', 'combo'],
+        selectionReason: 'High-density seasonal matrix revealing regional timing variance',
+      });
+    }
+
     return charts;
   }
 }

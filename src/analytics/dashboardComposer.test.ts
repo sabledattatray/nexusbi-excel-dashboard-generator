@@ -119,4 +119,71 @@ describe('Phase 9D: Dashboard Composer & Visual Accessibility Suite', () => {
     const kpiLabels = model.kpiCards.map((k) => k.label.toLowerCase());
     assert.ok(!kpiLabels.some((l) => l.includes('revenue') || l.includes('profit') || l.includes('cogs')), 'Must not invent revenue/profit');
   });
+
+  test('PRD v10.0: Peak period in accessible summary is computed from MAX, not first item', async () => {
+    const temporalRows = [
+      { Order_ID: 'O-1', Order_Date: '2024-01-15', Net_Sales: 100, Customer_Segment: 'Consumer' },
+      { Order_ID: 'O-2', Order_Date: '2024-02-15', Net_Sales: 200, Customer_Segment: 'Consumer' },
+      { Order_ID: 'O-3', Order_Date: '2024-03-15', Net_Sales: 800, Customer_Segment: 'Corporate' }, // Peak!
+      { Order_ID: 'O-4', Order_Date: '2024-04-15', Net_Sales: 300, Customer_Segment: 'Corporate' },
+    ];
+    const profile = profileDataset(Object.keys(temporalRows[0]), temporalRows);
+    const semantics = detectSemanticRoles(profile);
+    const rulePack = resolveDomainRulePack(profile, semantics);
+    const model = await composeUniversalDashboard('orders_table', temporalRows, profile, semantics, rulePack);
+
+    const timeChart = model.charts.find((c) => c.chartType === 'line' || c.id.includes('trend') || c.id.includes('time'));
+    assert.ok(timeChart, 'Must have temporal trend chart');
+    assert.ok(timeChart.accessibleSummary, 'Must have accessible summary');
+    assert.ok(
+      timeChart.accessibleSummary.includes('2024-03-01') || timeChart.accessibleSummary.includes('800'),
+      `Peak period must identify March 2024 (max 800), got: ${timeChart.accessibleSummary}`
+    );
+  });
+
+  test('PRD v10.0: 0-exception action queue state is handled cleanly in decision brief', async () => {
+    // Dataset with zero exceptions (no critical priority, no overdue, no unpaid balances)
+    const healthyRows = [
+      { Order_ID: 'O-101', Status: 'Completed', Overdue_Days: 0, Balance: 0, Amount: 150 },
+      { Order_ID: 'O-102', Status: 'Delivered', Overdue_Days: 0, Balance: 0, Amount: 250 },
+      { Order_ID: 'O-103', Status: 'Closed', Overdue_Days: 0, Balance: 0, Amount: 350 },
+    ];
+    const profile = profileDataset(Object.keys(healthyRows[0]), healthyRows);
+    const semantics = detectSemanticRoles(profile);
+    const rulePack = resolveDomainRulePack(profile, semantics);
+    const model = await composeUniversalDashboard('healthy_orders', healthyRows, profile, semantics, rulePack);
+
+    assert.strictEqual(model.actionQueue.length, 0, 'Action queue must be empty when 0 exceptions trigger');
+    const briefActions = model.decisionBrief.recommendedActions;
+    assert.ok(
+      briefActions.some((a) => a.includes('No exceptions detected under configured rules')),
+      'Decision brief must explicitly state no exceptions detected under configured rules'
+    );
+  });
+
+  test('PRD v10.0: Sales metric additivity classification (Gross Profit Margin = non_additive, Total Cost = additive)', async () => {
+    const salesRows = [
+      { Order_ID: 'S-1', Order_Date: '2024-01-15', Net_Sales: 1000, Profit: 300, Total_Cost: 700, Quantity: 10, Customer_Segment: 'Corporate' },
+      { Order_ID: 'S-2', Order_Date: '2024-02-15', Net_Sales: 2000, Profit: 800, Total_Cost: 1200, Quantity: 20, Customer_Segment: 'Consumer' },
+    ];
+    const profile = profileDataset(Object.keys(salesRows[0]), salesRows);
+    const semantics = detectSemanticRoles(profile);
+    const rulePack = resolveDomainRulePack(profile, semantics);
+    const model = await composeUniversalDashboard('sales_table', salesRows, profile, semantics, rulePack);
+
+    const marginKpi = model.kpiCards.find((k) => k.id.includes('margin') || k.label.includes('Margin'));
+    if (marginKpi) {
+      assert.strictEqual(marginKpi.additivity, 'non_additive', 'Gross Profit Margin must be non_additive');
+    }
+
+    const costKpi = model.kpiCards.find((k) => k.id === 'total_cost' || k.label.includes('Total Cost') || k.label.includes('COGS'));
+    if (costKpi) {
+      assert.strictEqual(costKpi.additivity, 'additive', 'Total Cost / COGS must be additive');
+    }
+
+    const salesKpi = model.kpiCards.find((k) => k.id === 'total_net_sales');
+    if (salesKpi) {
+      assert.strictEqual(salesKpi.additivity, 'additive', 'Total Net Sales must be additive');
+    }
+  });
 });

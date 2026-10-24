@@ -191,17 +191,53 @@ export class TruePdfExporter {
     doc.text('VISUAL COHORT BREAKDOWNS & OPERATIONAL ACTION QUEUE', margin + 4, margin + 9);
 
     curY = 35;
-    // Render 2 Primary Charts as Vector Bar Charts
+    // Render 2 Primary Charts as Vector Visuals
     const chartsToRender = model.charts.slice(0, 2);
     for (const c of chartsToRender) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(30, 41, 59);
-      doc.text(`${c.title.toUpperCase()} (${c.dimensionLabel} vs ${c.metricLabel})`, margin, curY);
+      doc.text(`${c.title.toUpperCase()} (${c.dimensionLabel} vs ${c.metricLabel} • ${c.chartType.toUpperCase()})`, margin, curY);
       curY += 4;
 
-      const maxVal = Math.max(...c.data.map((d) => (Number.isFinite(d.value) ? d.value : 0)), 1);
-      const totalVal = c.data.reduce((a, b) => a + (Number.isFinite(b.value) ? b.value : 0), 0);
+      if (c.chartType === 'waterfall') {
+        const wfMax = Math.max(...c.data.map((d) => Math.abs(d.value)), 1) * 1.15;
+        for (const pt of c.data) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(71, 85, 105);
+          doc.text(String(pt.label).slice(0, 25), margin, curY + 3.5);
+
+          const trackX = margin + 45;
+          const trackW = 85;
+          const barH = 4.5;
+          doc.setFillColor(241, 245, 249);
+          doc.rect(trackX, curY, trackW, barH, 'F');
+
+          const fillW = Math.max(1, (Math.abs(pt.value) / wfMax) * trackW);
+          if (pt.value < 0 || pt.stepType === 'decrease') {
+            doc.setFillColor(225, 29, 72); // Rose
+          } else if (pt.label.toLowerCase().includes('profit')) {
+            doc.setFillColor(5, 150, 105); // Emerald
+          } else if (pt.isSubtotal) {
+            doc.setFillColor(79, 70, 229); // Indigo
+          } else {
+            doc.setFillColor(2, 132, 199); // Sky
+          }
+          doc.rect(trackX, curY, fillW, barH, 'F');
+
+          doc.setFont('courier', 'bold');
+          doc.setFontSize(7);
+          doc.setTextColor(15, 23, 42);
+          doc.text(`$${Math.abs(pt.value).toLocaleString()}`, trackX + trackW + 4, curY + 3.5);
+          curY += 6.5;
+        }
+        curY += 4;
+        continue;
+      }
+
+      const maxVal = Math.max(...c.data.map((d) => (Number.isFinite(d.value) ? Math.abs(d.value) : 0)), 1);
+      const totalVal = c.data.reduce((a, b) => a + (Number.isFinite(b.value) ? Math.abs(b.value) : 0), 0);
       const topData = c.data.slice(0, 5);
 
       for (const pt of topData) {
@@ -219,7 +255,7 @@ export class TruePdfExporter {
         doc.rect(trackX, curY, trackW, barH, 'F');
 
         // Vector Fill
-        const fillW = Math.max(1, (pt.value / maxVal) * trackW);
+        const fillW = Math.max(1, (Math.abs(pt.value) / maxVal) * trackW);
         doc.setFillColor(2, 132, 199);
         doc.rect(trackX, curY, fillW, barH, 'F');
 
@@ -227,7 +263,7 @@ export class TruePdfExporter {
         doc.setFont('courier', 'bold');
         doc.setFontSize(7);
         doc.setTextColor(15, 23, 42);
-        const sharePct = totalVal > 0 ? ((pt.value / totalVal) * 100).toFixed(1) + '%' : '0.0%';
+        const sharePct = totalVal > 0 ? ((Math.abs(pt.value) / totalVal) * 100).toFixed(1) + '%' : '0.0%';
         doc.text(`${pt.value.toLocaleString()} (${sharePct})`, trackX + trackW + 4, curY + 3.5);
 
         curY += 6.5;
@@ -411,6 +447,6 @@ export class TruePdfExporter {
     drawFooter(3);
 
     const arrayBuffer = doc.output('arraybuffer');
-    return Buffer.from(arrayBuffer);
+    return (typeof Buffer !== 'undefined' ? Buffer.from(arrayBuffer) : new Uint8Array(arrayBuffer)) as unknown as Buffer;
   }
 }

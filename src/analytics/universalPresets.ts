@@ -57,7 +57,38 @@ export async function loadUniversalDataset(id: string): Promise<{
   headers: string[];
   rows: Record<string, any>[];
 }> {
-  if (id === 'sales') {
+  if (id === 'sales' || id === 'ecommerce') {
+    // 1. Try loading 5,000-row canonical e-commerce dataset
+    try {
+      if (typeof window !== 'undefined') {
+        const res = await fetch('/datasets/ecommerce_sales_5k.csv');
+        if (res.ok) {
+          const text = await res.text();
+          const parsed = Papa.parse(text, { header: true, skipEmptyLines: 'greedy' });
+          const headers = (parsed.meta.fields || []).map((h) => h.replace(/^\ufeff/, '').trim()).filter(Boolean);
+          const rows = (parsed.data as Record<string, any>[]).filter((r) =>
+            Object.values(r).some((v) => v !== null && v !== undefined && v !== '')
+          );
+          return { name: 'E-Commerce Sales & Revenue Operations', headers, rows };
+        }
+      } else {
+        const fs = await import('node:fs');
+        const path = await import('node:path');
+        const p = path.resolve(process.cwd(), 'public/datasets/ecommerce_sales_5k.csv');
+        if (fs.existsSync(p)) {
+          const text = fs.readFileSync(p, 'utf8');
+          const parsed = Papa.parse(text, { header: true, skipEmptyLines: 'greedy' });
+          const headers = (parsed.meta.fields || []).map((h) => h.replace(/^\ufeff/, '').trim()).filter(Boolean);
+          const rows = (parsed.data as Record<string, any>[]).filter((r) =>
+            Object.values(r).some((v) => v !== null && v !== undefined && v !== '')
+          );
+          return { name: 'E-Commerce Sales & Revenue Operations', headers, rows };
+        }
+      }
+    } catch {
+      // Fallback to legacy sales_6k if ecommerce_sales_5k is unavailable
+    }
+
     try {
       const res = await fetch('/datasets/sales_6k.csv');
       if (res.ok) {

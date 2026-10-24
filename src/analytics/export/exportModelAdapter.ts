@@ -55,6 +55,39 @@ function computeDeterministicHash(str: string): string {
   return (h >>> 0).toString(16).padStart(8, '0');
 }
 
+export function parseDateBucketKey(val: any): string | null {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number' && val > 20000 && val < 60000) {
+    const epoch = new Date(Date.UTC(1899, 11, 30));
+    epoch.setUTCDate(epoch.getUTCDate() + Math.floor(val));
+    const m = String(epoch.getUTCMonth() + 1).padStart(2, '0');
+    return `${epoch.getUTCFullYear()}-${m}-01`;
+  }
+  const d = new Date(String(val).trim());
+  if (!isNaN(d.getTime())) {
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${m}-01`;
+  }
+  return null;
+}
+
+export function matchesActiveFilter(r: Record<string, any>, filterField: string, filterVal: string): boolean {
+  if (filterField in r) {
+    if (String(r[filterField] ?? '') === filterVal) return true;
+    const bucket = parseDateBucketKey(r[filterField]);
+    if (bucket === filterVal) return true;
+  }
+  if (filterField === 'Month' || /month|date|period/i.test(filterField)) {
+    for (const k of Object.keys(r)) {
+      if (/date|time|period|month/i.test(k)) {
+        const bucket = parseDateBucketKey(r[k]);
+        if (bucket === filterVal) return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * Creates an immutable frozen ExportRenderModel from the universal dashboard model.
  */
@@ -73,7 +106,7 @@ export function buildExportRenderModel(
 
   // 1. Filter rows if activeFilter is present
   const filteredRows = activeFilter
-    ? rawRows.filter((r) => String(r[activeFilter.field] ?? '') === activeFilter.value)
+    ? rawRows.filter((r) => matchesActiveFilter(r, activeFilter.field, activeFilter.value))
     : rawRows;
 
   // 2. Hash source data representation
@@ -93,11 +126,23 @@ export function buildExportRenderModel(
 
   // 5. Build Metric Dictionary with exact additivity semantics
   const metricDictionary: MetricDictionaryEntry[] = model.kpiCards.map((kpi) => {
-    let additivity: 'additive' | 'non_additive' | 'semi_additive' = 'additive';
-    if (kpi.calculationFormula.startsWith('AVERAGE') || /csat|rating|gpa|age|pct|ratio|rate|cost/i.test(kpi.label)) {
-      additivity = 'non_additive';
-    } else if (/balance|stock|inventory|headcount/i.test(kpi.label)) {
-      additivity = 'semi_additive';
+    let additivity: 'additive' | 'non_additive' | 'semi_additive' = (kpi as any).additivity || 'additive';
+    if (!(kpi as any).additivity) {
+      const isBalance = /balance|stock|inventory|headcount/i.test(kpi.label);
+      const isExplicitAdditiveCost = /total.*cost|cogs|total.*cogs/i.test(kpi.label);
+      const isRatioOrRate = kpi.calculationFormula.includes('/') ||
+        kpi.calculationFormula.startsWith('AVERAGE') ||
+        /margin|pct|percent|ratio|rate|csat|rating|gpa|age|aov|unit_cost|unit_price|item_cost/i.test(kpi.label);
+
+      if (isBalance) {
+        additivity = 'semi_additive';
+      } else if (isExplicitAdditiveCost) {
+        additivity = 'additive';
+      } else if (isRatioOrRate) {
+        additivity = 'non_additive';
+      } else if (kpi.calculationFormula.startsWith('SUM') || kpi.calculationFormula.startsWith('COUNT')) {
+        additivity = 'additive';
+      }
     }
 
     return {

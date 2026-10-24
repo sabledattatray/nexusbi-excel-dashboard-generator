@@ -8,7 +8,7 @@
 
 import { DatasetProfile } from '../profiler/datasetProfiler';
 import { DetectedSemanticModel } from '../profiler/semanticDetector';
-import { DomainRulePack, ChartProposal } from '../rules/rulePacks';
+import { DomainRulePack, ChartProposal, ChartType } from '../rules/rulePacks';
 import { QueryPlan, MetricQuery } from '../types';
 import { executeAnalytics } from '../engineManager';
 
@@ -25,16 +25,38 @@ export interface KpiCardModel {
   confidence: number;
   isFinancial: boolean;
   explanation: string;
+  additivity?: 'additive' | 'non_additive' | 'semi_additive';
+}
+
+export interface ChartDataPoint {
+  label: string;
+  value: number;
+  secondaryValue?: number;
+  tertiaryValue?: number;
+  percentage?: number;
+  stackGroup?: string;
+  isSubtotal?: boolean;
+  stepType?: 'start' | 'decrease' | 'intermediate' | 'increase' | 'total';
+  color?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface ChartViewModel {
   id: string;
   title: string;
-  chartType: 'bar' | 'line' | 'pie' | 'scatter';
+  chartType: ChartType;
   dimensionLabel: string;
   metricLabel: string;
-  data: { label: string; value: number }[];
+  secondaryMetricLabel?: string;
+  tertiaryMetricLabel?: string;
+  data: ChartDataPoint[];
   accessibleSummary?: string;
+  sourceDimension?: any;
+  metricId?: string;
+  unit?: string;
+  section?: 'overview' | 'revenue' | 'customers_regions' | 'products_ops';
+  selectionReason?: string;
+  allowedAlternativeTypes?: ChartType[];
 }
 
 export interface ActionQueueItem {
@@ -261,7 +283,8 @@ function buildDecisionBrief(
   semantics: DetectedSemanticModel,
   rulePack: DomainRulePack,
   kpiCards: KpiCardModel[],
-  charts: ChartViewModel[]
+  charts: ChartViewModel[],
+  actionQueueCount: number = 0
 ): ManagementDecisionBrief {
   const topKpis = kpiCards.slice(0, 4);
   const cleanDomainName = rulePack.name.replace(/^executive\s+/i, '').trim();
@@ -341,11 +364,17 @@ function buildDecisionBrief(
     });
   }
 
-  const recommendedActions = [
-    'Review active/unresolved records in the prioritized Action Queue below.',
-    'Inspect columns with high null rates to ensure complete source data capture.',
-    'Cross-filter by top category cohorts to identify operational bottleneck variance.',
-  ];
+  const recommendedActions = actionQueueCount > 0
+    ? [
+        `Review ${actionQueueCount} prioritized active/unresolved records in the Action Queue below.`,
+        'Inspect columns with high null rates to ensure complete source data capture.',
+        'Cross-filter by top category cohorts to identify operational bottleneck variance.',
+      ]
+    : [
+        'No exceptions detected under configured rules (critical status, overdue days > 0, unpaid balances).',
+        'Inspect columns with high null rates to ensure complete source data capture.',
+        'Cross-filter by top category cohorts to identify operational bottleneck variance.',
+      ];
 
   const caveats = [
     'Comparisons are strictly descriptive; no causal assertions, predictions or forward forecasts are fabricated.',
@@ -413,6 +442,21 @@ export async function composeUniversalDashboard(
       explanation += ` Denominator strictly constrained to non-zero values of ${mq.denominatorField}.`;
     }
 
+    let kpiAdditivity: 'additive' | 'non_additive' | 'semi_additive' = 'additive';
+    if (
+      mq.operation === 'ratio' ||
+      mq.denominatorField ||
+      formulaDesc.includes('/') ||
+      mq.operation === 'average' ||
+      /margin|pct|rate|ratio|percent|csat|rating|gpa|age|aov|unit_cost|unit_price/i.test(mq.label)
+    ) {
+      kpiAdditivity = 'non_additive';
+    } else if (/balance|stock|inventory|headcount/i.test(mq.label)) {
+      kpiAdditivity = 'semi_additive';
+    } else {
+      kpiAdditivity = 'additive';
+    }
+
     kpiCards.push({
       id: mq.id,
       label: mq.label,
@@ -426,6 +470,7 @@ export async function composeUniversalDashboard(
       confidence: semantics.overallConfidence,
       isFinancial,
       explanation,
+      additivity: kpiAdditivity,
     });
   }
 
@@ -435,36 +480,98 @@ export async function composeUniversalDashboard(
   const queryPlans: QueryPlan[] = [summaryPlan];
 
   for (const cp of chartProposals) {
+    // A. Special Handler: Financial Bridge Waterfall
+    if (cp.type === 'waterfall') {
+      const grossSales = Number(summaryResult.metrics['total_gross_sales'] || summaryResult.metrics['total_net_sales'] || 0);
+      const netSales = Number(summaryResult.metrics['total_net_sales'] || 0);
+      const cogs = Number(summaryResult.metrics['total_cost'] || 0);
+      const profit = Number(summaryResult.metrics['total_gross_profit'] || (netSales - cogs));
+      const discount = Math.max(0, grossSales - netSales);
+
+      const wfPoints: ChartDataPoint[] = [
+        { label: 'Gross Sales', value: grossSales, stepType: 'start' },
+        { label: 'Discounts & Deductions', value: -discount, stepType: 'decrease' },
+        { label: 'Net Sales', value: netSales, stepType: 'intermediate', isSubtotal: true },
+        { label: 'Cost of Goods (COGS)', value: -cogs, stepType: 'decrease' },
+        { label: 'Gross Profit', value: profit, stepType: 'total', isSubtotal: true },
+      ];
+
+      chartViewModels.push({
+        id: cp.id,
+        title: cp.title,
+        chartType: 'waterfall',
+        dimensionLabel: 'Financial Bridge Step',
+        metricLabel: 'Amount',
+        data: wfPoints,
+        accessibleSummary: `Commercial financial bridge: Gross Sales ${grossSales.toLocaleString()} minus Discounts ${discount.toLocaleString()} yields Net Sales ${netSales.toLocaleString()}, minus COGS ${cogs.toLocaleString()} yields Gross Profit ${profit.toLocaleString()}.`,
+        sourceDimension: 'Financial_Bridge_Step',
+        metricId: 'total_gross_sales',
+        unit: 'currency',
+        section: cp.section || 'overview',
+        selectionReason: cp.selectionReason,
+        allowedAlternativeTypes: cp.allowedAlternativeTypes,
+      });
+      continue;
+    }
+
     const targetMetricQuery = metricQueries.find((m) => m.id === cp.metricId) || {
       id: cp.metricId,
       label: cp.metricLabel,
       operation: 'countRows' as const,
     };
 
+    const targetMetrics: MetricQuery[] = [targetMetricQuery];
+    if (cp.secondaryMetricId) {
+      const secMq = metricQueries.find((m) => m.id === cp.secondaryMetricId);
+      if (secMq) targetMetrics.push(secMq);
+    }
+    if (cp.tertiaryMetricId) {
+      const terMq = metricQueries.find((m) => m.id === cp.tertiaryMetricId);
+      if (terMq) targetMetrics.push(terMq);
+    }
+
     const isTemporal = typeof cp.dimension === 'object' && 'timeBucket' in cp.dimension;
     const dimKey = typeof cp.dimension === 'string' ? cp.dimension : cp.dimension.alias || cp.dimension.field;
+
+    const groupByDims: (string | any)[] = [cp.dimension];
+    if (cp.stackDimension) {
+      groupByDims.push(cp.stackDimension);
+    }
 
     const chartPlan: QueryPlan = {
       planId: `chart-${cp.id}-${Date.now()}`,
       tableName,
-      metrics: [targetMetricQuery],
-      groupBy: [cp.dimension],
-      topN: isTemporal ? undefined : cp.topN,
+      metrics: targetMetrics,
+      groupBy: groupByDims,
+      topN: isTemporal || cp.stackDimension ? undefined : cp.topN,
       sort: isTemporal
         ? [{ field: dimKey, direction: 'asc' }]
         : (cp.sortDirection ? [{ field: cp.metricId, direction: cp.sortDirection }] : undefined),
-      limit: isTemporal ? 36 : (cp.topN ? undefined : 12),
+      limit: isTemporal ? 36 : (cp.topN ? undefined : 15),
     };
     queryPlans.push(chartPlan);
 
     const { result: chartResult } = await executeAnalytics(chartPlan, rawRows);
 
-    const dataPoints: { label: string; value: number }[] = [];
+    const dataPoints: ChartDataPoint[] = [];
     if (chartResult.groupedRows) {
       for (const row of chartResult.groupedRows) {
+        const val = Number(row[cp.metricId] || 0);
+        const secVal = cp.secondaryMetricId ? Number(row[cp.secondaryMetricId] || 0) : undefined;
+        const terVal = cp.tertiaryMetricId ? Number(row[cp.tertiaryMetricId] || 0) : undefined;
+
+        // Ratio-of-sums calculation for scatter margin %
+        let calcSecVal = secVal;
+        if (cp.type === 'scatter' && secVal !== undefined && val > 0) {
+          calcSecVal = Number(((secVal / val) * 100).toFixed(2));
+        }
+
         dataPoints.push({
           label: String(row[dimKey] ?? 'Unknown'),
-          value: Number(row[cp.metricId] || 0),
+          value: val,
+          secondaryValue: calcSecVal,
+          tertiaryValue: terVal,
+          stackGroup: cp.stackDimension ? String(row[cp.stackDimension] ?? '') : undefined,
         });
       }
     }
@@ -474,20 +581,34 @@ export async function composeUniversalDashboard(
       dataPoints.sort((a, b) => a.label.localeCompare(b.label));
     }
 
+    // Calculate contribution percentage for categorical charts
+    const totalValSum = dataPoints.reduce((acc, d) => acc + Math.max(0, d.value), 0);
+    dataPoints.forEach((d) => {
+      d.percentage = totalValSum > 0 ? (Math.max(0, d.value) / totalValSum) * 100 : 0;
+    });
+
     const dimLabel = dimKey;
-    const topItem = dataPoints[0];
-    const accessibleSummary = topItem
-      ? `${cp.title} displaying ${dataPoints.length} cohorts along ${dimLabel}. Lead category is '${topItem.label}' with ${topItem.value.toLocaleString()} ${cp.metricLabel}.`
+    const maxItem = dataPoints.reduce((max, cur) => (cur.value > max.value ? cur : max), dataPoints[0]);
+    const accessibleSummary = maxItem
+      ? `${cp.title} displaying ${dataPoints.length} cohorts along ${dimLabel}. ${isTemporal ? 'Peak period' : 'Lead category'} is '${maxItem.label}' with ${maxItem.value.toLocaleString()} ${cp.metricLabel}.`
       : `${cp.title} with 0 records.`;
 
     chartViewModels.push({
       id: cp.id,
       title: cp.title,
-      chartType: cp.type === 'line' ? 'line' : cp.type === 'pie' ? 'pie' : 'bar',
+      chartType: cp.type,
       dimensionLabel: dimLabel,
       metricLabel: cp.metricLabel,
+      secondaryMetricLabel: cp.secondaryMetricLabel,
+      tertiaryMetricLabel: cp.tertiaryMetricLabel,
       data: dataPoints,
       accessibleSummary,
+      sourceDimension: cp.dimension,
+      metricId: cp.metricId,
+      unit: cp.unit,
+      section: cp.section || 'overview',
+      selectionReason: cp.selectionReason,
+      allowedAlternativeTypes: cp.allowedAlternativeTypes,
     });
   }
 
@@ -502,7 +623,7 @@ export async function composeUniversalDashboard(
 
   // 5. Build Action Queue & Management Decision Brief
   const actionQueue = buildActionQueue(rawRows, profile, semantics);
-  const decisionBrief = buildDecisionBrief(profile, semantics, rulePack, kpiCards, chartViewModels);
+  const decisionBrief = buildDecisionBrief(profile, semantics, rulePack, kpiCards, chartViewModels, actionQueue.length);
 
   // 6. Build Executive Header
   let intakePeriod: string | undefined;

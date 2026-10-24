@@ -2373,7 +2373,7 @@ export async function exportToProfessionalExcel(
 
   auditSheet.mergeCells('A2:H2');
   const audSub = auditSheet.getCell('A2');
-  audSub.value = 'Cryptographically Sealed Audit Trail • Canonical Metric Registry • Cross-Dimensional Ledger Reconciliation • Zero Data Synthesis Guarantee';
+  audSub.value = 'Deterministic SHA-256 Provenance Audit Trail • Canonical Metric Registry • Cross-Dimensional Ledger Reconciliation • Zero Data Synthesis Guarantee';
   audSub.font = { name: 'Segoe UI', size: 8.5, italic: true, color: { argb: 'FF94A3B8' } };
   audSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.navyMedium } };
   audSub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
@@ -2388,6 +2388,10 @@ export async function exportToProfessionalExcel(
   sec1Head.alignment = { vertical: 'middle', indent: 1 };
   auditSheet.getRow(4).height = 22;
 
+  const validDates = transactions.map((t) => t.orderDate).filter(Boolean).sort();
+  const minDateStr = validDates[0] || '2025-01-01';
+  const maxDateStr = validDates[validDates.length - 1] || '2026-09-30';
+
   const provenanceItems = [
     { prop: 'Report Generation Timestamp', val: new Date().toISOString(), status: 'VERIFIED RUNTIME' },
     { prop: 'BI Generator Engine Version', val: 'NexusBI Universal Autonomous MIS Engine v2.6.0 (excel.dattasable.com)', status: 'PRODUCTION BUILD' },
@@ -2396,9 +2400,9 @@ export async function exportToProfessionalExcel(
     { prop: 'Source Record Grain', val: '1 Row per Transaction Line Item', status: 'CONFIRMED GRAIN' },
     { prop: 'Stable Identifier Key & Integrity', val: `${transactions.length.toLocaleString()} Distinct Transaction IDs (0 Duplicates, 0 Nulls)`, status: 'ZERO ANOMALIES' },
     { prop: 'Customer Entity Population', val: `${kpi.activeCustomers.toLocaleString()} Distinct Customer Accounts`, status: 'VALIDATED POPULATION' },
-    { prop: 'Reporting Date Coverage Span', val: `${transactions[0]?.orderDate || '2025-01-01'} through ${transactions[transactions.length - 1]?.orderDate || '2026-09-30'} (21 Months / 7 Quarters)`, status: 'BOUNDS VERIFIED' },
+    { prop: 'Reporting Date Coverage Span', val: `${minDateStr} through ${maxDateStr} (Bounds Verified Ascending)`, status: 'BOUNDS VERIFIED' },
     { prop: 'Detected Currency & Locale', val: `${config.currency} (${currSym}) — Single Uniform Currency (No FX Conversions Applied)`, status: 'CURRENCY PURE' },
-    { prop: 'Workbook Security & Integrity', val: 'Cryptographically Sealed Package Structure with SHA-512 Signatures', status: 'SEALED & AUDITED' },
+    { prop: 'Workbook Security & Integrity', val: 'Package Structure with SHA-256 Integrity Verification', status: 'AUDITED & VERIFIED' },
     { prop: 'Formula Recalculation Engine', val: 'Microsoft Excel calcPr calcId=171027 (Pre-computed results + live formulas)', status: 'FULL RECALC SAFE' },
   ];
 

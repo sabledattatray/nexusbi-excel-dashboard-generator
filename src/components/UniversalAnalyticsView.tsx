@@ -28,6 +28,7 @@ import { CanonicalExporter } from '../analytics/export/canonicalExporter';
 import { PdfReportExporter } from '../analytics/export/pdfReportExporter';
 import { TruePdfExporter } from '../analytics/export/truePdfExporter';
 import { parseUploadedFile } from '../utils/dataImporter';
+import { ChartThemeMode } from '../analytics/composer/chartAdapter';
 import { UniversalJuliusDashboard } from './UniversalJuliusDashboard';
 import {
   Database,
@@ -64,6 +65,7 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
   const [datasetName, setDatasetName] = useState<string>('');
   const [isDragActive, setIsDragActive] = useState<boolean>(false);
   const [devMenuOpen, setDevMenuOpen] = useState<boolean>(false);
+  const [theme, setTheme] = useState<ChartThemeMode>('dark');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processRows = useCallback(async (name: string, headers: string[], rows: Record<string, any>[]) => {
@@ -167,95 +169,148 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
     }
   };
 
+  const [activeFilter, setActiveFilter] = useState<{ field: string; value: string } | null>(null);
+
   const handleResetToUpload = () => {
     setDashboardModel(null);
     setRawRows([]);
     setDatasetName('');
+    setActiveFilter(null);
   };
 
-  // Export handlers
-  const handleDownloadExcel = useCallback(async () => {
+  // Export handlers with filter snapshot & error handling
+  const handleDownloadExcel = useCallback(async (filterParam?: { field: string; value: string } | null) => {
     if (!dashboardModel || rawRows.length === 0) return;
-    const exporter = new CanonicalExporter();
-    const buf = await exporter.exportToExcel(dashboardModel, rawRows);
-    const blob = new Blob([new Uint8Array(buf)], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_universal_dashboard.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [dashboardModel, rawRows, datasetName]);
-
-  const handleDownloadHtml = useCallback(() => {
-    if (!dashboardModel) return;
-    const exporter = new CanonicalExporter();
-    const htmlStr = exporter.exportToHtml(dashboardModel, rawRows);
-    const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_universal_dashboard.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [dashboardModel, rawRows, datasetName]);
-
-  const handleDownloadPdf = useCallback(() => {
-    if (!dashboardModel) return;
-    const exporter = new TruePdfExporter();
-    const pdfBuf = exporter.exportToPdf(dashboardModel, rawRows, { datasetName });
-    const blob = new Blob([new Uint8Array(pdfBuf)], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_report.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [dashboardModel, rawRows, datasetName]);
-
-  const handlePrintReportHtml = useCallback(() => {
-    if (!dashboardModel) return;
-    const exporter = new PdfReportExporter();
-    const pdfHtmlStr = exporter.generatePrintReadyPdfHtml(dashboardModel, rawRows, { datasetName });
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(pdfHtmlStr);
-      printWindow.document.close();
-      printWindow.focus();
+    try {
+      const filter = filterParam !== undefined ? filterParam : activeFilter;
+      const exporter = new CanonicalExporter();
+      const buf = await exporter.exportToExcel(dashboardModel, rawRows, {
+        activeFilter: filter || undefined,
+        datasetName,
+      });
+      const blob = new Blob([new Uint8Array(buf)], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(datasetName || 'universal').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_universal_dashboard.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (a.parentNode) document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to export Excel workbook:', err);
+      alert('Error exporting Excel workbook. Please try again.');
     }
-  }, [dashboardModel, rawRows, datasetName]);
+  }, [dashboardModel, rawRows, datasetName, activeFilter]);
+
+  const handleDownloadHtml = useCallback((filterParam?: { field: string; value: string } | null) => {
+    if (!dashboardModel) return;
+    try {
+      const filter = filterParam !== undefined ? filterParam : activeFilter;
+      const exporter = new CanonicalExporter();
+      const htmlStr = exporter.exportToHtml(dashboardModel, rawRows, {
+        activeFilter: filter || undefined,
+        datasetName,
+      });
+      const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(datasetName || 'universal').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_universal_dashboard.html`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (a.parentNode) document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to export HTML:', err);
+      alert('Error exporting HTML dashboard. Please try again.');
+    }
+  }, [dashboardModel, rawRows, datasetName, activeFilter]);
+
+  const handleDownloadPdf = useCallback((filterParam?: { field: string; value: string } | null) => {
+    if (!dashboardModel) return;
+    try {
+      const filter = filterParam !== undefined ? filterParam : activeFilter;
+      const exporter = new TruePdfExporter();
+      const pdfBuf = exporter.exportToPdf(dashboardModel, rawRows, {
+        activeFilter: filter || undefined,
+        datasetName,
+      });
+      const u8 = new Uint8Array(pdfBuf);
+      const blob = new Blob([u8.buffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(datasetName || 'universal').replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()}_report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (a.parentNode) document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+      alert('Error exporting PDF document. Please verify data.');
+    }
+  }, [dashboardModel, rawRows, datasetName, activeFilter]);
+
+  const handlePrintReportHtml = useCallback((filterParam?: { field: string; value: string } | null) => {
+    if (!dashboardModel) return;
+    try {
+      const filter = filterParam !== undefined ? filterParam : activeFilter;
+      const exporter = new PdfReportExporter();
+      const pdfHtmlStr = exporter.generatePrintReadyPdfHtml(dashboardModel, rawRows, {
+        activeFilter: filter || undefined,
+        datasetName,
+      });
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(pdfHtmlStr);
+        printWindow.document.close();
+        printWindow.focus();
+      }
+    } catch (err) {
+      console.error('Failed to open print view:', err);
+    }
+  }, [dashboardModel, rawRows, datasetName, activeFilter]);
+
+  const isDark = theme === 'dark';
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className={`w-full min-h-screen font-sans transition-colors duration-200 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
       {/* Top Universal Analytics Header Bar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/95 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3.5">
+      <header className={`border-b backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3.5 transition-colors duration-200 ${
+        isDark ? 'border-slate-800/80 bg-slate-900/95 text-slate-100' : 'border-slate-200 bg-white/95 text-slate-900 shadow-2xs'
+      }`}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBackToApp}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-300 transition-colors shadow-sm"
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors shadow-sm ${
+                isDark ? 'border-slate-700/80 hover:bg-slate-800 text-slate-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+              }`}
             >
               <ArrowLeft size={14} /> Back to Classic Mode
             </button>
-            <div className="h-4 w-px bg-slate-800 hidden sm:block" />
+            <div className={`h-4 w-px hidden sm:block ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
             <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-sky-500/20 text-sky-400">
+              <span className={`p-1.5 rounded-lg ${isDark ? 'bg-sky-500/20 text-sky-400' : 'bg-sky-50 text-sky-600'}`}>
                 <Database size={16} />
               </span>
               <div>
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
-                  Universal Julius Analytics <span className="text-[10px] text-sky-400 font-mono px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20">PRD v9.0</span>
+                <h2 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+                  Universal Julius Analytics <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                    isDark ? 'text-sky-400 bg-sky-500/10 border border-sky-500/20' : 'text-sky-700 bg-sky-50 border border-sky-200'
+                  }`}>PRD v9.0</span>
                 </h2>
-                <p className="text-[10px] text-slate-400">Zero-AI Browser-Local Analytical Engine</p>
+                <p className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Zero-AI Browser-Local Analytical Engine</p>
               </div>
             </div>
           </div>
@@ -265,12 +320,14 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
             {/* When a dataset is active: show file badge & replace button */}
             {dashboardModel && (
               <div className="flex items-center gap-2">
-                <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/70 border border-slate-700/60 text-xs">
-                  <FileSpreadsheet size={13} className="text-emerald-400" />
-                  <span className="font-semibold text-slate-200 max-w-[200px] truncate" title={datasetName}>
+                <div className={`hidden md:flex items-center gap-2 px-3 py-1 rounded-lg border text-xs ${
+                  isDark ? 'bg-slate-800/70 border-slate-700/60 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
+                }`}>
+                  <FileSpreadsheet size={13} className={isDark ? "text-emerald-400" : "text-emerald-600"} />
+                  <span className={`font-semibold max-w-[200px] truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`} title={datasetName}>
                     {datasetName}
                   </span>
-                  <span className="text-slate-400 font-mono text-[11px]">
+                  <span className={`font-mono text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                     ({rawRows.length.toLocaleString()} rows)
                   </span>
                 </div>
@@ -291,7 +348,9 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
                   type="button"
                   onClick={handleResetToUpload}
                   title="Clear active dataset and return to file upload screen"
-                  className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1"
+                  className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors flex items-center gap-1 ${
+                    isDark ? 'border-slate-700/80 hover:bg-slate-800 text-slate-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
                 >
                   <RotateCcw size={12} />
                   <span className="hidden sm:inline">Reset</span>
@@ -349,6 +408,10 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
         <UniversalJuliusDashboard
           model={dashboardModel}
           rawRows={rawRows}
+          theme={theme}
+          onThemeChange={setTheme}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
           onDownloadExcel={handleDownloadExcel}
           onDownloadHtml={handleDownloadHtml}
           onDownloadPdf={handleDownloadPdf}
@@ -401,11 +464,28 @@ export function UniversalAnalyticsView({ onBackToApp, initialPreset }: Universal
               </p>
 
               {/* Supported Format Pills */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">.CSV</span>
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">.XLSX</span>
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">.XLS</span>
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">.TSV</span>
+              </div>
+
+              {/* Instant Demo Dataset Trigger */}
+              <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+                <button
+                  type="button"
+                  id="try-demo-sales-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectPreset('sales');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  title="Load the 5,000+ row commercial sales dataset"
+                >
+                  <Sparkles size={14} />
+                  <span>Try Demo Commercial Sales Dataset (5,000+ Rows)</span>
+                </button>
               </div>
 
               {/* Privacy & Locality Guarantee */}
